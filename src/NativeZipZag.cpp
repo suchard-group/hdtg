@@ -188,8 +188,7 @@ JNIEXPORT jobject JNICALL Java_dr_evomodel_operators_NativeZigZag_getNextEvent
                 jdoubleArray jVelocity,
                 jdoubleArray jAction,
                 jdoubleArray jGradient,
-                jdoubleArray jMomentum,
-                jint type, jint index, jdouble time){
+                jdoubleArray jMomentum){
 
     jboolean isPositionCopy, isVelocityCopy, isActionCopy, isGradientCopy, isMomentumCopy;
 
@@ -200,15 +199,6 @@ JNIEXPORT jobject JNICALL Java_dr_evomodel_operators_NativeZigZag_getNextEvent
     double *momentum = env->GetDoubleArrayElements(jMomentum, &isMomentumCopy);
 
     jsize dim = env->GetArrayLength(jPosition);
-
-    zz::BounceType bounceType = zz::BounceType::NONE;
-    if (type == 1) {
-        bounceType = zz::BounceType::BOUNDARY;
-    } else if (type == 2) {
-        bounceType = zz::BounceType::GRADIENT;
-    }
-
-    zz::BounceState bounceState(bounceType, index, time);
 
     auto firstBounce = implementation[instanceNumber]->getNextBounce(
             std::span<double>(position, dim), std::span<double>(velocity, dim),

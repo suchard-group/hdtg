@@ -29,7 +29,7 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_operate
  * Signature: ([D[D[D[DD)[Ldr/inference/operators/hmc/AbstractParticleOperator/MinTravelInfo;
  */
 JNIEXPORT jobject JNICALL Java_dr_evomodel_operators_NativeZigZag_getNextEvent
-  (JNIEnv *, jobject, jint, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jint, jint, jdouble);
+  (JNIEnv *, jobject, jint, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray);
 
 #ifdef __cplusplus
 }
