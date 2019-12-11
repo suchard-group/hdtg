@@ -127,6 +127,10 @@ namespace zz {
         template <typename T>
         double operateImpl(Dynamics<T>& dynamics, double time, PrecisionColumnCallback& precisionColumn) {
 
+#ifdef TIMING
+            auto start = zz::chrono::steady_clock::now();
+#endif
+
             BounceState bounceState(BounceType::NONE, -1, time);
 
             int count = 0;
@@ -147,6 +151,11 @@ namespace zz {
 //                    return 0.0;
 //                }
             }
+
+#ifdef TIMING
+            auto end = zz::chrono::steady_clock::now();
+            duration["operateImpl"] += zz::chrono::duration_cast<chrono::TimingUnits>(end - start).count();
+#endif
 
             return 0.0;
         }
@@ -350,7 +359,16 @@ namespace zz {
             const auto velocity = dynamics.velocity;
             const auto mk = mask.data(); // TODO Delegate
 
+#ifdef TIMING
+            auto start = zz::chrono::steady_clock::now();
+#endif
+
             const auto column = callback.getColumn(index);
+
+#ifdef TIMING
+            auto end = zz::chrono::steady_clock::now();
+            duration["getColumn"] += zz::chrono::duration_cast<chrono::TimingUnits>(end - start).count();
+#endif
 
             const auto twoV = 2 * velocity[index];
 

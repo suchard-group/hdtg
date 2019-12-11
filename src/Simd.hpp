@@ -166,8 +166,8 @@ namespace zz {
 
     template<>
     inline D2 SimdHelper<D2, D2::value_type>::get(const double *iterator) {
-//        return D2(iterator, xsimd::unaligned_mode());
-        return D2(iterator, xsimd::aligned_mode()); // TODO Check nearer end of development
+        return D2(iterator, xsimd::unaligned_mode());
+//        return D2(iterator, xsimd::aligned_mode()); // TODO Check nearer end of development
     }
 
     template<>

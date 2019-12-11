@@ -10,7 +10,7 @@ extern "C" {
 /*
  * Class:     dr_evomodel_operators_NativeZigZag
  * Method:    create
- * Signature: (ILdr/inference/hmc/PrecisionColumnProvider;[D)I
+ * Signature: (ILdr/inference/hmc/PrecisionColumnProvider;[D[D)I
  */
 JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_create
   (JNIEnv *, jobject, jint, jobject, jdoubleArray, jdoubleArray);
@@ -18,7 +18,7 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_create
 /*
  * Class:     dr_evomodel_operators_NativeZigZag
  * Method:    operate
- * Signature: (Ldr/inference/hmc/PrecisionColumnProvider;[D[D[D[DD)I
+ * Signature: (ILdr/inference/hmc/PrecisionColumnProvider;[D[D[D[D[DD)I
  */
 JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_operate
   (JNIEnv *, jobject, jint, jobject, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdouble);
@@ -26,10 +26,34 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_operate
 /*
  * Class:     dr_evomodel_operators_NativeZigZag
  * Method:    getNextEvent
- * Signature: ([D[D[D[DD)[Ldr/inference/operators/hmc/AbstractParticleOperator/MinTravelInfo;
+ * Signature: (I[D[D[D[D[D)Ldr/inference/operators/hmc/MinimumTravelInformation;
  */
 JNIEXPORT jobject JNICALL Java_dr_evomodel_operators_NativeZigZag_getNextEvent
   (JNIEnv *, jobject, jint, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray);
+
+/*
+ * Class:     dr_evomodel_operators_NativeZigZag
+ * Method:    enterCriticalRegion
+ * Signature: (I[D[D[D[D[D)I
+ */
+JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_enterCriticalRegion
+  (JNIEnv *, jobject, jint, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray);
+
+/*
+ * Class:     dr_evomodel_operators_NativeZigZag
+ * Method:    exitCriticalRegion
+ * Signature: (I)I
+ */
+JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_exitCriticalRegion
+  (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     dr_evomodel_operators_NativeZigZag
+ * Method:    getNextEventInCriticalRegion
+ * Signature: (I)Ldr/inference/operators/hmc/MinimumTravelInformation;
+ */
+JNIEXPORT jobject JNICALL Java_dr_evomodel_operators_NativeZigZag_getNextEventInCriticalRegion
+  (JNIEnv *, jobject, jint);
 
 #ifdef __cplusplus
 }
