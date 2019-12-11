@@ -21,7 +21,7 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_create
  * Signature: (Ldr/inference/hmc/PrecisionColumnProvider;[D[D[D[DD)I
  */
 JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_operate
-  (JNIEnv *, jobject, jint, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdouble);
+  (JNIEnv *, jobject, jint, jobject, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdouble);
 
 /*
  * Class:     dr_evomodel_operators_NativeZigZag

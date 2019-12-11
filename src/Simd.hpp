@@ -52,10 +52,19 @@ namespace zz {
 
     class BounceState : public BounceInfo {
     public:
+
+        BounceState() : BounceInfo(BounceType::NONE, -1, 0.0) { }
+
         explicit BounceState(double remainingTime) :
                 BounceInfo(BounceType::NONE, -1, remainingTime) { }
 
         BounceState(int type, int index, double time) : BounceInfo(type, index, time) { }
+
+        friend std::ostream& operator<<(std::ostream& os, const BounceState& rhs) {
+            os << "remainingTime : " << rhs.time <<
+            " lastBounceType: " << rhs.type << " in dim: " << rhs.index;
+            return os;
+        }
     };
 
     class MinTravelInfo : public BounceInfo {

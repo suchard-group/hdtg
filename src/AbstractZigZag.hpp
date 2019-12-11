@@ -8,6 +8,7 @@
 #define TCB_SPAN_NAMESPACE_NAME std
 #define TCB_SPAN_NO_CONTRACT_CHECKING
 #include "span.hpp"
+#include "PrecisionColumn.hpp"
 
 namespace zz {
 
@@ -40,7 +41,8 @@ namespace zz {
                                std::span<double> initialAction,
                                std::span<double> initialGradient,
                                std::span<double> initialMomentum,
-                               double time) = 0;
+                               double time,
+                               PrecisionColumnCallback& precisionColumn) = 0;
 
         virtual MinTravelInfo getNextBounce(std::span<double> position,
                                             std::span<double> velocity,

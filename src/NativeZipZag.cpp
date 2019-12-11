@@ -96,27 +96,6 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_create(
         jdoubleArray mask,
         jdoubleArray observed) {
 
-    std::cerr << "In create()" << std::endl;
-
-    jclass cls = env->GetObjectClass(provider);
-    jmethodID mid = env->GetMethodID(cls, "getColumn", "(I)[D");
-    if (mid == 0) {
-        return JNI_ERR;
-    }
-
-    std::cerr << "Trying callback ..." << std::endl;
-
-    jobject mvdata = env->CallObjectMethod(provider, mid, 0);
-    jdoubleArray *arr = reinterpret_cast<jdoubleArray*>(&mvdata);
-    double *data = env->GetDoubleArrayElements(*arr, NULL);
-
-    for (int i = 0; i < dimension; ++i) {
-        std::cerr << " " << data[i];
-    }
-    std::cerr << std::endl;
-
-    env->ReleaseDoubleArrayElements(*arr, data, JNI_ABORT);
-
     double *rawMask = env->GetDoubleArrayElements(mask, NULL);
     double *rawObserved = env->GetDoubleArrayElements(observed, NULL);
 
@@ -127,27 +106,81 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_create(
     implementation.emplace_back(zz::make_unique<
 //            zz::ZigZag<zz::DoubleNoSimdTypeInfo>
 zz::ZigZag<zz::DoubleSseTypeInfo>
-    >(dimension, rawMask, rawObserved, mid, flags, nThreads));
+    >(dimension, rawMask, rawObserved,
+            //env, provider, mid,
+            flags, nThreads));
 
     env->ReleaseDoubleArrayElements(mask, rawMask, JNI_ABORT);
     env->ReleaseDoubleArrayElements(observed, rawObserved, JNI_ABORT);
 
-
-    std::cerr << "Success" << std::endl;
-
     return instanceNumber;
 }
+
+class JniCallback : public zz::PrecisionColumnCallback {
+public:
+    JniCallback(JNIEnv *env, jobject provider)
+            : PrecisionColumnCallback(), env(env), provider(provider), array(nullptr), data(nullptr), column(-1) {
+        jclass cls = env->GetObjectClass(provider);
+        mid = env->GetMethodID(cls, "getColumn", "(I)[D");
+        if (mid == 0) {
+            throw;
+        }
+    }
+
+    ~JniCallback() {
+        releaseColumn();
+    }
+
+    const double* getColumn(int index) {
+
+        if (index != column) {
+
+            releaseColumn();
+
+            jobject object = env->CallObjectMethod(provider, mid, index);
+            array = reinterpret_cast<jdoubleArray *>(&object);
+            data = env->GetDoubleArrayElements(*array, &isCopy);
+        }
+
+        column = index;
+        return data;
+    }
+
+    void releaseColumn() {
+
+        if (data != nullptr) {
+            if (isCopy == JNI_TRUE) {
+                env->ReleaseDoubleArrayElements(*array, data, JNI_ABORT);
+            }
+            data = nullptr;
+        }
+        column = -1;
+    }
+
+private:
+    JNIEnv *env;
+    jobject provider;
+    jmethodID mid;
+
+    jdoubleArray *array;
+    double *data;
+    int column;
+    jboolean isCopy;
+};
 
 JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_operate(
         JNIEnv *env,
         jobject obj,
         jint instanceNumber,
+        jobject provider,
         jdoubleArray jPosition,
         jdoubleArray jVelocity,
         jdoubleArray jAction,
         jdoubleArray jGradient,
         jdoubleArray jMomentum,
         jdouble time) {
+
+    JniCallback callback(env, provider);
 
     jboolean isPositionCopy, isVelocityCopy, isActionCopy, isGradientCopy, isMomentumCopy;
 
@@ -161,10 +194,10 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_operate(
 
     jsize dim = env->GetArrayLength(jPosition);
 
-    implementation[instanceNumber]->operate(
+    auto returnValue = implementation[instanceNumber]->operate(
             std::span<double>(position, dim), std::span<double>(velocity, dim),
             std::span<double>(action, dim), std::span<double>(gradient, dim), std::span<double>(momentum, dim),
-            time);
+            time, callback);
 
     auto release = [&](jdoubleArray parent, double *child, jboolean isCopy, jint mode) {
         if (isCopy == JNI_TRUE) {
@@ -178,7 +211,7 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_operate(
     release(jGradient, gradient, isGradientCopy, 0);
     release(jMomentum, momentum, isMomentumCopy, 0);
 
-    return 0;
+    return returnValue;
 }
 
 JNIEXPORT jobject JNICALL Java_dr_evomodel_operators_NativeZigZag_getNextEvent

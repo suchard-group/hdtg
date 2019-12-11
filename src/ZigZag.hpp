@@ -44,13 +44,17 @@ namespace zz {
         ZigZag(size_t dimension,
                double *rawMask,
                double *rawObserved,
-               jmethodID id,
+//               JNIEnv *env,
+//               jobject *provider,
+//               jmethodID *id,
                long flags,
                int nThreads) : AbstractZigZag(),
                                dimension(dimension),
                                mask(constructMask(rawMask, dimension)),
                                observed(constructMask(rawObserved, dimension)),
-                               providerMethodId(id),
+//                               env(env),
+//                               providerObject(provider),
+//                               providerMethodId(id),
                                mmPosition(dimension),
                                mmVelocity(dimension),
                                mmAction(dimension),
@@ -83,28 +87,6 @@ namespace zz {
             std::cerr << "d'tor ZigZag" << std::endl;
         };
 
-        double operate(std::span<double> position,
-                       std::span<double> velocity,
-                       std::span<double> action,
-                       std::span<double> gradient,
-                       std::span<double> momentum,
-                       double time) {
-
-            BounceState bounceState(time);
-
-            while (bounceState.isTimeRemaining()) {
-
-                const auto firstBounce = getNextBounce(
-                        position, velocity,
-                        action, gradient, momentum);
-                
-                bounceState = doBounce(bounceState, firstBounce,
-                                       position, velocity, action, gradient, momentum);
-            }
-
-            return 0.0;
-        }
-
         template <typename T>
         struct Dynamics {
 
@@ -130,6 +112,45 @@ namespace zz {
             const T* observed;
         };
 
+        double operate(std::span<double> position,
+                       std::span<double> velocity,
+                       std::span<double> action,
+                       std::span<double> gradient,
+                       std::span<double> momentum,
+                       double time,
+                       PrecisionColumnCallback& precisionColumn) {
+
+            Dynamics<double> dynamics(position, velocity, action, gradient, momentum, observed);
+            return operateImpl(dynamics, time, precisionColumn);
+        }
+
+        template <typename T>
+        double operateImpl(Dynamics<T>& dynamics, double time, PrecisionColumnCallback& precisionColumn) {
+
+            BounceState bounceState(BounceType::NONE, -1, time);
+
+            int count = 0;
+
+            while (bounceState.isTimeRemaining()) {
+
+                const auto firstBounce = getNextBounce(dynamics);
+
+//                std::cerr << firstBounce << std::endl;
+                
+                bounceState = doBounce(bounceState, firstBounce, dynamics, precisionColumn);
+
+//                std::cerr << bounceState << std::endl;
+
+                ++count;
+
+//                if (count > 20) {
+//                    return 0.0;
+//                }
+            }
+
+            return 0.0;
+        }
+
         MinTravelInfo getNextBounce(std::span<double> position,
                                     std::span<double> velocity,
                                     std::span<double> action,
@@ -149,16 +170,16 @@ namespace zz {
             buffer(gradient, mmGradient);
             buffer(momentum, mmMomentum);
 
-            return getNextBounceImpl(
-                    Dynamics<double>(mmPosition, mmVelocity, mmAction, mmGradient, mmMomentum, observed));
+            return getNextBounce(
+                    Dynamics<double>(mmPosition, mmVelocity, mmAction, mmGradient, mmMomentum, observed, dimension));
 #else
-            return getNextBounceImpl(
+            return getNextBounce(
                     Dynamics<double>(position, velocity, action, gradient, momentum, observed));
 #endif
         }
 
         template <typename R>
-        MinTravelInfo getNextBounceImpl(const Dynamics<R>& dynamics) {
+        MinTravelInfo getNextBounce(const Dynamics<R>& dynamics) {
 
 #ifdef TIMING
             auto start = zz::chrono::steady_clock::now();
@@ -246,15 +267,145 @@ namespace zz {
         };
 
 
-        template <typename Vector>
-        BounceState doBounce(BounceState bounceState, MinTravelInfo bounceInformation,
-                Vector position,
-                Vector velocity,
-                Vector action,
-                Vector gradient,
-                Vector momentum) {
+        template <typename T>
+        BounceState doBounce(BounceState initialBounceState, MinTravelInfo firstBounce, Dynamics<T>& dynamics,
+                PrecisionColumnCallback& precisionColumn) {
 
-            return BounceState(0.0);
+            double remainingTime = initialBounceState.time;
+            double eventTime = firstBounce.time;
+
+            BounceState finalBounceState;
+            if (remainingTime < eventTime) { // No event during remaining time
+
+                updatePosition(dynamics, remainingTime);
+                finalBounceState = BounceState(BounceType::NONE, -1, 0.0);
+
+            } else {
+
+                updatePosition(dynamics, eventTime);
+                updateMomentum(dynamics, eventTime);
+
+                const int eventType = firstBounce.type;
+                const int eventIndex = firstBounce.index;
+
+                if (eventType == BounceType::BOUNDARY) {
+
+                    reflectMomentum(dynamics, eventIndex);
+
+                } else {
+
+                    setZeroMomentum(dynamics, eventIndex);
+
+                }
+
+                reflectVelocity(dynamics, eventIndex);
+                updateGradient(dynamics, eventTime);
+                updateAction(dynamics, eventIndex, precisionColumn);
+
+                finalBounceState = BounceState(eventType, eventIndex, remainingTime - eventTime);
+            }
+
+            return finalBounceState;
+        }
+
+        template <typename R>
+        inline void updatePosition(Dynamics<R>& dynamics, R time) {
+            auto position = dynamics.position;
+            const auto velocity = dynamics.velocity;
+
+//            std::transform(position, position + dimension, velocity,
+//                           position,
+//                           [time](T p, T v) {
+//                               return p + time * v;
+//                           });
+            vectorized_for_each(size_t(0), dimension,
+                    [position, velocity, time](size_t i) {
+                position[i] += time * velocity[i];
+            });
+        }
+
+        template <typename R>
+        inline void updateMomentum(Dynamics<R>& dynamics, R time) {
+            auto momentum = dynamics.momentum;
+            const auto action = dynamics.action;
+            const auto gradient = dynamics.gradient;
+            const auto mk = mask.data(); // TODO Delegate
+
+            const auto halfTimeSquared = time * time / 2;
+
+            if (mask.size() > 0) {
+                vectorized_for_each(size_t(0), dimension,
+                                    [momentum, action, gradient, mk, time, halfTimeSquared](size_t i) {
+                                        momentum[i] = mk[i] * (momentum[i] + time * gradient[i] - halfTimeSquared * action[i]);
+                                    });
+            } else {
+                exit(-1); // TODO Implement
+            }
+        }
+
+        template <typename R>
+        inline void updateAction(Dynamics<R>& dynamics, int index, PrecisionColumnCallback& callback) {
+            auto momentum = dynamics.momentum;
+            const auto action = dynamics.action;
+            const auto velocity = dynamics.velocity;
+            const auto mk = mask.data(); // TODO Delegate
+
+            const auto column = callback.getColumn(index);
+
+            const auto twoV = 2 * velocity[index];
+
+            if (mask.size() > 0) {
+                vectorized_for_each(size_t(0), dimension,
+                                    [action, column, mk, twoV](size_t i) {
+                                        action[i] = mk[i] * (action[i] + twoV * column[i]);
+                                    });
+            } else {
+                exit(-1); // TODO Implement
+            }
+
+            callback.releaseColumn();
+        }
+
+        template <typename R>
+        inline void updateGradient(Dynamics<R>& dynamics, R time) {
+            const auto action = dynamics.action;
+            auto gradient = dynamics.gradient;
+
+            vectorized_for_each(size_t(0), dimension,
+                                [action, gradient, time](size_t i) {
+                                    gradient[i] -= time * action[i];
+                                });
+        }
+
+        template <typename R>
+        static inline void reflectMomentum(Dynamics<R>& dynamics, int index) {
+            auto position = dynamics.position;
+            auto momentum = dynamics.momentum;
+
+            momentum[index] = -momentum[index];
+            position[index] = R(0.0);
+
+        }
+
+        template <typename R>
+        static inline void setZeroMomentum(Dynamics<R>& dynamics, int index) {
+            auto momentum = dynamics.momentum;
+
+            momentum[index] = R(0.0);
+        }
+
+        template <typename R>
+        static inline void reflectVelocity(Dynamics<R>& dynamics, int index) {
+            auto velocity = dynamics.velocity;
+
+            velocity[index] = -velocity[index];
+        }
+
+        template <typename I, typename F>
+        static inline void vectorized_for_each(I begin, const I end, F function) {
+            for ( ; begin < end; ++begin) {
+                function(begin);
+            }
         }
 
         static inline void reduce_min(MinTravelInfo& result,
@@ -352,7 +503,10 @@ namespace zz {
         size_t dimension;
         mm::MemoryManager<MaskType> mask;
         mm::MemoryManager<MaskType> observed;
-        jmethodID providerMethodId;
+
+//        JNIEnv *env;
+//        jobject *providerObject;
+//        jmethodID *providerMethodId;
 
         mm::MemoryManager<double> mmPosition;
         mm::MemoryManager<double> mmVelocity;
