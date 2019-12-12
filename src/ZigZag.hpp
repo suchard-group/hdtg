@@ -76,7 +76,6 @@ namespace zz {
         }
 
         virtual ~ZigZag() {
-
 #ifdef TIMING
             std::cerr << std::endl;
             for (auto& d : duration) {
@@ -84,7 +83,6 @@ namespace zz {
                 static_cast<double>(d.second) * 0.001 << std::endl;
             }
 #endif
-            std::cerr << "d'tor ZigZag" << std::endl;
         };
 
         template <typename T>
@@ -133,23 +131,11 @@ namespace zz {
 
             BounceState bounceState(BounceType::NONE, -1, time);
 
-            int count = 0;
-
             while (bounceState.isTimeRemaining()) {
 
                 const auto firstBounce = getNextBounce(dynamics);
-
-//                std::cerr << firstBounce << std::endl;
                 
                 bounceState = doBounce(bounceState, firstBounce, dynamics, precisionColumn);
-
-//                std::cerr << bounceState << std::endl;
-
-                ++count;
-
-//                if (count > 20) {
-//                    return 0.0;
-//                }
             }
 
 #ifdef TIMING
@@ -182,8 +168,7 @@ namespace zz {
             return getNextBounce(
                     Dynamics<double>(mmPosition, mmVelocity, mmAction, mmGradient, mmMomentum, observed, dimension));
 #else
-            return getNextBounce(
-                    Dynamics<double>(position, velocity, action, gradient, momentum, observed));
+            return getNextBounce(Dynamics<double>(position, velocity, action, gradient, momentum, observed));
 #endif
         }
 
@@ -202,8 +187,8 @@ namespace zz {
                 MinTravelInfo travel = vectorized_transform<SimdType, SimdSize>(begin, begin + vectorCount, dynamics,
                                                                                 InfoType());
 
-                if (begin + vectorCount < length) { // Edge-case
-                    travel = vectorized_transform<RealType, 1>(begin + vectorCount, length, dynamics, travel);
+                if (vectorCount < length) { // Edge-case
+                    travel = vectorized_transform<RealType, 1>(begin + vectorCount, end, dynamics, travel);
                 }
 
                 return travel;
@@ -226,16 +211,25 @@ namespace zz {
         }
 
         template <typename T, typename F, typename G>
-        inline T parallel_task(const size_t begin, const size_t end, T sum, F transform, G reduce) {
+        inline T parallel_task(size_t begin, const size_t end, T sum, F transform, G reduce) {
 
+#if 0
+            auto block = (end - begin) / nThreads;
+            for ( ; begin < (end - block); begin += block) {
+                sum = reduce(sum, transform(begin, begin + block));
+            }
+            return reduce(sum, transform(begin, end));
+#else
             return tbb::parallel_reduce(
-                    tbb::blocked_range<size_t>(begin, end, (end - begin) / nThreads),
+                    tbb::blocked_range<size_t>(begin, end, (end - begin) / nThreads
+                            ),
                     sum,
                     [transform, reduce](const tbb::blocked_range<size_t>& r, T sum) { // TODO Test &transform, &reduce
                         return reduce(sum, transform(r.begin(), r.end()));
                     },
                     reduce
             );
+#endif
         }
 
     protected:
@@ -322,11 +316,6 @@ namespace zz {
             auto position = dynamics.position;
             const auto velocity = dynamics.velocity;
 
-//            std::transform(position, position + dimension, velocity,
-//                           position,
-//                           [time](T p, T v) {
-//                               return p + time * v;
-//                           });
             vectorized_for_each(size_t(0), dimension,
                     [position, velocity, time](size_t i) {
                 position[i] += time * velocity[i];
@@ -450,10 +439,34 @@ namespace zz {
             }
         }
 
+        static inline void reduce_min(DoubleAvxMinTravelInfo& result, // TODO Remove code-dup with above
+                                      const D4 time, const int index, const int type) {
+            const auto lessThan = time < result.time;
+            if (xsimd::any(lessThan)) {
+                result.time = select(lessThan, time, result.time);
+                const auto mask = static_cast<__m256i>(lessThan);
+                result.index = select(mask, makeSimdIndex<D4Index>(index), result.index); // TODO Merge into single register?
+                result.type = select(mask, D4Index(type), result.type);
+            }
+        }
+
         static inline MinTravelInfo horizontal_min(DoubleSseMinTravelInfo vector) {
             return (vector.time[0] < vector.time[1]) ?
                 MinTravelInfo(vector.type[0], vector.index[0], vector.time[0]) :
                 MinTravelInfo(vector.type[1], vector.index[1], vector.time[1]);
+        }
+
+        static inline MinTravelInfo horizontal_min(DoubleAvxMinTravelInfo vector) {
+
+            auto const firstHalf =  (vector.time[0] < vector.time[1]) ?
+                                    MinTravelInfo(vector.type[0], vector.index[0], vector.time[0]) :
+                                    MinTravelInfo(vector.type[1], vector.index[1], vector.time[1]);
+
+            auto const secondHalf =  (vector.time[2] < vector.time[3]) ?
+                                    MinTravelInfo(vector.type[2], vector.index[2], vector.time[2]) :
+                                    MinTravelInfo(vector.type[3], vector.index[3], vector.time[3]);
+
+            return (firstHalf.time < secondHalf.time) ? firstHalf : secondHalf;
         }
 
         template <typename T>

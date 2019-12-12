@@ -58,7 +58,8 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_create(
     int instanceNumber = implementation.size();
     implementation.emplace_back(zz::make_unique<
 //            zz::ZigZag<zz::DoubleNoSimdTypeInfo>
-zz::ZigZag<zz::DoubleSseTypeInfo>
+//            zz::ZigZag<zz::DoubleSseTypeInfo>
+            zz::ZigZag<zz::DoubleAvxTypeInfo>
     >(dimension, rawMask, rawObserved, flags, nThreads));
 
     env->ReleaseDoubleArrayElements(mask, rawMask, JNI_ABORT);
@@ -99,9 +100,9 @@ public:
     void releaseColumn() {
 
         if (data != nullptr) {
-            if (isCopy == JNI_TRUE) {
+//            if (isCopy == JNI_TRUE) {
                 env->ReleaseDoubleArrayElements(*array, data, JNI_ABORT);
-            }
+//            }
             data = nullptr;
         }
 
@@ -151,9 +152,9 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_operate(
             time, callback);
 
     auto release = [&](jdoubleArray parent, double *child, jboolean isCopy, jint mode) {
-        if (isCopy == JNI_TRUE) {
+//        if (isCopy == JNI_TRUE) {
             env->ReleaseDoubleArrayElements(parent, child, mode);
-        }
+//        }
     };
 
     release(jPosition, position, isPositionCopy, 0); // or JNI_ABORT to avoid copy-back
@@ -193,9 +194,9 @@ public:
 #ifdef CRIT
             env->ReleasePrimitiveArrayCritical(jArray[i], (void *) array[i], JNI_ABORT);
 #else
-            if (isCopy[i] == JNI_TRUE) {
+//            if (isCopy[i] == JNI_TRUE) {
                 env->ReleaseDoubleArrayElements(jArray[i], array[i], JNI_ABORT);
-            }
+//            }
 #endif
         }
     }

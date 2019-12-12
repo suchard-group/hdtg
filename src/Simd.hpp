@@ -88,6 +88,10 @@ namespace zz {
     using D2Bool = xsimd::batch_bool<double, 2>;
     using D2Index = xsimd::batch<int64_t, 2>;
 
+    using D4 = xsimd::batch<double, 4>;
+    using D4Bool = xsimd::batch_bool<double, 4>;
+    using D4Index = xsimd::batch<int64_t, 4>;
+
 //#define MERGE
 #ifdef MERGE
 
@@ -125,6 +129,20 @@ namespace zz {
         D2Index index;
         D2 time;
     };
+
+    class DoubleAvxMinTravelInfo {
+    public:
+        DoubleAvxMinTravelInfo() : type(BounceType::NONE),
+                                   index(-1),
+                                   time(std::numeric_limits<double>::infinity()) { }
+
+        ~DoubleAvxMinTravelInfo() = default;
+
+        D4Index type;
+        D4Index index;
+        D4 time;
+    };
+
 #endif
 
     struct DoubleNoSimdTypeInfo {
@@ -143,6 +161,15 @@ namespace zz {
         using InfoType = DoubleSseMinTravelInfo;
         using IndexType = xsimd::batch<int64_t, 2>;
         static const int SimdSize = 2;
+    };
+
+    struct DoubleAvxTypeInfo {
+        using BaseType = double;
+        using SimdType = xsimd::batch<double, 4>;
+        using BoolType = xsimd::batch_bool<double, 4>;
+        using InfoType = DoubleAvxMinTravelInfo;
+        using IndexType = xsimd::batch<int64_t, 4>;
+        static const int SimdSize = 4;
     };
 
 
@@ -179,6 +206,25 @@ namespace zz {
     inline D2 SimdHelper<D2, D2::value_type>::infinity() noexcept {
         return D2(std::numeric_limits<D2::value_type>::infinity(),
                   std::numeric_limits<D2::value_type>::infinity());
+    }
+
+    template<>
+    inline D4 SimdHelper<D4, D4::value_type>::get(const double *iterator) {
+        return D4(iterator, xsimd::unaligned_mode());
+//        return D2(iterator, xsimd::aligned_mode()); // TODO Check nearer end of development
+    }
+
+    template<>
+    inline void SimdHelper<D4, D4::value_type>::put(D4 x, double *iterator) {
+        x.store_aligned(iterator);
+    }
+
+    template<>
+    inline D4 SimdHelper<D4, D4::value_type>::infinity() noexcept {
+        return D4(std::numeric_limits<D4::value_type>::infinity(),
+                  std::numeric_limits<D4::value_type>::infinity(),
+                  std::numeric_limits<D4::value_type>::infinity(),
+                  std::numeric_limits<D4::value_type>::infinity());
     }
 
     template<>
@@ -219,6 +265,16 @@ namespace zz {
         return xsimd::select(test, lhs, rhs);
     }
 
+    template<>
+    inline D4 select(const D4Bool test, const D4 lhs, const D4 rhs) {
+        return xsimd::select(test, lhs, rhs);
+    }
+
+    template<typename B>
+    inline D4Index select(const B test, const D4Index lhs, const D4Index rhs) {
+        return xsimd::select(test, lhs, rhs);
+    }
+
     template <typename T>
     inline T infinity() noexcept;
 
@@ -232,6 +288,11 @@ namespace zz {
         return D2(std::numeric_limits<double>::infinity());
     }
 
+    template<>
+    inline D4 infinity() noexcept {
+        return D4(std::numeric_limits<double>::infinity());
+    }
+
     template <typename T>
     inline T makeSimdIndex(int index) noexcept;
 
@@ -243,6 +304,11 @@ namespace zz {
     template <>
     inline D2Index makeSimdIndex(int index) noexcept {
         return D2Index(index, index + 1);
+    }
+
+    template <>
+    inline D4Index makeSimdIndex(int index) noexcept {
+        return D4Index(index, index + 1, index + 2, index + 3);
     }
 }
 
