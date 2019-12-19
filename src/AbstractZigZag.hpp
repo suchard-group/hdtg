@@ -2,8 +2,8 @@
 // Created by Marc Suchard on 2019-12-09.
 //
 
-#ifndef ZIG_ZAG_ABSTRACTZIGZAG_HPP
-#define ZIG_ZAG_ABSTRACTZIGZAG_HPP
+#ifndef ZIG_ZAG_ABSTRACT_ZIG_ZAG_HPP
+#define ZIG_ZAG_ABSTRACT_ZIG_ZAG_HPP
 
 #define TCB_SPAN_NAMESPACE_NAME std
 #define TCB_SPAN_NO_CONTRACT_CHECKING
@@ -21,7 +21,7 @@ namespace zz {
         AVX512 = 1 << 9
     };
 
-    struct CpuAccumulate { };
+//    struct CpuAccumulate { };
 
 #ifdef USE_TBB
     struct TbbAccumulate{ };
@@ -49,6 +49,21 @@ namespace zz {
                                             std::span<double> action,
                                             std::span<double> gradient,
                                             std::span<double> momentum) = 0;
+
+        virtual void innerBounce(std::span<double> position,
+                                 std::span<double> velocity,
+                                 std::span<double> action,
+                                 std::span<double> gradient,
+                                 std::span<double> momentum,
+                                 double time, int index, int type) = 0;
+
+        virtual void updateDynamics(std::span<double> position,
+                                    std::span<double> velocity,
+                                    std::span<double> action,
+                                    std::span<double> gradient,
+                                    std::span<double> momentum,
+                                    std::span<double> column,
+                                    double time, int index) = 0;
     };
 
     template<typename T, typename... Args>
@@ -57,4 +72,4 @@ namespace zz {
     }
 }
 
-#endif //ZIG_ZAG_ABSTRACTZIGZAG_HPP
+#endif //ZIG_ZAG_ABSTRACT_ZIG_ZAG_HPP

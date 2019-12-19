@@ -49,11 +49,43 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_exitCriticalRegio
 
 /*
  * Class:     dr_evomodel_operators_NativeZigZag
+ * Method:    inCriticalRegion
+ * Signature: (I)Z
+ */
+JNIEXPORT jboolean JNICALL Java_dr_evomodel_operators_NativeZigZag_inCriticalRegion
+  (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     dr_evomodel_operators_NativeZigZag
  * Method:    getNextEventInCriticalRegion
  * Signature: (I)Ldr/inference/operators/hmc/MinimumTravelInformation;
  */
 JNIEXPORT jobject JNICALL Java_dr_evomodel_operators_NativeZigZag_getNextEventInCriticalRegion
   (JNIEnv *, jobject, jint);
+
+/*
+ * Class:     dr_evomodel_operators_NativeZigZag
+ * Method:    innerBounce
+ * Signature: (I[D[D[D[D[DDII)V
+ */
+JNIEXPORT void JNICALL Java_dr_evomodel_operators_NativeZigZag_innerBounce
+  (JNIEnv *, jobject, jint, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdouble, jint, jint);
+
+/*
+ * Class:     dr_evomodel_operators_NativeZigZag
+ * Method:    innerBounceCriticalRegion
+ * Signature: (IDII)V
+ */
+JNIEXPORT void JNICALL Java_dr_evomodel_operators_NativeZigZag_innerBounceCriticalRegion
+  (JNIEnv *, jobject, jint, jdouble, jint, jint);
+
+/*
+ * Class:     dr_evomodel_operators_NativeZigZag
+ * Method:    updateDynamics
+ * Signature: (I[D[D[D[D[D[DDII)V
+ */
+JNIEXPORT void JNICALL Java_dr_evomodel_operators_NativeZigZag_updateDynamics
+  (JNIEnv *, jobject, jint, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdouble, jint, jint);
 
 #ifdef __cplusplus
 }

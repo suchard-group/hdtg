@@ -44,17 +44,11 @@ namespace zz {
         ZigZag(size_t dimension,
                double *rawMask,
                double *rawObserved,
-//               JNIEnv *env,
-//               jobject *provider,
-//               jmethodID *id,
                long flags,
                int nThreads) : AbstractZigZag(),
                                dimension(dimension),
                                mask(constructMask(rawMask, dimension)),
                                observed(constructMask(rawObserved, dimension)),
-//                               env(env),
-//                               providerObject(provider),
-//                               providerMethodId(id),
                                mmPosition(dimension),
                                mmVelocity(dimension),
                                mmAction(dimension),
@@ -99,7 +93,24 @@ namespace zz {
                                           action(action.data()),
                                           gradient(gradient.data()),
                                           momentum(momentum.data()),
-                                          observed(observed.data()) { }
+                                          observed(observed.data()),
+                                          column(nullptr) { }
+
+            template <typename V, typename W>
+            Dynamics(V& position,
+                     V& velocity,
+                     V& action,
+                     V& gradient,
+                     V& momentum,
+                     const W& observed,
+                     V& column) :position(position.data()),
+                                 velocity(velocity.data()),
+                                 action(action.data()),
+                                 gradient(gradient.data()),
+                                 momentum(momentum.data()),
+                                 observed(observed.data()),
+                                 column(column.data()) { }
+
             ~Dynamics() = default;
 
             T* position;
@@ -108,6 +119,7 @@ namespace zz {
             T* gradient;
             T* momentum;
             const T* observed;
+            T* column;
         };
 
         double operate(std::span<double> position,
@@ -120,6 +132,47 @@ namespace zz {
 
             Dynamics<double> dynamics(position, velocity, action, gradient, momentum, observed);
             return operateImpl(dynamics, time, precisionColumn);
+        }
+
+        void innerBounce(std::span<double> position,
+                         std::span<double> velocity,
+                         std::span<double> action,
+                         std::span<double> gradient,
+                         std::span<double> momentum,
+                         double time, int index, int type) {
+#ifdef TIMING
+            auto start = zz::chrono::steady_clock::now();
+#endif
+
+            Dynamics<double> dynamics(position, velocity, action, gradient, momentum, observed);
+            innerBounceImpl(dynamics, time, index, type);
+
+#ifdef TIMING
+            auto end = zz::chrono::steady_clock::now();
+            duration["innerBounce"] += zz::chrono::duration_cast<chrono::TimingUnits>(end - start).count();
+#endif
+        }
+
+        void updateDynamics(std::span<double> position,
+                                    std::span<double> velocity,
+                                    std::span<double> action,
+                                    std::span<double> gradient,
+                                    std::span<double> momentum,
+                                    std::span<double> column,
+                                    double time, int index) {
+
+#ifdef TIMING
+            auto start = zz::chrono::steady_clock::now();
+#endif
+
+            Dynamics<double> dynamics(position, velocity, action, gradient, momentum, observed, column);
+            updateDynamicsImpl<SimdType, SimdSize>(dynamics, time, index);
+
+
+#ifdef TIMING
+            auto end = zz::chrono::steady_clock::now();
+            duration["updateDynamics"] += zz::chrono::duration_cast<chrono::TimingUnits>(end - start).count();
+#endif
         }
 
         template <typename T>
@@ -196,11 +249,12 @@ namespace zz {
 
             MinTravelInfo travel = (nThreads <= 1) ?
                                    task(size_t(0), dimension) :
-                                   parallel_task(size_t(0), dimension, MinTravelInfo(),
-                                                 task,
-                                                 [](MinTravelInfo lhs, MinTravelInfo rhs) {
-                                                     return (lhs.time < rhs.time) ? lhs : rhs;
-                                                 });
+                                   parallel_task_reduce(
+                                           size_t(0), dimension, MinTravelInfo(),
+                                           task,
+                                           [](MinTravelInfo lhs, MinTravelInfo rhs) {
+                                               return (lhs.time < rhs.time) ? lhs : rhs;
+                                           });
 
 #ifdef TIMING
             auto end = zz::chrono::steady_clock::now();
@@ -211,7 +265,7 @@ namespace zz {
         }
 
         template <typename T, typename F, typename G>
-        inline T parallel_task(size_t begin, const size_t end, T sum, F transform, G reduce) {
+        inline T parallel_task_reduce(size_t begin, const size_t end, T sum, F transform, G reduce) {
 
 #if 0
             auto block = (end - begin) / nThreads;
@@ -230,6 +284,17 @@ namespace zz {
                     reduce
             );
 #endif
+        }
+
+        template <typename F>
+        inline void parallel_task_for(size_t begin, const size_t end, F transform) {
+
+            tbb::parallel_for(
+                    tbb::blocked_range<size_t>(begin, end, (end - begin) / nThreads),
+                    [transform](const tbb::blocked_range<size_t>& r) {
+                        transform(r.begin(), r.end());
+                    }
+            );
         }
 
     protected:
@@ -269,9 +334,92 @@ namespace zz {
             return horizontal_min(result);
         };
 
-
         template <typename T>
-        BounceState doBounce(BounceState initialBounceState, MinTravelInfo firstBounce, Dynamics<T>& dynamics,
+        void innerBounceImpl(Dynamics<T>& dynamics,
+                const T eventTime, const int eventIndex, const int eventType) {
+
+            updatePosition<SimdType, SimdSize>(dynamics, eventTime);
+            updateMomentum<SimdType, SimdSize>(dynamics, eventTime);
+
+            if (eventType == BounceType::BOUNDARY) {
+
+                reflectMomentum(dynamics, eventIndex);
+
+            } else {
+
+                setZeroMomentum(dynamics, eventIndex);
+
+            }
+
+            reflectVelocity(dynamics, eventIndex);
+            updateGradient(dynamics, eventTime);
+        }
+
+
+        template <typename S, int Size, typename R>
+        void updateDynamicsImpl(Dynamics<R>& dynamics,
+                const R time, const int index) {
+
+            auto p = dynamics.position;
+            auto v = dynamics.velocity;
+            auto a = dynamics.action;
+            auto g = dynamics.gradient;
+            auto m = dynamics.momentum;
+            const auto o = dynamics.observed;
+            const auto c = dynamics.column;
+
+            const R halfTimeSquared = time * time / 2;
+            const R twoV = 2 * v[index];
+
+            auto scalar = [p, v, a, g, m, o, c,
+                           time, halfTimeSquared, twoV](size_t i) {
+                const R gi = g[i];
+                const R ai = a[i];
+
+                p[i] = p[i] + time * v[i];
+                m[i] = m[i] + time * gi - halfTimeSquared * ai;
+                g[i] = gi - time * ai;
+                a[i] = ai - twoV * c[i];
+            };
+
+            const S timeS = S(time);
+            const S halfTimeSquaredS = S(halfTimeSquared);
+            const S twoVS = S(twoV);
+
+            auto simd = [p, v, a, g, m, o, c,
+                         timeS, halfTimeSquaredS, twoVS](size_t i) {
+                const S gi = SimdHelper<S,R>::get(g + i);
+                const S ai = SimdHelper<S,R>::get(a + i);
+
+                SimdHelper<S,R>::put(
+                        SimdHelper<S,R>::get(p + i) + timeS * SimdHelper<S,R>::get(v + i),
+                        p + i);
+                SimdHelper<S,R>::put(
+                        SimdHelper<S,R>::get(m + i) + timeS * gi - halfTimeSquaredS * ai,
+                        m + i);
+                SimdHelper<S,R>::put(
+                        gi - timeS * ai,
+                        g + i);
+                SimdHelper<S,R>::put(
+                        ai - twoVS * SimdHelper<S,R>::get(c + i),
+                        a + i);
+            };
+
+            if (nThreads <= 1) {
+                simd_for_each<Size>(size_t(0), dimension, simd, scalar);
+            } else {
+                parallel_task_for(size_t(0), dimension,
+                                  [simd,scalar](size_t begin, size_t end) { // TODO &task?
+                                      simd_for_each<Size>(begin, end, simd, scalar);
+                                  });
+            }
+
+
+        }
+
+
+        template <typename R>
+        BounceState doBounce(BounceState initialBounceState, MinTravelInfo firstBounce, Dynamics<R>& dynamics,
                 PrecisionColumnCallback& precisionColumn) {
 
             double remainingTime = initialBounceState.time;
@@ -280,13 +428,13 @@ namespace zz {
             BounceState finalBounceState;
             if (remainingTime < eventTime) { // No event during remaining time
 
-                updatePosition(dynamics, remainingTime);
+                updatePosition<SimdType, SimdSize>(dynamics, remainingTime);
                 finalBounceState = BounceState(BounceType::NONE, -1, 0.0);
 
             } else {
 
-                updatePosition(dynamics, eventTime);
-                updateMomentum(dynamics, eventTime);
+                updatePosition<SimdType, SimdSize>(dynamics, eventTime);
+                updateMomentum<SimdType, SimdSize>(dynamics, eventTime);
 
                 const int eventType = firstBounce.type;
                 const int eventIndex = firstBounce.index;
@@ -311,18 +459,33 @@ namespace zz {
             return finalBounceState;
         }
 
-        template <typename R>
+        template <typename S, int Size, typename R>
         inline void updatePosition(Dynamics<R>& dynamics, R time) {
             auto position = dynamics.position;
             const auto velocity = dynamics.velocity;
 
-            vectorized_for_each(size_t(0), dimension,
-                    [position, velocity, time](size_t i) {
-                position[i] += time * velocity[i];
-            });
+            auto scalar = [position, velocity, time](size_t i) {
+                position[i] = position[i] + time * velocity[i];
+            };
+
+            auto simd = [position, velocity, time](size_t i) {
+                SimdHelper<S,R>::put(
+                        SimdHelper<S,R>::get(position + i)
+                        + time * SimdHelper<S,R>::get(velocity + i),
+                        position + i);
+            };
+
+            if (nThreads <= 1) {
+                simd_for_each<Size>(size_t(0), dimension, simd, scalar);
+            } else {
+                parallel_task_for(size_t(0), dimension,
+                                  [simd,scalar](size_t begin, size_t end) { // TODO &task?
+                                      simd_for_each<Size>(begin, end, simd, scalar);
+                                  });
+            }
         }
 
-        template <typename R>
+        template <typename S, int Size, typename R>
         inline void updateMomentum(Dynamics<R>& dynamics, R time) {
             auto momentum = dynamics.momentum;
             const auto action = dynamics.action;
@@ -331,11 +494,28 @@ namespace zz {
 
             const auto halfTimeSquared = time * time / 2;
 
+            auto scalar = [momentum, action, gradient, mk, time, halfTimeSquared](size_t i) {
+                momentum[i] = mk[i] * (momentum[i] + time * gradient[i] - halfTimeSquared * action[i]);
+            };
+
+            auto simd = [momentum, action, gradient, mk, time, halfTimeSquared](size_t i) {
+                SimdHelper<S, R>::put(
+                        SimdHelper<S, R>::get(mk + i) * (
+                                SimdHelper<S, R>::get(momentum + i) +
+                                time * SimdHelper<S, R>::get(gradient + i) -
+                                halfTimeSquared * SimdHelper<S, R>::get(action + i)),
+                        momentum + i);
+            };
+
             if (mask.size() > 0) {
-                vectorized_for_each(size_t(0), dimension,
-                                    [momentum, action, gradient, mk, time, halfTimeSquared](size_t i) {
-                                        momentum[i] = mk[i] * (momentum[i] + time * gradient[i] - halfTimeSquared * action[i]);
-                                    });
+                if (nThreads <= 1) {
+                    simd_for_each<Size>(size_t(0), dimension, simd, scalar);
+                } else {
+                    parallel_task_for(size_t(0), dimension,
+                                      [simd, scalar](size_t begin, size_t end) { // TODO &task?
+                                          simd_for_each<Size>(begin, end, simd, scalar);
+                                      });
+                }
             } else {
                 exit(-1); // TODO Implement
             }
@@ -378,10 +558,18 @@ namespace zz {
             const auto action = dynamics.action;
             auto gradient = dynamics.gradient;
 
-            vectorized_for_each(size_t(0), dimension,
-                                [action, gradient, time](size_t i) {
-                                    gradient[i] -= time * action[i];
-                                });
+            auto task = [action, gradient, time](size_t i) {
+                gradient[i] = gradient[i] - time * action[i];
+            };
+
+            if (nThreads <= 1) {
+                vectorized_for_each(size_t(0), dimension, task);
+            } else {
+                parallel_task_for(size_t(0), dimension,
+                                  [task](size_t begin, size_t end) { // TODO &task?
+                                      vectorized_for_each(begin, end, task);
+                                  });
+            }
         }
 
         template <typename R>
@@ -406,6 +594,24 @@ namespace zz {
             auto velocity = dynamics.velocity;
 
             velocity[index] = -velocity[index];
+        }
+
+        template <int Size, typename I, typename FV, typename FS>
+        static inline void simd_for_each(I begin, const I end, FV vector, FS scalar) {
+
+            if (Size > 1) { // TODO is this compile-time?
+                const auto length = end - begin;
+                const auto simdLength = length - length % SimdSize;
+                const auto simdEnd = begin + simdLength;
+
+                for (; begin < simdEnd; begin += SimdSize) {
+                    vector(begin);
+                }
+            }
+
+            for ( ; begin < end; ++begin) {
+                scalar(begin);
+            }
         }
 
         template <typename I, typename F>
@@ -452,19 +658,19 @@ namespace zz {
 
         static inline MinTravelInfo horizontal_min(DoubleSseMinTravelInfo vector) {
             return (vector.time[0] < vector.time[1]) ?
-                MinTravelInfo(vector.type[0], vector.index[0], vector.time[0]) :
-                MinTravelInfo(vector.type[1], vector.index[1], vector.time[1]);
+                MinTravelInfo(static_cast<int>(vector.type[0]), static_cast<int>(vector.index[0]), vector.time[0]) :
+                MinTravelInfo(static_cast<int>(vector.type[1]), static_cast<int>(vector.index[1]), vector.time[1]);
         }
 
         static inline MinTravelInfo horizontal_min(DoubleAvxMinTravelInfo vector) {
 
             auto const firstHalf =  (vector.time[0] < vector.time[1]) ?
-                                    MinTravelInfo(vector.type[0], vector.index[0], vector.time[0]) :
-                                    MinTravelInfo(vector.type[1], vector.index[1], vector.time[1]);
+                                    MinTravelInfo(static_cast<int>(vector.type[0]), static_cast<int>(vector.index[0]), vector.time[0]) :
+                                    MinTravelInfo(static_cast<int>(vector.type[1]), static_cast<int>(vector.index[1]), vector.time[1]);
 
             auto const secondHalf =  (vector.time[2] < vector.time[3]) ?
-                                    MinTravelInfo(vector.type[2], vector.index[2], vector.time[2]) :
-                                    MinTravelInfo(vector.type[3], vector.index[3], vector.time[3]);
+                                    MinTravelInfo(static_cast<int>(vector.type[2]), static_cast<int>(vector.index[2]), vector.time[2]) :
+                                    MinTravelInfo(static_cast<int>(vector.type[3]), static_cast<int>(vector.index[3]), vector.time[3]);
 
             return (firstHalf.time < secondHalf.time) ? firstHalf : secondHalf;
         }
@@ -503,16 +709,16 @@ namespace zz {
             return select(discriminant < T(0.0), infinity<T>(), root);
         }
 
-        template <typename T>
-        static inline T sign(const T x) {
-            const auto zero = T(0.0);
-            return select(x == zero,
-                          x,
-                          select(x < zero,
-                                 T(-1.0),
-                                 T(+1.0))
-            );
-        }
+//        template <typename T>
+//        static inline T sign(const T x) {
+//            const auto zero = T(0.0);
+//            return select(x == zero,
+//                          x,
+//                          select(x < zero,
+//                                 T(-1.0),
+//                                 T(+1.0))
+//            );
+//        }
 
         static mm::MemoryManager<MaskType> constructMask(double *raw, size_t length) {
 
@@ -527,9 +733,9 @@ namespace zz {
             return mask;
         }
 
-        static double doMask(MaskType mask, double x) {
-            return mask * x;
-        }
+//        static double doMask(MaskType mask, double x) {
+//            return mask * x;
+//        }
 
         size_t dimension;
         mm::MemoryManager<MaskType> mask;
@@ -555,14 +761,14 @@ namespace zz {
 #endif
     };
 
-    template <typename Integer, typename Transform, typename Reduce, typename Output>
-    inline Output transform_reduce(Integer begin, Integer end,
-                                   Output result, Transform transform, Reduce reduce) {
-        for (; begin != end; ++begin) {
-            result = reduce(result, transform(begin));
-        }
-        return result;
-    }
+//    template <typename Integer, typename Transform, typename Reduce, typename Output>
+//    inline Output transform_reduce(Integer begin, Integer end,
+//                                   Output result, Transform transform, Reduce reduce) {
+//        for (; begin != end; ++begin) {
+//            result = reduce(result, transform(begin));
+//        }
+//        return result;
+//    }
 
 //    template <typename Integer, typename Function>
 //    inline void for_each(Integer begin, const Integer end, Function function, TbbAccumulate) {

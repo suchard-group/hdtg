@@ -187,8 +187,6 @@ namespace zz {
         static inline void put(SimdType x, RealType *iterator);
 
         static inline SimdType infinity() noexcept; // TODO Make constexpr?
-
-//        static const SimdType infinity = std::numeric_limits<double>::infinity();
     };
 
     template<>
@@ -199,13 +197,14 @@ namespace zz {
 
     template<>
     inline void SimdHelper<D2, D2::value_type>::put(D2 x, double *iterator) {
-        x.store_aligned(iterator);
+//        x.store_aligned(iterator);
+        x.store_unaligned(iterator);
     }
 
     template<>
     inline D2 SimdHelper<D2, D2::value_type>::infinity() noexcept {
-        return D2(std::numeric_limits<D2::value_type>::infinity(),
-                  std::numeric_limits<D2::value_type>::infinity());
+        return {std::numeric_limits<D2::value_type>::infinity(),
+                std::numeric_limits<D2::value_type>::infinity()};
     }
 
     template<>
@@ -221,10 +220,10 @@ namespace zz {
 
     template<>
     inline D4 SimdHelper<D4, D4::value_type>::infinity() noexcept {
-        return D4(std::numeric_limits<D4::value_type>::infinity(),
-                  std::numeric_limits<D4::value_type>::infinity(),
-                  std::numeric_limits<D4::value_type>::infinity(),
-                  std::numeric_limits<D4::value_type>::infinity());
+        return {std::numeric_limits<D4::value_type>::infinity(),
+                std::numeric_limits<D4::value_type>::infinity(),
+                std::numeric_limits<D4::value_type>::infinity(),
+                std::numeric_limits<D4::value_type>::infinity()};
     }
 
     template<>
@@ -243,7 +242,7 @@ namespace zz {
     }
 
     template <typename T, typename B>
-    inline T select(const B test, const T lhs, const T rhs);
+    inline T select(B test, T lhs, T rhs);
 
     template<>
     inline double select(const bool test, const double lhs, const double rhs) {
@@ -303,12 +302,12 @@ namespace zz {
 
     template <>
     inline D2Index makeSimdIndex(int index) noexcept {
-        return D2Index(index, index + 1);
+        return {index, index + 1};
     }
 
     template <>
     inline D4Index makeSimdIndex(int index) noexcept {
-        return D4Index(index, index + 1, index + 2, index + 3);
+        return {index, index + 1, index + 2, index + 3};
     }
 }
 

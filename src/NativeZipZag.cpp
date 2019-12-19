@@ -49,13 +49,16 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_create(
         jdoubleArray mask,
         jdoubleArray observed) {
 
-    double *rawMask = env->GetDoubleArrayElements(mask, NULL);
-    double *rawObserved = env->GetDoubleArrayElements(observed, NULL);
+    (void)obj;
+    (void)provider;
+
+    double *rawMask = env->GetDoubleArrayElements(mask, nullptr);
+    double *rawObserved = env->GetDoubleArrayElements(observed, nullptr);
 
     long flags = zz::Flags::TBB;
-    int nThreads = 4;
+    int nThreads = 2;
 
-    int instanceNumber = implementation.size();
+    int instanceNumber = static_cast<int>(implementation.size());
     implementation.emplace_back(zz::make_unique<
 //            zz::ZigZag<zz::DoubleNoSimdTypeInfo>
 //            zz::ZigZag<zz::DoubleSseTypeInfo>
@@ -72,17 +75,18 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_create(
 class JniCallback : public zz::PrecisionColumnCallback {
 public:
     JniCallback(JNIEnv *env, jobject provider)
-            : PrecisionColumnCallback(), env(env), provider(provider), array(nullptr), data(nullptr), column(-1) {
+            : PrecisionColumnCallback(), env(env), provider(provider), array(nullptr), data(nullptr),
+              column(-1), isCopy(static_cast<jboolean>(false)) {
         jclass cls = env->GetObjectClass(provider);
         mid = env->GetMethodID(cls, "getColumn", "(I)[D");
-        if (mid == 0) {
+        if (mid == nullptr) {
             throw;
         }
     }
 
     ~JniCallback() { releaseColumn(); }
 
-    const double* getColumn(int index) {
+    const double* getColumn(int index) override {
 
         if (index != column) {
 
@@ -97,12 +101,10 @@ public:
         return data;
     }
 
-    void releaseColumn() {
+    void releaseColumn() override {
 
         if (data != nullptr) {
-//            if (isCopy == JNI_TRUE) {
-                env->ReleaseDoubleArrayElements(*array, data, JNI_ABORT);
-//            }
+            env->ReleaseDoubleArrayElements(*array, data, JNI_ABORT);
             data = nullptr;
         }
 
@@ -132,6 +134,8 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_operate(
         jdoubleArray jMomentum,
         jdouble time) {
 
+    (void)obj;
+
     JniCallback callback(env, provider);
 
     jboolean isPositionCopy, isVelocityCopy, isActionCopy, isGradientCopy, isMomentumCopy;
@@ -144,9 +148,9 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_operate(
 
     // TODO Check all dimensions
 
-    jsize dim = env->GetArrayLength(jPosition);
+    const auto dim = static_cast<size_t>(env->GetArrayLength(jPosition));
 
-    auto returnValue = implementation[instanceNumber]->operate(
+    implementation[instanceNumber]->operate(
             std::span<double>(position, dim), std::span<double>(velocity, dim),
             std::span<double>(action, dim), std::span<double>(gradient, dim), std::span<double>(momentum, dim),
             time, callback);
@@ -163,25 +167,27 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_operate(
     release(jGradient, gradient, isGradientCopy, 0);
     release(jMomentum, momentum, isMomentumCopy, 0);
 
-    return returnValue;
+    return 0;
 }
 
-#define CRIT
+#define CRITICAL
 
 class JniCriticalHandler {
 public:
     JniCriticalHandler(JNIEnv *env,
                        int dim,
-                       const jdoubleArray jPosition,
-                       const jdoubleArray jVelocity,
-                       const jdoubleArray jAction,
-                       const jdoubleArray jGradient,
-                       const jdoubleArray jMomentum)
-            : env(env), dim(dim), jArray({jPosition, jVelocity, jAction, jGradient, jMomentum}),
+                       int releaseMode,
+                       jdoubleArray jPosition,
+                       jdoubleArray jVelocity,
+                       jdoubleArray jAction,
+                       jdoubleArray jGradient,
+                       jdoubleArray jMomentum)
+            : env(env), dim(static_cast<size_t>(dim)), releaseMode(releaseMode),
+              jArray({jPosition, jVelocity, jAction, jGradient, jMomentum}),
               array(jArray.size()), isCopy(jArray.size()) {
 
         for (int i = 0; i < jArray.size(); ++i) {
-#ifdef CRIT
+#ifdef CRITICAL
             array[i] = (double *) env->GetPrimitiveArrayCritical(jArray[i], &isCopy[i]);
 #else
             array[i] = env->GetDoubleArrayElements(jArray[i], &isCopy[i]);
@@ -191,31 +197,78 @@ public:
 
     ~JniCriticalHandler() {
         for (int i = 0; i < jArray.size(); ++i) {
-#ifdef CRIT
-            env->ReleasePrimitiveArrayCritical(jArray[i], (void *) array[i], JNI_ABORT);
+#ifdef CRITICAL
+            env->ReleasePrimitiveArrayCritical(jArray[i], (void *) array[i], releaseMode);
 #else
-//            if (isCopy[i] == JNI_TRUE) {
-                env->ReleaseDoubleArrayElements(jArray[i], array[i], JNI_ABORT);
-//            }
+            env->ReleaseDoubleArrayElements(jArray[i], array[i], releaseMode);
 #endif
         }
     }
 
-    double* getArray(int i) { return array[i]; }
+//    double* getArray(int i) { return array[i]; }
 
     std::span<double> getSpan(int i) { return std::span<double>(array[i], dim); }
 
-    int getSize() const { return dim; }
+//    size_t getSize() const { return dim; }
 
 private:
 
     JNIEnv *env;
-    const int dim;
+    const size_t dim;
+    const int releaseMode;
 
     std::vector<jdoubleArray> jArray;
     std::vector<double*> array;
     std::vector<jboolean> isCopy;
 };
+
+JNIEXPORT void JNICALL Java_dr_evomodel_operators_NativeZigZag_innerBounce
+        (JNIEnv *env, jobject obj, jint instanceNumber,
+                jdoubleArray position,
+                jdoubleArray velocity,
+                jdoubleArray action,
+                jdoubleArray gradient,
+                jdoubleArray momentum,
+                jdouble time, jint index, jint type) {
+    (void)obj;
+
+    JniCriticalHandler handler(env, env->GetArrayLength(position), 0,
+            position, velocity, action, gradient, momentum);
+
+    implementation[instanceNumber]->innerBounce(
+            handler.getSpan(0), handler.getSpan(1),
+            handler.getSpan(2), handler.getSpan(3), handler.getSpan(4),
+            time, index, type);
+}
+
+JNIEXPORT void JNICALL Java_dr_evomodel_operators_NativeZigZag_updateDynamics
+        (JNIEnv *env, jobject, jint instanceNumber,
+                jdoubleArray position,
+                jdoubleArray velocity,
+                jdoubleArray action,
+                jdoubleArray gradient,
+                jdoubleArray momentum,
+                jdoubleArray jColumn,
+                jdouble time, jint index, jint) {
+
+    size_t dim = env->GetArrayLength(position);
+
+    JniCriticalHandler handler(env, dim, 0,
+            position, velocity, action, gradient, momentum);
+
+    jboolean isColumnCopy;
+
+    double *column = (double *) env->GetPrimitiveArrayCritical(jColumn, &isColumnCopy);
+
+    implementation[instanceNumber]->updateDynamics(
+            handler.getSpan(0), handler.getSpan(1),
+            handler.getSpan(2), handler.getSpan(3), handler.getSpan(4),
+            std::span<double>(column, dim),
+            time, index);
+
+    env->ReleasePrimitiveArrayCritical(jColumn, (void *) column, JNI_ABORT);
+}
+
 
 JNIEXPORT jobject JNICALL Java_dr_evomodel_operators_NativeZigZag_getNextEvent
         (JNIEnv *env, jobject obj,
@@ -226,7 +279,9 @@ JNIEXPORT jobject JNICALL Java_dr_evomodel_operators_NativeZigZag_getNextEvent
                 jdoubleArray jGradient,
                 jdoubleArray jMomentum) {
 
-    JniCriticalHandler handler(env, env->GetArrayLength(jPosition),
+    (void)obj;
+
+    JniCriticalHandler handler(env, env->GetArrayLength(jPosition), JNI_ABORT,
             jPosition, jVelocity, jAction, jGradient, jMomentum);
 
     auto firstBounce = implementation[instanceNumber]->getNextBounce(
@@ -238,6 +293,19 @@ JNIEXPORT jobject JNICALL Java_dr_evomodel_operators_NativeZigZag_getNextEvent
 
 std::unique_ptr<JniCriticalHandler> handler;
 
+JNIEXPORT void JNICALL Java_dr_evomodel_operators_NativeZigZag_innerBounceCriticalRegion
+        (JNIEnv *env, jobject obj, jint instanceNumber,
+         jdouble time, jint index, jint type) {
+
+    (void)env;
+    (void)obj;
+
+    implementation[instanceNumber]->innerBounce(
+            handler->getSpan(0), handler->getSpan(1),
+            handler->getSpan(2), handler->getSpan(3), handler->getSpan(4),
+            time, index, type);
+}
+
 JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_enterCriticalRegion
         (JNIEnv *env, jobject obj,
          jint instanceNumber,
@@ -247,8 +315,11 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_enterCriticalRegi
          jdoubleArray jGradient,
          jdoubleArray jMomentum) {
 
+    (void)obj;
+    (void)instanceNumber;
+
     handler = zz::make_unique<JniCriticalHandler>(env,
-                                                  env->GetArrayLength(jPosition),
+                                                  env->GetArrayLength(jPosition), JNI_ABORT,
                                                   jPosition, jVelocity, jAction, jGradient, jMomentum);
 
     return 0;
@@ -256,12 +327,31 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_enterCriticalRegi
 
 JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_exitCriticalRegion
         (JNIEnv *env, jobject obj, jint instanceNumber) {
+
+    (void)env;
+    (void)obj;
+    (void)instanceNumber;
+
     handler = nullptr;
     return 0;
 }
 
+JNIEXPORT jboolean JNICALL Java_dr_evomodel_operators_NativeZigZag_inCriticalRegion
+        (JNIEnv *env, jobject obj, jint instanceNumber) {
+
+    (void)env;
+    (void)obj;
+    (void)instanceNumber;
+
+    return (handler != nullptr);
+}
+
+
+
 JNIEXPORT jobject JNICALL Java_dr_evomodel_operators_NativeZigZag_getNextEventInCriticalRegion
         (JNIEnv *env, jobject obj, jint instanceNumber) {
+
+    (void)obj;
 
     auto firstBounce = implementation[instanceNumber]->getNextBounce(
             handler->getSpan(0), handler->getSpan(1),

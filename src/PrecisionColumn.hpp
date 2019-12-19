@@ -2,8 +2,8 @@
 // Created by Marc Suchard on 2019-12-10.
 //
 
-#ifndef ZIG_ZAG_PRECISIONCOLUMN_HPP
-#define ZIG_ZAG_PRECISIONCOLUMN_HPP
+#ifndef ZIG_ZAG_PRECISION_COLUMN_HPP
+#define ZIG_ZAG_PRECISION_COLUMN_HPP
 
 namespace zz {
 
@@ -15,4 +15,4 @@ namespace zz {
     };
 }
 
-#endif //ZIG_ZAG_PRECISIONCOLUMN_HPP
+#endif //ZIG_ZAG_PRECISION_COLUMN_HPP
