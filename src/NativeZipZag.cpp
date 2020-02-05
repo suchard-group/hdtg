@@ -57,13 +57,14 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_create(
 
     long flags = zz::Flags::TBB;
     int nThreads = 2;
+    long seed = 666;
 
     int instanceNumber = static_cast<int>(implementation.size());
     implementation.emplace_back(zz::make_unique<
 //            zz::ZigZag<zz::DoubleNoSimdTypeInfo>
 //            zz::ZigZag<zz::DoubleSseTypeInfo>
             zz::ZigZag<zz::DoubleAvxTypeInfo>
-    >(dimension, rawMask, rawObserved, flags, nThreads));
+    >(dimension, rawMask, rawObserved, flags, nThreads, seed));
 
     env->ReleaseDoubleArrayElements(mask, rawMask, JNI_ABORT);
     env->ReleaseDoubleArrayElements(observed, rawObserved, JNI_ABORT);

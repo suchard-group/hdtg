@@ -23,6 +23,8 @@
 #include "Timing.h"
 #endif // TIMING
 
+#include "threefry.h"
+
 #include "dr_evomodel_operators_NativeZigZag.h"
 #include "MemoryManagement.hpp"
 #include "Simd.hpp"
@@ -45,7 +47,8 @@ namespace zz {
                double *rawMask,
                double *rawObserved,
                long flags,
-               int nThreads) : AbstractZigZag(),
+               int nThreads,
+               long seed) : AbstractZigZag(),
                                dimension(dimension),
                                mask(constructMask(rawMask, dimension)),
                                observed(constructMask(rawObserved, dimension)),
@@ -66,6 +69,11 @@ namespace zz {
                 std::cout << "Using " << nThreads << " threads" << std::endl;
 
                 control = std::make_shared<tbb::global_control>(tbb::global_control::max_allowed_parallelism, nThreads);
+            }
+
+            rng.resize(nThreads);
+            for (int i = 0; i < nThreads; ++i) {
+                rng[i].seed(seed + i);
             }
         }
 
@@ -755,6 +763,8 @@ namespace zz {
         int nThreads;
 
         std::shared_ptr<tbb::global_control> control;
+
+        std::vector<sitmo::threefry_20_64> rng;
 
 #ifdef TIMING
 	std::map<std::string,long long> duration;

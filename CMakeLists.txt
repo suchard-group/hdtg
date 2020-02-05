@@ -47,7 +47,8 @@ include_directories(${xsimd_INCLUDE_DIRS})
 add_library (zig_zag SHARED
         src/NativeZipZag.cpp
         src/AbstractZigZag.hpp src/ZigZag.hpp src/Timing.h
-        src/aligned_allocator.hpp src/MemoryManagement.hpp src/Simd.hpp src/PrecisionColumn.hpp)
+        src/aligned_allocator.hpp src/MemoryManagement.hpp src/Simd.hpp src/PrecisionColumn.hpp
+        src/threefry.h)
 
 target_link_libraries (zig_zag ${JAVA_JVM_LIBRARY} ${TBB_LIBRARIES})
 target_include_directories(zig_zag PRIVATE
