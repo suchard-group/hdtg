@@ -9,6 +9,10 @@ std::vector<std::unique_ptr<zz::AbstractZigZag>> implementation;
 
 static jclass classMTL;
 static jmethodID cid;
+static jclass classNZZO;
+static jfieldID flagsFid;
+static jfieldID seedFid;
+static jfieldID infoFid;
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
 
@@ -26,6 +30,14 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
 
     cid = env->GetMethodID(classMTL, "<init>", "(DII)V");
 
+    jclass tmpClassNZZO = env->FindClass("dr/evomodel/operators/NativeZigZagOptions");
+    classNZZO = (jclass) env->NewGlobalRef(tmpClassNZZO);
+    env->DeleteLocalRef(tmpClassNZZO);
+
+    flagsFid = env->GetFieldID(classNZZO, "flags", "J");
+    seedFid = env->GetFieldID(classNZZO, "seed", "J");
+    infoFid = env->GetFieldID(classNZZO, "info", "I");
+
     return JNI_VERSION_1_6;
 }
 
@@ -40,31 +52,48 @@ JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *vm, void *reserved) {
     env->DeleteGlobalRef(classMTL);
 }
 
+std::unique_ptr<zz::AbstractZigZag> dispatch(
+        int dimension,
+        double *rawMask,
+        double *rawObserved,
+        long flags,
+        int info,
+        long seed) {
+
+    if (static_cast<unsigned long>(flags) & zz::Flags::AVX) {
+        std::cerr << "Factory: AVX" << std::endl;
+        return zz::make_unique<zz::ZigZag<zz::DoubleAvxTypeInfo>>(
+                dimension, rawMask, rawObserved, flags, info, seed);
+    } else if (static_cast<unsigned long>(flags) & zz::Flags::SSE) {
+        std::cerr << "Factory: SSE" << std::endl;
+        return zz::make_unique<zz::ZigZag<zz::DoubleSseTypeInfo>>(
+                dimension, rawMask, rawObserved, flags, info, seed);
+    } else {
+        std::cerr << "Factory: No SIMD" << std::endl;
+        return zz::make_unique<zz::ZigZag<zz::DoubleNoSimdTypeInfo>>(
+                dimension, rawMask, rawObserved, flags, info, seed);
+    }
+}
 
 JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_create(
         JNIEnv *env,
         jobject obj,
         jint dimension,
-        jobject provider,
+        jobject options,
         jdoubleArray mask,
         jdoubleArray observed) {
 
     (void)obj;
-    (void)provider;
 
     double *rawMask = env->GetDoubleArrayElements(mask, nullptr);
     double *rawObserved = env->GetDoubleArrayElements(observed, nullptr);
 
-    long flags = zz::Flags::TBB;
-    int nThreads = 2;
-    long seed = 666;
+    long flags = env->GetLongField(options, flagsFid);
+    long seed = env->GetLongField(options, seedFid);
+    int info = env->GetIntField(options, infoFid);
 
     int instanceNumber = static_cast<int>(implementation.size());
-    implementation.emplace_back(zz::make_unique<
-//            zz::ZigZag<zz::DoubleNoSimdTypeInfo>
-//            zz::ZigZag<zz::DoubleSseTypeInfo>
-            zz::ZigZag<zz::DoubleAvxTypeInfo>
-    >(dimension, rawMask, rawObserved, flags, nThreads, seed));
+    implementation.emplace_back(dispatch(dimension, rawMask, rawObserved, flags, info, seed));
 
     env->ReleaseDoubleArrayElements(mask, rawMask, JNI_ABORT);
     env->ReleaseDoubleArrayElements(observed, rawObserved, JNI_ABORT);
@@ -188,21 +217,28 @@ public:
               array(jArray.size()), isCopy(jArray.size()) {
 
         for (int i = 0; i < jArray.size(); ++i) {
+            if (jArray[i] != nullptr) {
 #ifdef CRITICAL
-            array[i] = (double *) env->GetPrimitiveArrayCritical(jArray[i], &isCopy[i]);
+
+                array[i] = (double *) env->GetPrimitiveArrayCritical(jArray[i], &isCopy[i]);
 #else
-            array[i] = env->GetDoubleArrayElements(jArray[i], &isCopy[i]);
+                array[i] = env->GetDoubleArrayElements(jArray[i], &isCopy[i]);
 #endif
+            } else {
+                array[i] = nullptr;
+            }
         }
     }
 
     ~JniCriticalHandler() {
         for (int i = 0; i < jArray.size(); ++i) {
+            if (jArray[i] != nullptr) {
 #ifdef CRITICAL
-            env->ReleasePrimitiveArrayCritical(jArray[i], (void *) array[i], releaseMode);
+                env->ReleasePrimitiveArrayCritical(jArray[i], (void *) array[i], releaseMode);
 #else
-            env->ReleaseDoubleArrayElements(jArray[i], array[i], releaseMode);
+                env->ReleaseDoubleArrayElements(jArray[i], array[i], releaseMode);
 #endif
+            }
         }
     }
 
@@ -259,7 +295,7 @@ JNIEXPORT void JNICALL Java_dr_evomodel_operators_NativeZigZag_updateDynamics
 
     jboolean isColumnCopy;
 
-    double *column = (double *) env->GetPrimitiveArrayCritical(jColumn, &isColumnCopy);
+    auto *column = (double *) env->GetPrimitiveArrayCritical(jColumn, &isColumnCopy);
 
     implementation[instanceNumber]->updateDynamics(
             handler.getSpan(0), handler.getSpan(1),
@@ -291,6 +327,26 @@ JNIEXPORT jobject JNICALL Java_dr_evomodel_operators_NativeZigZag_getNextEvent
 
     return env->NewObject(classMTL, cid, firstBounce.time, firstBounce.index, firstBounce.type);
 }
+
+JNIEXPORT jobject JNICALL Java_dr_evomodel_operators_NativeZigZag_getNextEventIrreversible
+        (JNIEnv *env, jobject obj,
+                jint instanceNumber,
+                jdoubleArray jPosition,
+                jdoubleArray jVelocity,
+                jdoubleArray jAction,
+                jdoubleArray jGradient) {
+    (void)obj;
+
+    JniCriticalHandler handler(env, env->GetArrayLength(jPosition), JNI_ABORT,
+            jPosition, jVelocity, jAction, jGradient, nullptr);
+
+    auto firstBounce = implementation[instanceNumber]->getNextBounceIrreversible(
+            handler.getSpan(0), handler.getSpan(1),
+            handler.getSpan(2), handler.getSpan(3));
+
+    return env->NewObject(classMTL, cid, firstBounce.time, firstBounce.index, firstBounce.type);
+}
+
 
 std::unique_ptr<JniCriticalHandler> handler;
 

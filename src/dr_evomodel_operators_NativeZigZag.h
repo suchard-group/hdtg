@@ -10,7 +10,7 @@ extern "C" {
 /*
  * Class:     dr_evomodel_operators_NativeZigZag
  * Method:    create
- * Signature: (ILdr/inference/hmc/PrecisionColumnProvider;[D[D)I
+ * Signature: (ILdr/evomodel/operators/NativeZigZagOptions;[D[D)I
  */
 JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_create
   (JNIEnv *, jobject, jint, jobject, jdoubleArray, jdoubleArray);
@@ -86,6 +86,14 @@ JNIEXPORT void JNICALL Java_dr_evomodel_operators_NativeZigZag_innerBounceCritic
  */
 JNIEXPORT void JNICALL Java_dr_evomodel_operators_NativeZigZag_updateDynamics
   (JNIEnv *, jobject, jint, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdouble, jint, jint);
+
+/*
+ * Class:     dr_evomodel_operators_NativeZigZag
+ * Method:    getNextEventIrreversible
+ * Signature: (I[D[D[D[D)Ldr/inference/operators/hmc/MinimumTravelInformation;
+ */
+JNIEXPORT jobject JNICALL Java_dr_evomodel_operators_NativeZigZag_getNextEventIrreversible
+  (JNIEnv *, jobject, jint, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray);
 
 #ifdef __cplusplus
 }

@@ -58,7 +58,8 @@ namespace zz {
                                mmGradient(dimension),
                                mmMomentum(dimension),
                                flags(flags),
-                               nThreads(nThreads) {
+                               nThreads(nThreads),
+                               seed(seed) {
             std::cerr << "c'tor ZigZag" << std::endl;
 
             if (flags & zz::Flags::TBB) {
@@ -101,6 +102,20 @@ namespace zz {
                                           action(action.data()),
                                           gradient(gradient.data()),
                                           momentum(momentum.data()),
+                                          observed(observed.data()),
+                                          column(nullptr) { }
+
+            template <typename V, typename W>
+            Dynamics(V& position,
+                     V& velocity,
+                     V& action,
+                     V& gradient,
+                     std::nullptr_t,
+                     const W& observed) : position(position.data()),
+                                          velocity(velocity.data()),
+                                          action(action.data()),
+                                          gradient(gradient.data()),
+                                          momentum(nullptr),
                                           observed(observed.data()),
                                           column(nullptr) { }
 
@@ -195,7 +210,7 @@ namespace zz {
             while (bounceState.isTimeRemaining()) {
 
                 const auto firstBounce = getNextBounce(dynamics);
-                
+
                 bounceState = doBounce(bounceState, firstBounce, dynamics, precisionColumn);
             }
 
@@ -231,6 +246,57 @@ namespace zz {
 #else
             return getNextBounce(Dynamics<double>(position, velocity, action, gradient, momentum, observed));
 #endif
+        }
+
+        MinTravelInfo getNextBounceIrreversible(std::span<double> position,
+                                    std::span<double> velocity,
+                                    std::span<double> action,
+                                    std::span<double> gradient) {
+
+            return getNextBounceIrreversible(Dynamics<double>(position, velocity, action, gradient, nullptr, observed));
+        }
+
+        template <typename R>
+        MinTravelInfo getNextBounceIrreversible(const Dynamics<R>& dynamics) {
+
+#ifdef TIMING
+            auto start = zz::chrono::steady_clock::now();
+#endif
+
+            auto task = [&](const size_t begin, const size_t end) -> MinTravelInfo {
+
+                const auto length = end - begin;
+                const auto vectorCount = length - length % SimdSize;
+
+                MinTravelInfo travel = vectorized_transform<SimdType, SimdSize>(begin, begin + vectorCount, dynamics,
+                                                                                InfoType());
+
+                if (vectorCount < length) { // Edge-case
+                    travel = vectorized_transform<RealType, 1>(begin + vectorCount, end, dynamics, travel);
+                }
+
+                return travel;
+            };
+
+//            MinTravelInfo travel = (nThreads <= 1) ?
+//                                   task(size_t(0), dimension) :
+//                                   parallel_task_reduce(
+//                                           size_t(0), dimension, MinTravelInfo(),
+//                                           task,
+//                                           [](MinTravelInfo lhs, MinTravelInfo rhs) {
+//                                               return (lhs.time < rhs.time) ? lhs : rhs;
+//                                           });
+
+            MinTravelInfo travel;
+            travel.time = 42.0;
+            travel.index = seed;
+
+#ifdef TIMING
+            auto end = zz::chrono::steady_clock::now();
+            duration["getNextBounceIrr"] += zz::chrono::duration_cast<chrono::TimingUnits>(end - start).count();
+#endif
+
+            return travel;
         }
 
         template <typename R>
@@ -761,6 +827,7 @@ namespace zz {
 
         long flags;
         int nThreads;
+        long seed;
 
         std::shared_ptr<tbb::global_control> control;
 

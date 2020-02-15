@@ -13,6 +13,7 @@
 namespace zz {
 
     enum Flags {
+        DOUBLE = 1 << 1,
         FLOAT = 1 << 2,
         TBB = 1 << 3,
         OPENCL = 1 << 4,
@@ -49,6 +50,11 @@ namespace zz {
                                             std::span<double> action,
                                             std::span<double> gradient,
                                             std::span<double> momentum) = 0;
+
+        virtual MinTravelInfo getNextBounceIrreversible(std::span<double> position,
+                                                        std::span<double> velocity,
+                                                        std::span<double> action,
+                                                        std::span<double> gradient) = 0;
 
         virtual void innerBounce(std::span<double> position,
                                  std::span<double> velocity,
