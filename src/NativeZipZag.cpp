@@ -50,6 +50,7 @@ JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *vm, void *reserved) {
         return;
 
     env->DeleteGlobalRef(classMTL);
+    env->DeleteGlobalRef(classNZZO);
 }
 
 std::unique_ptr<zz::AbstractZigZag> dispatch(
