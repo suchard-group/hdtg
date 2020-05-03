@@ -15,13 +15,13 @@ namespace zz {
     using DblSpan = tcb::span<double>;
 
     enum Flags {
-        DOUBLE = 1 << 1,
-        FLOAT = 1 << 2,
-        TBB = 1 << 3,
-        OPENCL = 1 << 4,
-        SSE = 1 << 7,
-        AVX = 1 << 8,
-        AVX512 = 1 << 9
+        DOUBLE = 1u << 1u,
+        FLOAT = 1u << 2u,
+        TBB = 1u << 3u,
+        OPENCL = 1u << 4u,
+        SSE = 1u << 7u,
+        AVX = 1u << 8u,
+        AVX512 = 1u << 9u
     };
 
 //    struct CpuAccumulate { };
