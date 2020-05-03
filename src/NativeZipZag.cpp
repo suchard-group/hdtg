@@ -181,8 +181,8 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_operate(
     const auto dim = static_cast<size_t>(env->GetArrayLength(jPosition));
 
     implementation[instanceNumber]->operate(
-            std::span<double>(position, dim), std::span<double>(velocity, dim),
-            std::span<double>(action, dim), std::span<double>(gradient, dim), std::span<double>(momentum, dim),
+            zz::DblSpan(position, dim), zz::DblSpan(velocity, dim),
+            zz::DblSpan(action, dim), zz::DblSpan(gradient, dim), zz::DblSpan(momentum, dim),
             time, callback);
 
     auto release = [&](jdoubleArray parent, double *child, jboolean isCopy, jint mode) {
@@ -244,7 +244,7 @@ public:
 
 //    double* getArray(int i) { return array[i]; }
 
-    std::span<double> getSpan(int i) { return std::span<double>(array[i], dim); }
+    zz::DblSpan getSpan(int i) { return zz::DblSpan(array[i], dim); }
 
 //    size_t getSize() const { return dim; }
 
@@ -300,7 +300,7 @@ JNIEXPORT void JNICALL Java_dr_evomodel_operators_NativeZigZag_updateDynamics
     implementation[instanceNumber]->updateDynamics(
             handler.getSpan(0), handler.getSpan(1),
             handler.getSpan(2), handler.getSpan(3), handler.getSpan(4),
-            std::span<double>(column, dim),
+            zz::DblSpan(column, dim),
             time, index);
 
     env->ReleasePrimitiveArrayCritical(jColumn, (void *) column, JNI_ABORT);

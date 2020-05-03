@@ -5,12 +5,14 @@
 #ifndef ZIG_ZAG_ABSTRACT_ZIG_ZAG_HPP
 #define ZIG_ZAG_ABSTRACT_ZIG_ZAG_HPP
 
-#define TCB_SPAN_NAMESPACE_NAME std
+//#define TCB_SPAN_NAMESPACE_NAME std
 #define TCB_SPAN_NO_CONTRACT_CHECKING
 #include "span.hpp"
 #include "PrecisionColumn.hpp"
 
 namespace zz {
+
+    using DblSpan = tcb::span<double>;
 
     enum Flags {
         DOUBLE = 1 << 1,
@@ -37,38 +39,38 @@ namespace zz {
 
         virtual ~AbstractZigZag() = default;
 
-        virtual double operate(std::span<double> initialPosition,
-                               std::span<double> initialVelocity,
-                               std::span<double> initialAction,
-                               std::span<double> initialGradient,
-                               std::span<double> initialMomentum,
+        virtual double operate(DblSpan initialPosition,
+                               DblSpan initialVelocity,
+                               DblSpan initialAction,
+                               DblSpan initialGradient,
+                               DblSpan initialMomentum,
                                double time,
                                PrecisionColumnCallback& precisionColumn) = 0;
 
-        virtual MinTravelInfo getNextBounce(std::span<double> position,
-                                            std::span<double> velocity,
-                                            std::span<double> action,
-                                            std::span<double> gradient,
-                                            std::span<double> momentum) = 0;
+        virtual MinTravelInfo getNextBounce(DblSpan position,
+                                            DblSpan velocity,
+                                            DblSpan action,
+                                            DblSpan gradient,
+                                            DblSpan momentum) = 0;
 
-        virtual MinTravelInfo getNextBounceIrreversible(std::span<double> position,
-                                                        std::span<double> velocity,
-                                                        std::span<double> action,
-                                                        std::span<double> gradient) = 0;
+        virtual MinTravelInfo getNextBounceIrreversible(DblSpan position,
+                                                        DblSpan velocity,
+                                                        DblSpan action,
+                                                        DblSpan gradient) = 0;
 
-        virtual void innerBounce(std::span<double> position,
-                                 std::span<double> velocity,
-                                 std::span<double> action,
-                                 std::span<double> gradient,
-                                 std::span<double> momentum,
+        virtual void innerBounce(DblSpan position,
+                                 DblSpan velocity,
+                                 DblSpan action,
+                                 DblSpan gradient,
+                                 DblSpan momentum,
                                  double time, int index, int type) = 0;
 
-        virtual void updateDynamics(std::span<double> position,
-                                    std::span<double> velocity,
-                                    std::span<double> action,
-                                    std::span<double> gradient,
-                                    std::span<double> momentum,
-                                    std::span<double> column,
+        virtual void updateDynamics(DblSpan position,
+                                    DblSpan velocity,
+                                    DblSpan action,
+                                    DblSpan gradient,
+                                    DblSpan momentum,
+                                    DblSpan column,
                                     double time, int index) = 0;
     };
 
