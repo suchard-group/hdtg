@@ -75,9 +75,9 @@ namespace zz {
                 control = std::make_shared<tbb::global_control>(tbb::global_control::max_allowed_parallelism, nThreads);
             }
 
-            rng.resize(nThreads);
+            rng.resize(static_cast<std::size_t>(nThreads));
             for (int i = 0; i < nThreads; ++i) {
-                rng[i].seed(seed + i);
+                rng[i].seed(static_cast<std::uint64_t>(seed + i));
             }
         }
 
@@ -292,7 +292,7 @@ namespace zz {
 
             MinTravelInfo travel;
             travel.time = 42.0;
-            travel.index = seed;
+            travel.index = static_cast<int>(seed);
 
 #ifdef TIMING
             auto end = zz::chrono::steady_clock::now();

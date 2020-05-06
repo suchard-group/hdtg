@@ -289,7 +289,7 @@ JNIEXPORT void JNICALL Java_dr_evomodel_operators_NativeZigZag_updateDynamics
                 jdoubleArray jColumn,
                 jdouble time, jint index, jint) {
 
-    size_t dim = env->GetArrayLength(position);
+    auto dim = env->GetArrayLength(position);
 
     JniCriticalHandler handler(env, dim, 0,
             position, velocity, action, gradient, momentum);
@@ -301,7 +301,7 @@ JNIEXPORT void JNICALL Java_dr_evomodel_operators_NativeZigZag_updateDynamics
     implementation[instanceNumber]->updateDynamics(
             handler.getSpan(0), handler.getSpan(1),
             handler.getSpan(2), handler.getSpan(3), handler.getSpan(4),
-            zz::DblSpan(column, dim),
+            zz::DblSpan(column, static_cast<std::size_t>(dim)),
             time, index);
 
     env->ReleasePrimitiveArrayCritical(jColumn, (void *) column, JNI_ABORT);
