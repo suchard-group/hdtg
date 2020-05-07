@@ -17,14 +17,16 @@ namespace std {
 
 namespace zz {
 
+    using DblSpan = tcb::span<double>;
+
     enum Flags {
-        DOUBLE = 1 << 1,
-        FLOAT = 1 << 2,
-        TBB = 1 << 3,
-        OPENCL = 1 << 4,
-        SSE = 1 << 7,
-        AVX = 1 << 8,
-        AVX512 = 1 << 9
+        DOUBLE = 1u << 1u,
+        FLOAT = 1u << 2u,
+        TBB = 1u << 3u,
+        OPENCL = 1u << 4u,
+        SSE = 1u << 7u,
+        AVX = 1u << 8u,
+        AVX512 = 1u << 9u
     };
 
 //    struct CpuAccumulate { };
@@ -42,38 +44,38 @@ namespace zz {
 
         virtual ~AbstractZigZag() = default;
 
-        virtual double operate(std::span<double> initialPosition,
-                               std::span<double> initialVelocity,
-                               std::span<double> initialAction,
-                               std::span<double> initialGradient,
-                               std::span<double> initialMomentum,
+        virtual double operate(DblSpan initialPosition,
+                               DblSpan initialVelocity,
+                               DblSpan initialAction,
+                               DblSpan initialGradient,
+                               DblSpan initialMomentum,
                                double time,
                                PrecisionColumnCallback& precisionColumn) = 0;
 
-        virtual MinTravelInfo getNextBounce(std::span<double> position,
-                                            std::span<double> velocity,
-                                            std::span<double> action,
-                                            std::span<double> gradient,
-                                            std::span<double> momentum) = 0;
+        virtual MinTravelInfo getNextBounce(DblSpan position,
+                                            DblSpan velocity,
+                                            DblSpan action,
+                                            DblSpan gradient,
+                                            DblSpan momentum) = 0;
 
-        virtual MinTravelInfo getNextBounceIrreversible(std::span<double> position,
-                                                        std::span<double> velocity,
-                                                        std::span<double> action,
-                                                        std::span<double> gradient) = 0;
+        virtual MinTravelInfo getNextBounceIrreversible(DblSpan position,
+                                                        DblSpan velocity,
+                                                        DblSpan action,
+                                                        DblSpan gradient) = 0;
 
-        virtual void innerBounce(std::span<double> position,
-                                 std::span<double> velocity,
-                                 std::span<double> action,
-                                 std::span<double> gradient,
-                                 std::span<double> momentum,
+        virtual void innerBounce(DblSpan position,
+                                 DblSpan velocity,
+                                 DblSpan action,
+                                 DblSpan gradient,
+                                 DblSpan momentum,
                                  double time, int index, int type) = 0;
 
-        virtual void updateDynamics(std::span<double> position,
-                                    std::span<double> velocity,
-                                    std::span<double> action,
-                                    std::span<double> gradient,
-                                    std::span<double> momentum,
-                                    std::span<double> column,
+        virtual void updateDynamics(DblSpan position,
+                                    DblSpan velocity,
+                                    DblSpan action,
+                                    DblSpan gradient,
+                                    DblSpan momentum,
+                                    DblSpan column,
                                     double time, int index) = 0;
     };
 

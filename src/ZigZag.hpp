@@ -5,6 +5,9 @@
 #ifndef ZIG_ZAG_ZIGZAG_HPP
 #define ZIG_ZAG_ZIGZAG_HPP
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedMacroInspection" // Turn off warning for TBB_PREVIEW_GLOBAL_CONTROL
+
 #include <vector>
 #include <cmath>
 
@@ -72,9 +75,9 @@ namespace zz {
                 control = std::make_shared<tbb::global_control>(tbb::global_control::max_allowed_parallelism, nThreads);
             }
 
-            rng.resize(nThreads);
+            rng.resize(static_cast<std::size_t>(nThreads));
             for (int i = 0; i < nThreads; ++i) {
-                rng[i].seed(seed + i);
+                rng[i].seed(static_cast<std::uint64_t>(seed + i));
             }
         }
 
@@ -145,11 +148,11 @@ namespace zz {
             T* column;
         };
 
-        double operate(std::span<double> position,
-                       std::span<double> velocity,
-                       std::span<double> action,
-                       std::span<double> gradient,
-                       std::span<double> momentum,
+        double operate(DblSpan position,
+                       DblSpan velocity,
+                       DblSpan action,
+                       DblSpan gradient,
+                       DblSpan momentum,
                        double time,
                        PrecisionColumnCallback& precisionColumn) {
 
@@ -157,11 +160,11 @@ namespace zz {
             return operateImpl(dynamics, time, precisionColumn);
         }
 
-        void innerBounce(std::span<double> position,
-                         std::span<double> velocity,
-                         std::span<double> action,
-                         std::span<double> gradient,
-                         std::span<double> momentum,
+        void innerBounce(DblSpan position,
+                         DblSpan velocity,
+                         DblSpan action,
+                         DblSpan gradient,
+                         DblSpan momentum,
                          double time, int index, int type) {
 #ifdef TIMING
             auto start = zz::chrono::steady_clock::now();
@@ -176,12 +179,12 @@ namespace zz {
 #endif
         }
 
-        void updateDynamics(std::span<double> position,
-                                    std::span<double> velocity,
-                                    std::span<double> action,
-                                    std::span<double> gradient,
-                                    std::span<double> momentum,
-                                    std::span<double> column,
+        void updateDynamics(DblSpan position,
+                                    DblSpan velocity,
+                                    DblSpan action,
+                                    DblSpan gradient,
+                                    DblSpan momentum,
+                                    DblSpan column,
                                     double time, int index) {
 
 #ifdef TIMING
@@ -222,16 +225,16 @@ namespace zz {
             return 0.0;
         }
 
-        MinTravelInfo getNextBounce(std::span<double> position,
-                                    std::span<double> velocity,
-                                    std::span<double> action,
-                                    std::span<double> gradient,
-                                    std::span<double> momentum) {
+        MinTravelInfo getNextBounce(DblSpan position,
+                                    DblSpan velocity,
+                                    DblSpan action,
+                                    DblSpan gradient,
+                                    DblSpan momentum) {
 
 #if 0
             std::vector<double> b;
 
-            auto buffer = [&b](std::span<double>& in, mm::MemoryManager<double>& out) {
+            auto buffer = [&b](DblSpan& in, mm::MemoryManager<double>& out) {
                 mm::bufferedCopy(std::begin(in), std::end(in), std::begin(out), b);
             };
 
@@ -248,10 +251,10 @@ namespace zz {
 #endif
         }
 
-        MinTravelInfo getNextBounceIrreversible(std::span<double> position,
-                                    std::span<double> velocity,
-                                    std::span<double> action,
-                                    std::span<double> gradient) {
+        MinTravelInfo getNextBounceIrreversible(DblSpan position,
+                                    DblSpan velocity,
+                                    DblSpan action,
+                                    DblSpan gradient) {
 
             return getNextBounceIrreversible(Dynamics<double>(position, velocity, action, gradient, nullptr, observed));
         }
@@ -289,7 +292,7 @@ namespace zz {
 
             MinTravelInfo travel;
             travel.time = 42.0;
-            travel.index = seed;
+            travel.index = static_cast<int>(seed);
 
 #ifdef TIMING
             auto end = zz::chrono::steady_clock::now();
@@ -815,10 +818,6 @@ namespace zz {
         mm::MemoryManager<MaskType> mask;
         mm::MemoryManager<MaskType> observed;
 
-//        JNIEnv *env;
-//        jobject *providerObject;
-//        jmethodID *providerMethodId;
-
         mm::MemoryManager<double> mmPosition;
         mm::MemoryManager<double> mmVelocity;
         mm::MemoryManager<double> mmAction;
@@ -863,5 +862,7 @@ namespace zz {
 //        );
 //    };
 }
+
+#pragma clang diagnostic pop
 
 #endif //ZIG_ZAG_ZIGZAG_HPP
