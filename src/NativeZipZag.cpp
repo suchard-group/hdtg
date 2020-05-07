@@ -135,7 +135,7 @@ public:
     void releaseColumn() override {
 
         if (data != nullptr) {
-            //env->ReleaseDoubleArrayElements(*array, data, JNI_ABORT);
+            env->ReleaseDoubleArrayElements(*array, data, JNI_ABORT);
             data = nullptr;
         }
 
