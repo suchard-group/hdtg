@@ -6,14 +6,14 @@
 #define ZIG_ZAG_ABSTRACT_ZIG_ZAG_HPP
 
 //#define TCB_SPAN_NAMESPACE_NAME std
-#define TCB_SPAN_NO_CONTRACT_CHECKING
+//#define TCB_SPAN_NO_CONTRACT_CHECKING
 #include "span.hpp"
 #include "PrecisionColumn.hpp"
 
-namespace std {
-    template <typename T>
-    using span = tcb::span<T>;
-}
+//namespace std {
+//    template <typename T>
+//    using span = tcb::span<T>;
+//}
 
 namespace zz {
 
