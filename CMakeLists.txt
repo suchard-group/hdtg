@@ -45,7 +45,7 @@ message(STATUS "xsimd directory: ${xsimd_INCLUDE_DIRS}")
 include_directories(${xsimd_INCLUDE_DIRS})
 
 add_library (zig_zag SHARED
-        src/NativeZipZag.cpp
+        src/NativeZigZag.cpp
         src/AbstractZigZag.hpp src/ZigZag.hpp src/Timing.h
         src/aligned_allocator.hpp src/MemoryManagement.hpp src/Simd.hpp src/PrecisionColumn.hpp
         src/threefry.h)
