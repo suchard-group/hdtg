@@ -10,6 +10,11 @@
 #include "span.hpp"
 #include "PrecisionColumn.hpp"
 
+namespace std {
+    template <typename T>
+    using span = tcb::span<T>;
+}
+
 namespace zz {
 
     using DblSpan = tcb::span<double>;
