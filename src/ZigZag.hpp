@@ -28,7 +28,7 @@
 
 #include "threefry.h"
 
-#include "dr_evomodel_operators_NativeZigZag.h"
+//#include "dr_evomodel_operators_NativeZigZag.h"
 #include "MemoryManagement.hpp"
 #include "Simd.hpp"
 #include "AbstractZigZag.hpp"

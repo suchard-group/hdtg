@@ -2,6 +2,8 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
+#include "ZigZag.hpp"
+
 //' @export
 // [[Rcpp::export]]
 List rcpp_hello_world() {

@@ -28,6 +28,7 @@ CXX_STD = CXX11
 
 PKG_CPPFLAGS = -I.
 #PKG_CXXFLAGS = -g1
+PKG_CXXFLAGS = -mavx -mavx2 -mfma
 
 OBJECTS.zigzag = \
     RcppZigZag.o \
