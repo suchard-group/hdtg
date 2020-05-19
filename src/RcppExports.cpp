@@ -15,9 +15,38 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// createEngine
+Rcpp::List createEngine(int dimension, std::vector<double>& mask, std::vector<double>& observed, long flags, long info, long seed);
+RcppExport SEXP _ZigZag_createEngine(SEXP dimensionSEXP, SEXP maskSEXP, SEXP observedSEXP, SEXP flagsSEXP, SEXP infoSEXP, SEXP seedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type dimension(dimensionSEXP);
+    Rcpp::traits::input_parameter< std::vector<double>& >::type mask(maskSEXP);
+    Rcpp::traits::input_parameter< std::vector<double>& >::type observed(observedSEXP);
+    Rcpp::traits::input_parameter< long >::type flags(flagsSEXP);
+    Rcpp::traits::input_parameter< long >::type info(infoSEXP);
+    Rcpp::traits::input_parameter< long >::type seed(seedSEXP);
+    rcpp_result_gen = Rcpp::wrap(createEngine(dimension, mask, observed, flags, info, seed));
+    return rcpp_result_gen;
+END_RCPP
+}
+// doSomething
+void doSomething(SEXP sexp, std::vector<double>& data);
+RcppExport SEXP _ZigZag_doSomething(SEXP sexpSEXP, SEXP dataSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type sexp(sexpSEXP);
+    Rcpp::traits::input_parameter< std::vector<double>& >::type data(dataSEXP);
+    doSomething(sexp, data);
+    return R_NilValue;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_ZigZag_rcpp_hello_world", (DL_FUNC) &_ZigZag_rcpp_hello_world, 0},
+    {"_ZigZag_createEngine", (DL_FUNC) &_ZigZag_createEngine, 6},
+    {"_ZigZag_doSomething", (DL_FUNC) &_ZigZag_doSomething, 2},
     {NULL, NULL, 0}
 };
 

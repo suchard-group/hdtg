@@ -53,28 +53,28 @@ JNIEXPORT void JNICALL JNI_OnUnload(JavaVM *vm, void *reserved) {
     env->DeleteGlobalRef(classNZZO);
 }
 
-std::unique_ptr<zz::AbstractZigZag> dispatch(
-        int dimension,
-        double *rawMask,
-        double *rawObserved,
-        long flags,
-        int info,
-        long seed) {
-
-    if (static_cast<unsigned long>(flags) & zz::Flags::AVX) {
-        std::cerr << "Factory: AVX" << std::endl;
-        return zz::make_unique<zz::ZigZag<zz::DoubleAvxTypeInfo>>(
-                dimension, rawMask, rawObserved, flags, info, seed);
-    } else if (static_cast<unsigned long>(flags) & zz::Flags::SSE) {
-        std::cerr << "Factory: SSE" << std::endl;
-        return zz::make_unique<zz::ZigZag<zz::DoubleSseTypeInfo>>(
-                dimension, rawMask, rawObserved, flags, info, seed);
-    } else {
-        std::cerr << "Factory: No SIMD" << std::endl;
-        return zz::make_unique<zz::ZigZag<zz::DoubleNoSimdTypeInfo>>(
-                dimension, rawMask, rawObserved, flags, info, seed);
-    }
-}
+// std::unique_ptr<zz::AbstractZigZag> dispatch(
+//         int dimension,
+//         double *rawMask,
+//         double *rawObserved,
+//         long flags,
+//         int info,
+//         long seed) {
+// 
+//     if (static_cast<unsigned long>(flags) & zz::Flags::AVX) {
+//         std::cerr << "Factory: AVX" << std::endl;
+//         return zz::make_unique<zz::ZigZag<zz::DoubleAvxTypeInfo>>(
+//                 dimension, rawMask, rawObserved, flags, info, seed);
+//     } else if (static_cast<unsigned long>(flags) & zz::Flags::SSE) {
+//         std::cerr << "Factory: SSE" << std::endl;
+//         return zz::make_unique<zz::ZigZag<zz::DoubleSseTypeInfo>>(
+//                 dimension, rawMask, rawObserved, flags, info, seed);
+//     } else {
+//         std::cerr << "Factory: No SIMD" << std::endl;
+//         return zz::make_unique<zz::ZigZag<zz::DoubleNoSimdTypeInfo>>(
+//                 dimension, rawMask, rawObserved, flags, info, seed);
+//     }
+// }
 
 JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_create(
         JNIEnv *env,
@@ -94,7 +94,7 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_create(
     int info = env->GetIntField(options, infoFid);
 
     int instanceNumber = static_cast<int>(implementation.size());
-    implementation.emplace_back(dispatch(dimension, rawMask, rawObserved, flags, info, seed));
+    implementation.emplace_back(zz::dispatch(dimension, rawMask, rawObserved, flags, info, seed));
 
     env->ReleaseDoubleArrayElements(mask, rawMask, JNI_ABORT);
     env->ReleaseDoubleArrayElements(observed, rawObserved, JNI_ABORT);

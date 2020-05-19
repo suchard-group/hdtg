@@ -861,6 +861,30 @@ namespace zz {
 //                }
 //        );
 //    };
+
+
+std::unique_ptr<zz::AbstractZigZag> dispatch(
+    int dimension,
+    double *rawMask,
+    double *rawObserved,
+    long flags,
+    int info,
+    long seed) {
+  
+  if (static_cast<unsigned long>(flags) & zz::Flags::AVX) {
+    std::cerr << "Factory: AVX" << std::endl;
+    return zz::make_unique<zz::ZigZag<zz::DoubleAvxTypeInfo>>(
+      dimension, rawMask, rawObserved, flags, info, seed);
+  } else if (static_cast<unsigned long>(flags) & zz::Flags::SSE) {
+    std::cerr << "Factory: SSE" << std::endl;
+    return zz::make_unique<zz::ZigZag<zz::DoubleSseTypeInfo>>(
+      dimension, rawMask, rawObserved, flags, info, seed);
+  } else {
+    std::cerr << "Factory: No SIMD" << std::endl;
+    return zz::make_unique<zz::ZigZag<zz::DoubleNoSimdTypeInfo>>(
+      dimension, rawMask, rawObserved, flags, info, seed);
+  }
+}
 }
 
 #pragma clang diagnostic pop

@@ -6,3 +6,26 @@ rcpp_hello_world <- function() {
     .Call(`_ZigZag_rcpp_hello_world`)
 }
 
+#' Create ZigZag engine object
+#'
+#' Helper function creates zigZag engine object with given latent dimension, location count and various
+#' implementation details. Called by \code{MassivezigZag::engineInitial()}.
+#'
+#' @param embeddingDimension Dimension of latent locations.
+#' @param locationCount Number of locations and size of distance matrix.
+#' @param tbb Number of CPU cores to be used.
+#' @param simd For CPU implementation: no SIMD (\code{0}), SSE (\code{1}) or AVX (\code{2}).
+#' @param truncation Likelihood includes truncation term? Defaults to \code{TRUE}.
+#' @param gpu Which GPU to use? If only 1 available, use \code{gpu=1}. Defaults to \code{0}, no GPU.
+#' @param single Set \code{single=1} if your GPU does not accommodate doubles.
+#' @return zigZag engine object.
+#'
+#' @export
+createEngine <- function(dimension, mask, observed, flags, info, seed) {
+    .Call(`_ZigZag_createEngine`, dimension, mask, observed, flags, info, seed)
+}
+
+.doSomething <- function(sexp, data) {
+    invisible(.Call(`_ZigZag_doSomething`, sexp, data))
+}
+
