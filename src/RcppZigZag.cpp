@@ -1,4 +1,6 @@
 
+#include <unordered_map>
+
 #include <Rcpp.h>
 using namespace Rcpp;
 
@@ -124,13 +126,14 @@ public:
   
   const double* getColumn(int index) override {
     
-    if (index != column) {
-      releaseColumn();
-      result = callback();
-    }
+    auto it = map.find(index);
     
-    column = index;
-    return result.begin();
+    if (it == map.end()) {
+      auto newElement = map.emplace(index, callback(index));
+      return newElement.first->second.begin();
+    } else {
+      return it->second.begin();
+    }
   }
   
   void releaseColumn() override {
@@ -140,6 +143,7 @@ public:
 private:
   Function callback;
   int column;
+  std::unordered_map<int, NumericVector> map;
   NumericVector result;
 };
 
