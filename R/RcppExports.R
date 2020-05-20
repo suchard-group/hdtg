@@ -29,3 +29,11 @@ createEngine <- function(dimension, mask, observed, flags, info, seed) {
     invisible(.Call(`_ZigZag_doSomething`, sexp, data))
 }
 
+.getNextEvent <- function(sexp, position, velocity, action, gradient, momentum) {
+    .Call(`_ZigZag_getNextEvent`, sexp, position, velocity, action, gradient, momentum)
+}
+
+.operate <- function(sexp, rCallback, position, velocity, action, gradient, momentum, time) {
+    .Call(`_ZigZag_operate`, sexp, rCallback, position, velocity, action, gradient, momentum, time)
+}
+

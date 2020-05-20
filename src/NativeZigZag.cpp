@@ -307,7 +307,6 @@ JNIEXPORT void JNICALL Java_dr_evomodel_operators_NativeZigZag_updateDynamics
     env->ReleasePrimitiveArrayCritical(jColumn, (void *) column, JNI_ABORT);
 }
 
-
 JNIEXPORT jobject JNICALL Java_dr_evomodel_operators_NativeZigZag_getNextEvent
         (JNIEnv *env, jobject obj,
                 jint instanceNumber,

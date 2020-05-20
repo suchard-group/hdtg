@@ -42,11 +42,47 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// getNextEvent
+Rcpp::List getNextEvent(SEXP sexp, NumericVector& position, NumericVector& velocity, NumericVector& action, NumericVector& gradient, NumericVector& momentum);
+RcppExport SEXP _ZigZag_getNextEvent(SEXP sexpSEXP, SEXP positionSEXP, SEXP velocitySEXP, SEXP actionSEXP, SEXP gradientSEXP, SEXP momentumSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type sexp(sexpSEXP);
+    Rcpp::traits::input_parameter< NumericVector& >::type position(positionSEXP);
+    Rcpp::traits::input_parameter< NumericVector& >::type velocity(velocitySEXP);
+    Rcpp::traits::input_parameter< NumericVector& >::type action(actionSEXP);
+    Rcpp::traits::input_parameter< NumericVector& >::type gradient(gradientSEXP);
+    Rcpp::traits::input_parameter< NumericVector& >::type momentum(momentumSEXP);
+    rcpp_result_gen = Rcpp::wrap(getNextEvent(sexp, position, velocity, action, gradient, momentum));
+    return rcpp_result_gen;
+END_RCPP
+}
+// operate
+Rcpp::List operate(SEXP sexp, Function rCallback, NumericVector& position, NumericVector& velocity, NumericVector& action, NumericVector& gradient, NumericVector& momentum, double time);
+RcppExport SEXP _ZigZag_operate(SEXP sexpSEXP, SEXP rCallbackSEXP, SEXP positionSEXP, SEXP velocitySEXP, SEXP actionSEXP, SEXP gradientSEXP, SEXP momentumSEXP, SEXP timeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type sexp(sexpSEXP);
+    Rcpp::traits::input_parameter< Function >::type rCallback(rCallbackSEXP);
+    Rcpp::traits::input_parameter< NumericVector& >::type position(positionSEXP);
+    Rcpp::traits::input_parameter< NumericVector& >::type velocity(velocitySEXP);
+    Rcpp::traits::input_parameter< NumericVector& >::type action(actionSEXP);
+    Rcpp::traits::input_parameter< NumericVector& >::type gradient(gradientSEXP);
+    Rcpp::traits::input_parameter< NumericVector& >::type momentum(momentumSEXP);
+    Rcpp::traits::input_parameter< double >::type time(timeSEXP);
+    rcpp_result_gen = Rcpp::wrap(operate(sexp, rCallback, position, velocity, action, gradient, momentum, time));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_ZigZag_rcpp_hello_world", (DL_FUNC) &_ZigZag_rcpp_hello_world, 0},
     {"_ZigZag_createEngine", (DL_FUNC) &_ZigZag_createEngine, 6},
     {"_ZigZag_doSomething", (DL_FUNC) &_ZigZag_doSomething, 2},
+    {"_ZigZag_getNextEvent", (DL_FUNC) &_ZigZag_getNextEvent, 6},
+    {"_ZigZag_operate", (DL_FUNC) &_ZigZag_operate, 8},
     {NULL, NULL, 0}
 };
 

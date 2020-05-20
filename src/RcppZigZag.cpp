@@ -90,3 +90,82 @@ void doSomething(SEXP sexp,
   auto ptr = parsePtr(sexp);
   //ptr->doSomething(data.data(), data.size());
 }
+
+// [[Rcpp::export(.getNextEvent)]]
+Rcpp::List getNextEvent(SEXP sexp, 
+                        NumericVector& position,
+                        NumericVector& velocity,
+                        NumericVector& action,
+                        NumericVector& gradient,
+                        NumericVector& momentum) {
+  
+  auto ptr = parsePtr(sexp);
+  auto firstBounce =  ptr->getNextBounce(
+    zz::DblSpan(position.begin(), position.end()),
+    zz::DblSpan(velocity.begin(), velocity.end()),
+    zz::DblSpan(action.begin(), action.end()),
+    zz::DblSpan(gradient.begin(), gradient.end()),
+    zz::DblSpan(momentum.begin(), momentum.end()));
+  
+  Rcpp::List list = Rcpp::List::create(
+    Rcpp::Named("type") = firstBounce.type,
+    Rcpp::Named("index") = firstBounce.index,
+    Rcpp::Named("time") = firstBounce.time);
+  
+  return list;  
+}
+
+
+class RCallback : public zz::PrecisionColumnCallback {
+public:
+  RCallback(Function callback) : PrecisionColumnCallback(), callback(callback), column(-1) { }
+  
+  ~RCallback() { releaseColumn(); }
+  
+  const double* getColumn(int index) override {
+    
+    if (index != column) {
+      releaseColumn();
+      result = callback();
+    }
+    
+    column = index;
+    return result.begin();
+  }
+  
+  void releaseColumn() override {
+    column = -1;
+  }
+  
+private:
+  Function callback;
+  int column;
+  NumericVector result;
+};
+
+// [[Rcpp::export(.operate)]]
+Rcpp::List operate(SEXP sexp,
+                   Function rCallback,
+                   NumericVector& position,
+                   NumericVector& velocity,
+                   NumericVector& action,
+                   NumericVector& gradient,
+                   NumericVector& momentum,
+                   double time) {
+
+  RCallback callback(rCallback);
+
+  auto ptr = parsePtr(sexp);
+  auto firstBounce =  ptr->operate(
+    zz::DblSpan(position.begin(), position.end()),
+    zz::DblSpan(velocity.begin(), velocity.end()),
+    zz::DblSpan(action.begin(), action.end()),
+    zz::DblSpan(gradient.begin(), gradient.end()),
+    zz::DblSpan(momentum.begin(), momentum.end()),
+    time, callback);
+
+  Rcpp::List list = Rcpp::List::create(
+    Rcpp::Named("position") = position);
+
+  return list;
+}
