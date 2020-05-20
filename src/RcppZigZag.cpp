@@ -156,7 +156,7 @@ Rcpp::List operate(SEXP sexp,
   RCallback callback(rCallback);
 
   auto ptr = parsePtr(sexp);
-  auto firstBounce =  ptr->operate(
+  auto returnValue =  ptr->operate(
     zz::DblSpan(position.begin(), position.end()),
     zz::DblSpan(velocity.begin(), velocity.end()),
     zz::DblSpan(action.begin(), action.end()),
@@ -165,6 +165,7 @@ Rcpp::List operate(SEXP sexp,
     time, callback);
 
   Rcpp::List list = Rcpp::List::create(
+    Rcpp::Named("returnValue") = returnValue,
     Rcpp::Named("position") = position);
 
   return list;
