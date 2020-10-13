@@ -716,7 +716,7 @@ namespace zz {
             const auto lessThan = time < result.time;
             if (xsimd::any(lessThan)) {
                 result.time = select(lessThan, time, result.time);
-                const auto mask = static_cast<__m128i>(lessThan);
+                const auto mask = _mm_castpd_si128(lessThan);
                 result.index = select(mask, makeSimdIndex<D2Index>(index), result.index); // TODO Merge into single register?
                 result.type = select(mask, D2Index(type), result.type);
             }
@@ -727,7 +727,7 @@ namespace zz {
             const auto lessThan = time < result.time;
             if (xsimd::any(lessThan)) {
                 result.time = select(lessThan, time, result.time);
-                const auto mask = static_cast<__m256i>(lessThan);
+                const auto mask = _mm256_castpd_si256(lessThan);
                 result.index = select(mask, makeSimdIndex<D4Index>(index), result.index); // TODO Merge into single register?
                 result.type = select(mask, D4Index(type), result.type);
             }
