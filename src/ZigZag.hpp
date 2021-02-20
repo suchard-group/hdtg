@@ -49,12 +49,14 @@ namespace zz {
         ZigZag(size_t dimension,
                double *rawMask,
                double *rawObserved,
+               double *rawParameterSign,
                long flags,
                int nThreads,
                long seed) : AbstractZigZag(),
                                dimension(dimension),
-                               mask(constructMask(rawMask, dimension)),
-                               observed(constructMask(rawObserved, dimension)),
+                               mask(constructMask(rawMask, dimension, true)),
+                               observed(constructMask(rawObserved, dimension, true)),
+                               parameterSign(constructMask(rawParameterSign, dimension, false)),
                                mmPosition(dimension),
                                mmVelocity(dimension),
                                mmAction(dimension),
@@ -100,12 +102,14 @@ namespace zz {
                      V& action,
                      V& gradient,
                      V& momentum,
-                     const W& observed) : position(position.data()),
+                     const W& observed,
+                     const W& parameterSign) : position(position.data()),
                                           velocity(velocity.data()),
                                           action(action.data()),
                                           gradient(gradient.data()),
                                           momentum(momentum.data()),
                                           observed(observed.data()),
+                                          parameterSign(parameterSign.data()),
                                           column(nullptr) { }
 
             template <typename V, typename W>
@@ -114,12 +118,14 @@ namespace zz {
                      V& action,
                      V& gradient,
                      std::nullptr_t,
-                     const W& observed) : position(position.data()),
+                     const W& observed,
+                     const W& parameterSign) : position(position.data()),
                                           velocity(velocity.data()),
                                           action(action.data()),
                                           gradient(gradient.data()),
                                           momentum(nullptr),
                                           observed(observed.data()),
+                                          parameterSign(parameterSign.data()),
                                           column(nullptr) { }
 
             template <typename V, typename W>
@@ -129,12 +135,14 @@ namespace zz {
                      V& gradient,
                      V& momentum,
                      const W& observed,
+                     const W& parameterSign,
                      V& column) :position(position.data()),
                                  velocity(velocity.data()),
                                  action(action.data()),
                                  gradient(gradient.data()),
                                  momentum(momentum.data()),
                                  observed(observed.data()),
+                                 parameterSign(parameterSign.data()),
                                  column(column.data()) { }
 
             ~Dynamics() = default;
@@ -145,6 +153,7 @@ namespace zz {
             T* gradient;
             T* momentum;
             const T* observed;
+            const T* parameterSign;
             T* column;
         };
 
@@ -156,7 +165,7 @@ namespace zz {
                        double time,
                        PrecisionColumnCallback& precisionColumn) {
 
-            Dynamics<double> dynamics(position, velocity, action, gradient, momentum, observed);
+            Dynamics<double> dynamics(position, velocity, action, gradient, momentum, observed, parameterSign);
             return operateImpl(dynamics, time, precisionColumn);
         }
 
@@ -170,7 +179,7 @@ namespace zz {
             auto start = zz::chrono::steady_clock::now();
 #endif
 
-            Dynamics<double> dynamics(position, velocity, action, gradient, momentum, observed);
+            Dynamics<double> dynamics(position, velocity, action, gradient, momentum, observed, parameterSign);
             innerBounceImpl(dynamics, time, index, type);
 
 #ifdef TIMING
@@ -191,7 +200,7 @@ namespace zz {
             auto start = zz::chrono::steady_clock::now();
 #endif
 
-            Dynamics<double> dynamics(position, velocity, action, gradient, momentum, observed, column);
+            Dynamics<double> dynamics(position, velocity, action, gradient, momentum, observed, parameterSign, column);
             updateDynamicsImpl<SimdType, SimdSize>(dynamics, time, index);
 
 
@@ -245,9 +254,9 @@ namespace zz {
             buffer(momentum, mmMomentum);
 
             return getNextBounce(
-                    Dynamics<double>(mmPosition, mmVelocity, mmAction, mmGradient, mmMomentum, observed, dimension));
+                    Dynamics<double>(mmPosition, mmVelocity, mmAction, mmGradient, mmMomentum, observed, parameterSign, dimension));
 #else
-            return getNextBounce(Dynamics<double>(position, velocity, action, gradient, momentum, observed));
+            return getNextBounce(Dynamics<double>(position, velocity, action, gradient, momentum, observed, parameterSign));
 #endif
         }
 
@@ -256,7 +265,7 @@ namespace zz {
                                     DblSpan action,
                                     DblSpan gradient) {
 
-            return getNextBounceIrreversible(Dynamics<double>(position, velocity, action, gradient, nullptr, observed));
+            return getNextBounceIrreversible(Dynamics<double>(position, velocity, action, gradient, nullptr, observed, parameterSign));
         }
 
         template <typename R>
@@ -388,13 +397,15 @@ namespace zz {
             const auto *gradient = dynamics.gradient;
             const auto *momentum = dynamics.momentum;
             const auto *observed = dynamics.observed;
+            const auto *parameterSign = dynamics.parameterSign;
 
             for ( ; i < end; i += SimdSize) {
 
                 const auto boundaryTime = findBoundaryTime(
                         SimdHelper<S, R>::get(position + i),
                         SimdHelper<S, R>::get(velocity + i),
-                        SimdHelper<S, R>::get(observed + i)
+                        SimdHelper<S, R>::get(observed + i),
+                        SimdHelper<S, R>::get(parameterSign + i)
                 );
 
                 reduce_min(result, boundaryTime, i, BounceType::BOUNDARY); // TODO Try: result = reduce_min(result, ...)
@@ -443,12 +454,13 @@ namespace zz {
             auto g = dynamics.gradient;
             auto m = dynamics.momentum;
             const auto o = dynamics.observed;
+            const auto ps = dynamics.parameterSign;
             const auto c = dynamics.column;
 
             const R halfTimeSquared = time * time / 2;
             const R twoV = 2 * v[index];
 
-            auto scalar = [p, v, a, g, m, o, c,
+            auto scalar = [p, v, a, g, m, o, ps, c,
                            time, halfTimeSquared, twoV](size_t i) {
                 const R gi = g[i];
                 const R ai = a[i];
@@ -463,7 +475,7 @@ namespace zz {
             const S halfTimeSquaredS = S(halfTimeSquared);
             const S twoVS = S(twoV);
 
-            auto simd = [p, v, a, g, m, o, c,
+            auto simd = [p, v, a, g, m, o, ps, c,
                          timeS, halfTimeSquaredS, twoVS](size_t i) {
                 const S gi = SimdHelper<S,R>::get(g + i);
                 const S ai = SimdHelper<S,R>::get(a + i);
@@ -755,19 +767,20 @@ namespace zz {
         template <typename T>
         static inline T findBoundaryTime(const T position,
                                          const T velocity,
-                                         const T observed) {
+                                         const T observed,
+                                         const T parameterSign) {
 
-            return select(headingTowardsBoundary(position, velocity, observed),
+            return select(headingTowardsBoundary(parameterSign, velocity, observed),
                           abs(position / velocity),
                           infinity<T>());
         }
 
         template <typename T>
-        static inline auto headingTowardsBoundary(const T position,
+        static inline auto headingTowardsBoundary(const T parameterSign,
                                                   const T velocity,
                                                   const T observed)
         -> decltype(T(1.0) > T(0.0)) {
-            return observed * position * velocity < T(0.0);
+            return parameterSign * velocity * observed < T(0.0);
         }
 
         template <typename T>
@@ -797,14 +810,18 @@ namespace zz {
 //            );
 //        }
 
-        static mm::MemoryManager<MaskType> constructMask(double *raw, size_t length) {
+        static mm::MemoryManager<MaskType> constructMask(double *raw, size_t length, bool zeroOneFlg) {
 
             mm::MemoryManager<MaskType> mask;
             mask.reserve(length);
 
             std::transform(raw, raw + length, std::back_inserter(mask),
-                           [](double x) {
-                               return (x == 1.0) ? MaskType(1.0) : MaskType(0.0);
+                           [&zeroOneFlg](double x) {
+                               if (zeroOneFlg) {
+                                   return (x == 1.0) ? MaskType(1.0) : MaskType(0.0);
+                               } else {
+                                   return (x == 1.0) ? MaskType(1.0) : MaskType(-1.0);
+                               }
                            });
 
             return mask;
@@ -817,6 +834,7 @@ namespace zz {
         size_t dimension;
         mm::MemoryManager<MaskType> mask;
         mm::MemoryManager<MaskType> observed;
+        mm::MemoryManager<MaskType> parameterSign;
 
         mm::MemoryManager<double> mmPosition;
         mm::MemoryManager<double> mmVelocity;
@@ -867,6 +885,7 @@ std::unique_ptr<zz::AbstractZigZag> dispatch(
     int dimension,
     double *rawMask,
     double *rawObserved,
+    double *rawParameterSign,
     long flags,
     int info,
     long seed) {
@@ -874,15 +893,15 @@ std::unique_ptr<zz::AbstractZigZag> dispatch(
   if (static_cast<unsigned long>(flags) & zz::Flags::AVX) {
     std::cerr << "Factory: AVX" << std::endl;
     return zz::make_unique<zz::ZigZag<zz::DoubleAvxTypeInfo>>(
-      dimension, rawMask, rawObserved, flags, info, seed);
+      dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed);
   } else if (static_cast<unsigned long>(flags) & zz::Flags::SSE) {
     std::cerr << "Factory: SSE" << std::endl;
     return zz::make_unique<zz::ZigZag<zz::DoubleSseTypeInfo>>(
-      dimension, rawMask, rawObserved, flags, info, seed);
+      dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed);
   } else {
     std::cerr << "Factory: No SIMD" << std::endl;
     return zz::make_unique<zz::ZigZag<zz::DoubleNoSimdTypeInfo>>(
-      dimension, rawMask, rawObserved, flags, info, seed);
+      dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed);
   }
 }
 }

@@ -13,7 +13,7 @@ extern "C" {
  * Signature: (ILdr/evomodel/operators/NativeZigZagOptions;[D[D)I
  */
 JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_create
-  (JNIEnv *, jobject, jint, jobject, jdoubleArray, jdoubleArray);
+  (JNIEnv *, jobject, jint, jobject, jdoubleArray, jdoubleArray, jdoubleArray);
 
 /*
  * Class:     dr_evomodel_operators_NativeZigZag

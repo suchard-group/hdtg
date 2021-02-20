@@ -82,24 +82,27 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_create(
         jint dimension,
         jobject options,
         jdoubleArray mask,
-        jdoubleArray observed) {
+        jdoubleArray observed,
+        jdoubleArray parameterSign) {
 
     (void)obj;
 
     double *rawMask = env->GetDoubleArrayElements(mask, nullptr);
     double *rawObserved = env->GetDoubleArrayElements(observed, nullptr);
+    double *rawParameterSign = env->GetDoubleArrayElements(parameterSign, nullptr);
 
     long flags = env->GetLongField(options, flagsFid);
     long seed = env->GetLongField(options, seedFid);
     int info = env->GetIntField(options, infoFid);
 
     int instanceNumber = static_cast<int>(implementation.size());
-    implementation.emplace_back(zz::dispatch(dimension, rawMask, rawObserved, flags, info, seed));
+    implementation.emplace_back(zz::dispatch(dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed));
 
     env->ReleaseDoubleArrayElements(mask, rawMask, JNI_ABORT);
     env->ReleaseDoubleArrayElements(observed, rawObserved, JNI_ABORT);
+    env->ReleaseDoubleArrayElements(parameterSign, rawParameterSign, JNI_ABORT);
 
-    return instanceNumber;
+return instanceNumber;
 }
 
 
