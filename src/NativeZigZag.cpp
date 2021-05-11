@@ -24,7 +24,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
         return JNI_ERR;
     }
 
-    jclass tmpClassMTL = env->FindClass("dr/inference/operators/hmc/MinimumTravelInformation");
+    jclass tmpClassMTL = env->FindClass("dr/inference/operators/hmc/MinimumTravelInformationBinary");
     classMTL =  (jclass) env->NewGlobalRef(tmpClassMTL);
     env->DeleteLocalRef(tmpClassMTL);
 

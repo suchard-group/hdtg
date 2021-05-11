@@ -26,7 +26,7 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_operate
 /*
  * Class:     dr_evomodel_operators_NativeZigZag
  * Method:    getNextEvent
- * Signature: (I[D[D[D[D[D)Ldr/inference/operators/hmc/MinimumTravelInformation;
+ * Signature: (I[D[D[D[D[D)Ldr/inference/operators/hmc/MinimumTravelInformationBinary;
  */
 JNIEXPORT jobject JNICALL Java_dr_evomodel_operators_NativeZigZag_getNextEvent
   (JNIEnv *, jobject, jint, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray);
@@ -58,7 +58,7 @@ JNIEXPORT jboolean JNICALL Java_dr_evomodel_operators_NativeZigZag_inCriticalReg
 /*
  * Class:     dr_evomodel_operators_NativeZigZag
  * Method:    getNextEventInCriticalRegion
- * Signature: (I)Ldr/inference/operators/hmc/MinimumTravelInformation;
+ * Signature: (I)Ldr/inference/operators/hmc/MinimumTravelInformationBinary;
  */
 JNIEXPORT jobject JNICALL Java_dr_evomodel_operators_NativeZigZag_getNextEventInCriticalRegion
   (JNIEnv *, jobject, jint);
@@ -90,7 +90,7 @@ JNIEXPORT void JNICALL Java_dr_evomodel_operators_NativeZigZag_updateDynamics
 /*
  * Class:     dr_evomodel_operators_NativeZigZag
  * Method:    getNextEventIrreversible
- * Signature: (I[D[D[D[D)Ldr/inference/operators/hmc/MinimumTravelInformation;
+ * Signature: (I[D[D[D[D)Ldr/inference/operators/hmc/MinimumTravelInformationBinary;
  */
 JNIEXPORT jobject JNICALL Java_dr_evomodel_operators_NativeZigZag_getNextEventIrreversible
   (JNIEnv *, jobject, jint, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray);
