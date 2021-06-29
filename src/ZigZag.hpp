@@ -771,7 +771,7 @@ namespace zz {
                                          const T parameterSign) {
 
             return select(headingTowardsBoundary(parameterSign, velocity, observed),
-                          abs(position / velocity),
+                          fabs(position / velocity),
                           infinity<T>());
         }
 
@@ -787,7 +787,7 @@ namespace zz {
         static inline T minimumPositiveRoot(const T a, const T b, const T c) {
 
             const auto discriminant = b * b - 4 * a * c;
-            const auto sqrtDiscriminant = select(c == T(0.0), b, sqrt(abs(discriminant)));
+            const auto sqrtDiscriminant = select(c == T(0.0), b, sqrt(fabs(discriminant)));
 
             auto root1 = (-b - sqrtDiscriminant) / (2 * a);
             auto root2 = (-b + sqrtDiscriminant) / (2 * a);
