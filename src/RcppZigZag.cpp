@@ -62,11 +62,12 @@ ZigZagSharedPtr& parsePtr(SEXP sexp) {
 // [[Rcpp::export(createEngine)]]
 Rcpp::List createEngine(int dimension, 
                         std::vector<double>& mask, 
-                        std::vector<double>& observed, 
+                        std::vector<double>& observed,
+                        std::vector<double>& parameterSign,
                         long flags, long info, long seed) {
   
   auto zigZag = new ZigZagWrapper(
-    zz::dispatch(dimension, mask.data(), observed.data(), flags, info, seed));
+    zz::dispatch(dimension, mask.data(), observed.data(), parameterSign.data(), flags, info, seed));
   
   XPtrZigZagWrapper engine(zigZag);
   

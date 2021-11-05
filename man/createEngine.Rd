@@ -4,7 +4,7 @@
 \alias{createEngine}
 \title{Create ZigZag engine object}
 \usage{
-createEngine(dimension, mask, observed, flags, info, seed)
+createEngine(dimension, mask, observed, parameterSign, flags, info, seed)
 }
 \arguments{
 \item{embeddingDimension}{Dimension of latent locations.}

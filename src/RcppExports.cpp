@@ -5,6 +5,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // rcpp_hello_world
 List rcpp_hello_world();
 RcppExport SEXP _ZigZag_rcpp_hello_world() {
@@ -16,18 +21,19 @@ BEGIN_RCPP
 END_RCPP
 }
 // createEngine
-Rcpp::List createEngine(int dimension, std::vector<double>& mask, std::vector<double>& observed, long flags, long info, long seed);
-RcppExport SEXP _ZigZag_createEngine(SEXP dimensionSEXP, SEXP maskSEXP, SEXP observedSEXP, SEXP flagsSEXP, SEXP infoSEXP, SEXP seedSEXP) {
+Rcpp::List createEngine(int dimension, std::vector<double>& mask, std::vector<double>& observed, std::vector<double>& parameterSign, long flags, long info, long seed);
+RcppExport SEXP _ZigZag_createEngine(SEXP dimensionSEXP, SEXP maskSEXP, SEXP observedSEXP, SEXP parameterSignSEXP, SEXP flagsSEXP, SEXP infoSEXP, SEXP seedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type dimension(dimensionSEXP);
     Rcpp::traits::input_parameter< std::vector<double>& >::type mask(maskSEXP);
     Rcpp::traits::input_parameter< std::vector<double>& >::type observed(observedSEXP);
+    Rcpp::traits::input_parameter< std::vector<double>& >::type parameterSign(parameterSignSEXP);
     Rcpp::traits::input_parameter< long >::type flags(flagsSEXP);
     Rcpp::traits::input_parameter< long >::type info(infoSEXP);
     Rcpp::traits::input_parameter< long >::type seed(seedSEXP);
-    rcpp_result_gen = Rcpp::wrap(createEngine(dimension, mask, observed, flags, info, seed));
+    rcpp_result_gen = Rcpp::wrap(createEngine(dimension, mask, observed, parameterSign, flags, info, seed));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -79,7 +85,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_ZigZag_rcpp_hello_world", (DL_FUNC) &_ZigZag_rcpp_hello_world, 0},
-    {"_ZigZag_createEngine", (DL_FUNC) &_ZigZag_createEngine, 6},
+    {"_ZigZag_createEngine", (DL_FUNC) &_ZigZag_createEngine, 7},
     {"_ZigZag_doSomething", (DL_FUNC) &_ZigZag_doSomething, 2},
     {"_ZigZag_getNextEvent", (DL_FUNC) &_ZigZag_getNextEvent, 6},
     {"_ZigZag_operate", (DL_FUNC) &_ZigZag_operate, 8},

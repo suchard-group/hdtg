@@ -21,8 +21,8 @@ rcpp_hello_world <- function() {
 #' @return zigZag engine object.
 #'
 #' @export
-createEngine <- function(dimension, mask, observed, flags, info, seed) {
-    .Call(`_ZigZag_createEngine`, dimension, mask, observed, flags, info, seed)
+createEngine <- function(dimension, mask, observed, parameterSign, flags, info, seed) {
+    .Call(`_ZigZag_createEngine`, dimension, mask, observed, parameterSign, flags, info, seed)
 }
 
 .doSomething <- function(sexp, data) {

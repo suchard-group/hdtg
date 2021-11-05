@@ -1,0 +1,24 @@
+---
+title: "ForMakingPkg"
+author: "Zhenyu"
+date: "11/4/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(devtools, usethis)
+library(Rcpp)
+```
+
+```{r}
+use_package("RcppParallel")
+use_package("RcppXsimd")
+use_package("Rcpp")
+load_all()
+rcmg(1,1,1,1,1)
+check()
+use_mit_license()
+usethis::use_rcpp() #you have to run this command in the same directory where src/ is
+document()
+?rcmg
+```
