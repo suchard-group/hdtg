@@ -22,3 +22,30 @@ usethis::use_rcpp() #you have to run this command in the same directory where sr
 document()
 ?rcmg
 ```
+
+```{r tmp test rcmg}
+load_all()
+n = 10
+mean = c(0.2, 0.2)
+prec = matrix(data = c(1, 0.5, 0.5, 1), nrow = 2)
+constraits = 0
+p0 = c(1, -1)
+t = 2
+burnin = 2
+
+prec_product_func <- function (x) {
+    drop(prec %*% x)
+}
+  
+velocity = sign(momentum)
+gradient = get_prec_product(position - mean)
+action = get_prec_product(velocity + mean)
+
+bounce_time <- min_pos_root(action / 2, gradient, -momentum)
+get_next_bounce(position, velocity, action, gradient, momentum)
+
+rcmg(n, mean, prec, constraits, t, burnin = 2, p0)
+position = p0
+grad = prec %*% (position - mean)
+```
+

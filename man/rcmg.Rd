@@ -4,7 +4,7 @@
 \alias{rcmg}
 \title{Sample from a constrained Gaussian distribution}
 \usage{
-rcmg(n, mean, prec, constraits, p0, burnin)
+rcmg(n, mean, prec, constraits, p0 = NULL, t, burnin)
 }
 \arguments{
 \item{n}{number of samples}
@@ -16,6 +16,8 @@ rcmg(n, mean, prec, constraits, p0, burnin)
 \item{constraits}{a (list?) of constraints}
 
 \item{p0}{a d-dimensional vector of the initial value. It must satisfy all constraints. If not specified a random initial value will be used}
+
+\item{t}{time length to simulate the Markov process}
 
 \item{burnin}{the number of burn-in iterations}
 }

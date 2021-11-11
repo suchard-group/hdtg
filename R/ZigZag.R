@@ -4,5 +4,5 @@
 NULL
 
 .onUnload <- function (libpath) {
-  library.dynam.unload("mypackage", libpath)
+  library.dynam.unload("ZigZag", libpath)
 }
