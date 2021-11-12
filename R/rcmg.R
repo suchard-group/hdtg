@@ -22,19 +22,20 @@ rcmg <- function(n, mean, prec, constraits, t, burnin, p0 = NULL) {
   
   ndim = length(mean)
   get_prec_product <- function (x) {
-      drop(prec %*% x)
+    if (length(x) == 1){
+      return(prec[, x])
+    } else {
+      return(drop(prec %*% x))
+    }
   }
   
   samples <- array(0, c(ndim, n))
   for (i in 1:n) {
     t_jittered <- t + .1 * runif(1, -t, t)
     
-    x <- hzz(get_prec_product, mean, position, momentum, t_jittered)
+    p0 <- hzz(get_prec_product, mean, p0, momentum, t_jittered)
 
-    samples[, i] <- x
+    samples[, i] <- p0
   }
-  
- 
-  
   return(samples)
 }

@@ -80,7 +80,7 @@ get_grad_time <- function(action, gradient, momentum){
 get_bound_time <- function(position, velocity){
   times <- rep(Inf, length(position))
   towards_boundary <- position * velocity < 0
-  times[towards_boundary] <- abs(position / velocity)
+  times[towards_boundary] <- abs(position / velocity)[towards_boundary]
   return(times)
 }
 
