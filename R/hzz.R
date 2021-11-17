@@ -16,10 +16,10 @@ hzz <- function(get_prec_product,
                 momentum,
                 t) {
   set.seed(666)
-  
+  debug_flg = FALSE
   ndim = length(position)
   
-  position <- get_initial_position(position, constraits)
+  position <- .get_initial_position(position, constraits)
   momentum <-
     (2 * (runif(ndim) > .5) - 1) * rexp(ndim, rate = 1)
   velocity <- sign(momentum)
@@ -43,7 +43,7 @@ hzz <- function(get_prec_product,
   time_remaining <- t
   while (time_remaining > 0) {
     first_bounce <-
-      get_next_bounce(
+      .get_next_bounce(
         dynamics$position,
         dynamics$velocity,
         dynamics$action,
@@ -52,16 +52,25 @@ hzz <- function(get_prec_product,
       )
     event_time <- first_bounce$t_event
     event_idx <- first_bounce$index
+    
+    if (debug_flg) {
+      print(paste("event time", paste(event_time, collapse = " ")))
+      print(paste("position", paste(dynamics$position, collapse = " ")))
+      print(paste("momentun", paste(dynamics$momentum, collapse = " ")))
+      print(paste("gradient", paste(dynamics$gradient, collapse = " ")))
+      print(paste("action", paste(dynamics$action, collapse = " ")))
+    }
+    
     if (time_remaining < event_time) {
       # No event during remaining time
       
       # update position
-      position <- position + time_remaining * velocity
+      dynamics$position <- dynamics$position + time_remaining * velocity
       # update momentum
       # TODO: this update of momentum is only necessary when using NUTS
       half_time_squared = time_remaining * time_remaining / 2
-      momentum <-
-        momentum - time_remaining * gradient - half_time_squared * action
+      dynamics$momentum <-
+        dynamics$momentum - time_remaining * dynamics$gradient - half_time_squared * dynamics$action
       
       time_remaining <- 0
     } else {
@@ -81,33 +90,20 @@ hzz <- function(get_prec_product,
       dynamics$velocity[event_idx] <- -dynamics$velocity[event_idx]
       time_remaining <- time_remaining - event_time
     }
-    
   }
   
-  return(position)
+  return(dynamics$position)
 }
 
 
-#' Title
-#'
-#' @param position
-#' @param velocity
-#' @param action
-#' @param gradient
-#' @param momentum
-#'
-#' @return
-#' @export
-#'
-#' @examples
-get_next_bounce <-
+.get_next_bounce <-
   function(position,
            velocity,
            action,
            gradient,
            momentum) {
-    grad_time <- get_grad_time(action, gradient, momentum)
-    bound_time <- get_bound_time(position, velocity)
+    grad_time <- .get_grad_time(action, gradient, momentum)
+    bound_time <- .get_bound_time(position, velocity)
     
     idx_grad <- which.min(grad_time)
     idx_bound <- which.min(bound_time)
@@ -131,10 +127,9 @@ get_next_bounce <-
 #' @param dynamics
 #'
 #' @return
-#' @export
 #'
 #' @examples
-update_dynamics <- function(dynamics) {
+.update_dynamics <- function(dynamics) {
   p <- dynamics$position
   v <- dynamics$velocity
   a <- dynamics$action
@@ -148,14 +143,19 @@ update_dynamics <- function(dynamics) {
   two_v1 = 2 * v[index]
   
   p <- p + time * v
-  m <- m + time * g - half_time_squared * a
-  g <- g - time * a
+  m <- m - time * g - half_time_squared * a
+  g <- g + time * a
   a <- a - two_v1 * c
   
   if (dynamics$event_type == "boundary") {
     # Reflect against binary boundary
     m[index] <- -m[index]
     p[index] <- 0
+  }
+  
+  if (dynamics$event_type == "gradient") {
+    # Set 0 momentum to avoid numeric error
+    m[index] <- 0
   }
   return(modifyList(dynamics, list(
     position = p,

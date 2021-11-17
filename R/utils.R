@@ -2,12 +2,11 @@
 #'
 #' @param p0 a d-dimensional vector of the initial value. It must satisfy all constraints. If not specified a random initial value will be used
 #' @param constraits a (list?) of constraints
-#'
+#' @NoRd
 #' @return a d-dimensional vector of the initial value
-#' @export
 #'
 #' @examples
-get_initial_position <- function(p0, constraits){
+.get_initial_position <- function(p0, constraits){
   stopifnot('random generated initial position not implemented yet' = !is.null(p0))
   #if (!is.null(p0)){
   return(p0)
@@ -24,10 +23,9 @@ get_initial_position <- function(p0, constraits){
 #' @param c vector of c
 #'
 #' @return vector of the minimal positive roots
-#' @export
 #'
 #' @examples
-min_pos_root <- function(a, b, c) {
+.min_pos_root <- function(a, b, c) {
   
   sign_a <- sign(a)
   b <- b * sign_a
@@ -60,11 +58,10 @@ min_pos_root <- function(a, b, c) {
 #' @param momentum 
 #'
 #' @return
-#' @export
 #'
 #' @examples
-get_grad_time <- function(action, gradient, momentum){
-  return(min_pos_root(action / 2, gradient, -momentum))
+.get_grad_time <- function(action, gradient, momentum){
+  return(.min_pos_root(action / 2, gradient, -momentum))
 }
 
 
@@ -74,17 +71,12 @@ get_grad_time <- function(action, gradient, momentum){
 #' @param velocity 
 #'
 #' @return
-#' @export
 #'
 #' @examples
-get_bound_time <- function(position, velocity){
+.get_bound_time <- function(position, velocity){
   times <- rep(Inf, length(position))
   towards_boundary <- position * velocity < 0
   times[towards_boundary] <- abs(position / velocity)[towards_boundary]
   return(times)
 }
 
-
-initialize_state <- function(t){
-  return(list(type = "None", index = -1, remaining_time = t))
-}

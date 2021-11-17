@@ -1,4 +1,4 @@
-Package: ZigZag
+Package: hzz
 Title: Generate samples from a constrained Gaussian distribution
 Version: 0.0.0.9000
 Authors@R: 

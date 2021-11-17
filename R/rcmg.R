@@ -31,8 +31,8 @@ rcmg <- function(n, mean, prec, constraits, t, burnin, p0 = NULL) {
   
   samples <- array(0, c(ndim, n))
   for (i in 1:n) {
-    t_jittered <- t + .1 * runif(1, -t, t)
-    
+    #t_jittered <- t + .1 * runif(1, -t, t)
+    t_jittered <- t
     p0 <- hzz(get_prec_product, mean, p0, momentum, t_jittered)
 
     samples[, i] <- p0

@@ -3,7 +3,7 @@
 
 #' @export
 rcpp_hello_world <- function() {
-    .Call(`_ZigZag_rcpp_hello_world`)
+    .Call(`_hzz_rcpp_hello_world`)
 }
 
 #' Create ZigZag engine object
@@ -22,18 +22,18 @@ rcpp_hello_world <- function() {
 #'
 #' @export
 createEngine <- function(dimension, mask, observed, parameterSign, flags, info, seed) {
-    .Call(`_ZigZag_createEngine`, dimension, mask, observed, parameterSign, flags, info, seed)
+    .Call(`_hzz_createEngine`, dimension, mask, observed, parameterSign, flags, info, seed)
 }
 
 .doSomething <- function(sexp, data) {
-    invisible(.Call(`_ZigZag_doSomething`, sexp, data))
+    invisible(.Call(`_hzz_doSomething`, sexp, data))
 }
 
 .getNextEvent <- function(sexp, position, velocity, action, gradient, momentum) {
-    .Call(`_ZigZag_getNextEvent`, sexp, position, velocity, action, gradient, momentum)
+    .Call(`_hzz_getNextEvent`, sexp, position, velocity, action, gradient, momentum)
 }
 
 .operate <- function(sexp, rCallback, position, velocity, action, gradient, momentum, time) {
-    .Call(`_ZigZag_operate`, sexp, rCallback, position, velocity, action, gradient, momentum, time)
+    .Call(`_hzz_operate`, sexp, rCallback, position, velocity, action, gradient, momentum, time)
 }
 

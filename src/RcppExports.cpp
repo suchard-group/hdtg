@@ -12,7 +12,7 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 
 // rcpp_hello_world
 List rcpp_hello_world();
-RcppExport SEXP _ZigZag_rcpp_hello_world() {
+RcppExport SEXP _hzz_rcpp_hello_world() {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -22,7 +22,7 @@ END_RCPP
 }
 // createEngine
 Rcpp::List createEngine(int dimension, std::vector<double>& mask, std::vector<double>& observed, std::vector<double>& parameterSign, long flags, long info, long seed);
-RcppExport SEXP _ZigZag_createEngine(SEXP dimensionSEXP, SEXP maskSEXP, SEXP observedSEXP, SEXP parameterSignSEXP, SEXP flagsSEXP, SEXP infoSEXP, SEXP seedSEXP) {
+RcppExport SEXP _hzz_createEngine(SEXP dimensionSEXP, SEXP maskSEXP, SEXP observedSEXP, SEXP parameterSignSEXP, SEXP flagsSEXP, SEXP infoSEXP, SEXP seedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -39,7 +39,7 @@ END_RCPP
 }
 // doSomething
 void doSomething(SEXP sexp, std::vector<double>& data);
-RcppExport SEXP _ZigZag_doSomething(SEXP sexpSEXP, SEXP dataSEXP) {
+RcppExport SEXP _hzz_doSomething(SEXP sexpSEXP, SEXP dataSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type sexp(sexpSEXP);
@@ -50,7 +50,7 @@ END_RCPP
 }
 // getNextEvent
 Rcpp::List getNextEvent(SEXP sexp, NumericVector& position, NumericVector& velocity, NumericVector& action, NumericVector& gradient, NumericVector& momentum);
-RcppExport SEXP _ZigZag_getNextEvent(SEXP sexpSEXP, SEXP positionSEXP, SEXP velocitySEXP, SEXP actionSEXP, SEXP gradientSEXP, SEXP momentumSEXP) {
+RcppExport SEXP _hzz_getNextEvent(SEXP sexpSEXP, SEXP positionSEXP, SEXP velocitySEXP, SEXP actionSEXP, SEXP gradientSEXP, SEXP momentumSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -66,7 +66,7 @@ END_RCPP
 }
 // operate
 Rcpp::List operate(SEXP sexp, Function rCallback, NumericVector& position, NumericVector& velocity, NumericVector& action, NumericVector& gradient, NumericVector& momentum, double time);
-RcppExport SEXP _ZigZag_operate(SEXP sexpSEXP, SEXP rCallbackSEXP, SEXP positionSEXP, SEXP velocitySEXP, SEXP actionSEXP, SEXP gradientSEXP, SEXP momentumSEXP, SEXP timeSEXP) {
+RcppExport SEXP _hzz_operate(SEXP sexpSEXP, SEXP rCallbackSEXP, SEXP positionSEXP, SEXP velocitySEXP, SEXP actionSEXP, SEXP gradientSEXP, SEXP momentumSEXP, SEXP timeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -84,15 +84,15 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_ZigZag_rcpp_hello_world", (DL_FUNC) &_ZigZag_rcpp_hello_world, 0},
-    {"_ZigZag_createEngine", (DL_FUNC) &_ZigZag_createEngine, 7},
-    {"_ZigZag_doSomething", (DL_FUNC) &_ZigZag_doSomething, 2},
-    {"_ZigZag_getNextEvent", (DL_FUNC) &_ZigZag_getNextEvent, 6},
-    {"_ZigZag_operate", (DL_FUNC) &_ZigZag_operate, 8},
+    {"_hzz_rcpp_hello_world", (DL_FUNC) &_hzz_rcpp_hello_world, 0},
+    {"_hzz_createEngine", (DL_FUNC) &_hzz_createEngine, 7},
+    {"_hzz_doSomething", (DL_FUNC) &_hzz_doSomething, 2},
+    {"_hzz_getNextEvent", (DL_FUNC) &_hzz_getNextEvent, 6},
+    {"_hzz_operate", (DL_FUNC) &_hzz_operate, 8},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_ZigZag(DllInfo *dll) {
+RcppExport void R_init_hzz(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }
