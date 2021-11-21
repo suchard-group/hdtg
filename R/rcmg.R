@@ -15,7 +15,7 @@
 #'
 #' @examples rcmg(1,1,1,1,1)
 rcmg <- function(n, mean, prec, constraits, t, burnin, p0 = NULL) {
-  
+  debug_flg = F
   stopifnot("n > burnin must be integers!" = (n %% 1 == 0 && burnin %% 1 == 0 && n > burnin))
   stopifnot("mean and prec must be numeric" = (is.numeric(mean) && is.numeric(prec)))
   # TODO add other checks for arguments. all dimensions must match.
@@ -30,12 +30,18 @@ rcmg <- function(n, mean, prec, constraits, t, burnin, p0 = NULL) {
   }
   
   samples <- array(0, c(ndim, n))
-  for (i in 1:n) {
-    #t_jittered <- t + .1 * runif(1, -t, t)
-    t_jittered <- t
-    p0 <- hzz(get_prec_product, mean, p0, momentum, t_jittered)
+  set.seed(666)
 
+  #
+  for (i in 1:n) {
+    momentum <-
+      (2 * (runif(ndim) > .5) - 1) * rexp(ndim, rate = 1)
+    t_jittered <- t
+    p0 <- hzz(get_prec_product, mean, p0, constraits, momentum, t_jittered)
     samples[, i] <- p0
+    if (debug_flg) {
+      cat('----------------------one iteration done----------------------')
+    }
   }
   return(samples)
 }

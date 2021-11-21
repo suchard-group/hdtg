@@ -73,9 +73,9 @@
 #' @return
 #'
 #' @examples
-.get_bound_time <- function(position, velocity){
+.get_bound_time <- function(position, velocity, constraits){
   times <- rep(Inf, length(position))
-  towards_boundary <- position * velocity < 0
+  towards_boundary <- constraits * velocity < 0
   times[towards_boundary] <- abs(position / velocity)[towards_boundary]
   return(times)
 }

@@ -7,21 +7,17 @@
 #' @param t time length to simulate the Markov process
 #'
 #' @return
-#' @export
 #'
 #' @examples
 hzz <- function(get_prec_product,
                 mean,
                 position,
+                constraits,
                 momentum,
                 t) {
-  set.seed(666)
-  debug_flg = FALSE
+  debug_flg = F
   ndim = length(position)
-  
   position <- .get_initial_position(position, constraits)
-  momentum <-
-    (2 * (runif(ndim) > .5) - 1) * rexp(ndim, rate = 1)
   velocity <- sign(momentum)
   gradient <- get_prec_product(position - mean)
   action <- get_prec_product(velocity + mean)
@@ -48,24 +44,27 @@ hzz <- function(get_prec_product,
         dynamics$velocity,
         dynamics$action,
         dynamics$gradient,
-        dynamics$momentum
+        dynamics$momentum,
+        constraits
       )
     event_time <- first_bounce$t_event
     event_idx <- first_bounce$index
-    
+    event_type <- first_bounce$event_type
     if (debug_flg) {
       print(paste("event time", paste(event_time, collapse = " ")))
+      print(paste("event type", paste(event_type, collapse = " ")))
       print(paste("position", paste(dynamics$position, collapse = " ")))
       print(paste("momentun", paste(dynamics$momentum, collapse = " ")))
       print(paste("gradient", paste(dynamics$gradient, collapse = " ")))
       print(paste("action", paste(dynamics$action, collapse = " ")))
+      cat("\n")
     }
     
     if (time_remaining < event_time) {
       # No event during remaining time
       
       # update position
-      dynamics$position <- dynamics$position + time_remaining * velocity
+      dynamics$position <- dynamics$position + time_remaining * dynamics$velocity
       # update momentum
       # TODO: this update of momentum is only necessary when using NUTS
       half_time_squared = time_remaining * time_remaining / 2
@@ -85,10 +84,19 @@ hzz <- function(get_prec_product,
           )
         )
       # update dynamics
-      dynamics <- update_dynamics(dynamics)
+      dynamics <- .update_dynamics(dynamics)
       # reflect velocity element
       dynamics$velocity[event_idx] <- -dynamics$velocity[event_idx]
       time_remaining <- time_remaining - event_time
+    }
+    if (debug_flg) {
+      print("after update")
+      print(paste("position", paste(dynamics$position, collapse = " ")))
+      print(paste("momentun", paste(dynamics$momentum, collapse = " ")))
+      print(paste("gradient", paste(dynamics$gradient, collapse = " ")))
+      print(paste("action", paste(dynamics$action, collapse = " ")))
+      cat("**************************")
+      cat("\n")
     }
   }
   
@@ -101,9 +109,10 @@ hzz <- function(get_prec_product,
            velocity,
            action,
            gradient,
-           momentum) {
+           momentum,
+           constraits) {
     grad_time <- .get_grad_time(action, gradient, momentum)
-    bound_time <- .get_bound_time(position, velocity)
+    bound_time <- .get_bound_time(position, velocity, constraits)
     
     idx_grad <- which.min(grad_time)
     idx_bound <- which.min(bound_time)
