@@ -29,13 +29,13 @@ require(coda)
 require(matrixcalc)
 require(clusterGeneration)
 
-d = 500
+d = 1000
 mu = rep(0, d)
 set.seed(666)
 cov_mat = rWishart(1, 2 * d, diag(d))[ , , 1]
 cor_mat = cov2cor(cov_mat)
 # rcorrmatrix(d, alphad = 1) # from the lkj prior. runs slow though.
-cor_mat = CSgenerate(d, 0.9)
+cor_mat = CSgenerate(d, 0.99)
 prec = solve(cor_mat)
 
 #cor_mat = diag(d)
@@ -50,8 +50,28 @@ burnin = 20
 
 ```{r to profile}
 require(profvis)
-profvis({samples = rcmg(n = 10, mean = mu, prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = rep(0.1, d))})
+require(hzz)
+profvis({samples_2 = rcmg(n = 3, mean = mu, prec, constraits = rep(1, d), t = 100, burnin = 0, p0 = rep(0.1, d))})
 ```
+```{r tmp test out things}
+t0 = proc.time()
+for (i in 1:1000000) {
+  p = rep(Inf, 1000)
+}
+t1 = proc.time()
+cat(" it takes", t1[3] - t0[3], 'secs')
+
+
+t0 = proc.time()
+for (i in 1:1000000) {
+  p = vector(length = 1000)
+  p[] <- 0
+}
+t1 = proc.time()
+cat(" it takes", t1[3] - t0[3], 'secs')
+
+```
+
 
 ```{r to compare with ground truth}
 require(hzz)

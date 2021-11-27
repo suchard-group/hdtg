@@ -73,16 +73,20 @@ hzz <- function(get_prec_product,
       
       time_remaining <- 0
     } else {
-      dynamics <-
-        modifyList(
-          dynamics,
-          list(
-            column = get_prec_product(event_idx),
-            event_time = event_time,
-            event_idx = event_idx,
-            event_type = first_bounce$event_type
-          )
-        )
+      # dynamics <-
+      #   modifyList(
+      #     dynamics,
+      #     list(
+      #       column = get_prec_product(event_idx),
+      #       event_time = event_time,
+      #       event_idx = event_idx,
+      #       event_type = first_bounce$event_type
+      #     )
+      #   )
+      dynamics$column <- get_prec_product(event_idx)
+      dynamics$event_time <- event_time
+      dynamics$event_idx = event_idx
+      dynamics$event_type = first_bounce$event_type
       # update dynamics
       dynamics <- .update_dynamics(dynamics)
       # reflect velocity element
@@ -131,45 +135,25 @@ hzz <- function(get_prec_product,
   }
 
 
-#' Title
-#'
-#' @param dynamics
-#'
-#' @return
-#'
-#' @examples
-.update_dynamics <- function(dynamics) {
-  p <- dynamics$position
-  v <- dynamics$velocity
-  a <- dynamics$action
-  g <- dynamics$gradient
-  m <- dynamics$momentum
-  c <- dynamics$column
-  time <- dynamics$event_time
-  index <- dynamics$event_idx
+.update_dynamics <- function(dy) {
   
-  half_time_squared = time ^ 2 / 2
-  two_v1 = 2 * v[index]
+  half_time_squared = dy$event_time ^ 2 / 2
+  two_v1 = 2 * dy$velocity[dy$event_idx]
   
-  p <- p + time * v
-  m <- m - time * g - half_time_squared * a
-  g <- g + time * a
-  a <- a - two_v1 * c
+  dy$position <- dy$position + dy$event_time * dy$velocity
+  dy$momentum <- dy$momentum - dy$event_time * dy$gradient - half_time_squared * dy$action
+  dy$gradient <- dy$gradient + dy$event_time * dy$action
+  dy$action <- dy$action - two_v1 * dy$column
   
-  if (dynamics$event_type == "boundary") {
+  if (dy$event_type == "boundary") {
     # Reflect against binary boundary
-    m[index] <- -m[index]
-    p[index] <- 0
+    dy$momentum[dy$event_idx] <- -dy$momentum[dy$event_idx]
+    dy$position[dy$event_idx] <- 0
   }
   
-  if (dynamics$event_type == "gradient") {
+  if (dy$event_type == "gradient") {
     # Set 0 momentum to avoid numeric error
-    m[index] <- 0
+    dy$momentum[dy$event_idx] <- 0
   }
-  return(modifyList(dynamics, list(
-    position = p,
-    momentum = m,
-    gradient = g,
-    action = a
-  )))
+  return(dy)
 }
