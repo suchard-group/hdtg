@@ -23,12 +23,19 @@ document()
 ```
 
 ```{r prepare inputs}
-n = 20
-d = 10
+require(MixMatrix)
+require(magrittr)
+require(coda)
+require(matrixcalc)
+require(clusterGeneration)
+
+d = 500
 mu = rep(0, d)
 set.seed(666)
 cov_mat = rWishart(1, 2 * d, diag(d))[ , , 1]
 cor_mat = cov2cor(cov_mat)
+# rcorrmatrix(d, alphad = 1) # from the lkj prior. runs slow though.
+cor_mat = CSgenerate(d, 0.9)
 prec = solve(cor_mat)
 
 #cor_mat = diag(d)
@@ -43,16 +50,19 @@ burnin = 20
 
 ```{r to profile}
 require(profvis)
-profvis({res = rcmg(n, mean = mu, prec, constraits, t, burnin = as.integer(0.1 * n), p0 = p0)})
+profvis({samples = rcmg(n = 10, mean = mu, prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = rep(0.1, d))})
 ```
 
 ```{r to compare with ground truth}
 require(hzz)
 library(MASS)
 
-n_hzz = 5000
+n_hzz = 100
 debugSource("~/zigzag/R/hzz.R", echo=TRUE)
+t0 = proc.time()
 samples = rcmg(n = n_hzz, mean = mu, prec, constraits = rep(1, d), t = 1, burnin = 0, p0 = rep(0.1, d))
+t1 = proc.time()
+cat(n_hzz, "hzz samples with dimension", d, "takes", t1[3] - t0[3], 'secs')
 
 n_reject = 10^7
 true_samples <- t(mvrnorm(n_reject, mu, cor_mat))
@@ -66,14 +76,8 @@ hist(samples[index, ], breaks=breaks, probability=T, col=rgb(1, 0, 0, 1/4), xlim
 hist(true_samples[index, ], breaks=breaks, probability=T, col=rgb(0, 0, 1, 1/4), xlim=c(0, 5), add=T)
 ```
 
-```{r}
-            int sign = (MathUtils.nextDouble() > 0.5) ? 1 : -1;
-            momentum[i] = sign * MathUtils.nextExponential(1) * Math.sqrt(mass.get(i));
-ndim = 2
-momentum <- (2 * (runif(ndim) > .5) - 1) * rexp(ndim, rate = 1)
-```
 
-```{r}
+```{r for debug (not reliable results from old code)}
 source("~/truncated-normal-sampler-code/truncated-normal-sampler-code/truncated_normal_hmc.R", echo=TRUE)
 f <- function (x) {
   if (length(x) == 1) {
@@ -90,14 +94,77 @@ samples <- array(0, c(2, n_samples))
 p0 = c(0.1, 0.1)
 for (i in 1:n_samples) {
   #debugSource("~/truncated-normal-sampler-code/truncated-normal-sampler-code/truncated_normal_hmc.R", echo=TRUE)
-  
   p0 <- truncated_normal_hmc(f, p0, mu = c(0,0), t = 1, m=NULL)
   samples[, i] <- p0
 }
 ```
-```{r}
-hzz_samples = rcmg(n = n_hzz, mean = mu, prec, constraits, t = 1, burnin = 0, p0)
-```
 
+I found the following packages that can sample from a multivariate truncated normal:
+The results is for our naive version, pure-R code.
+### Package tmvtnorm
+1. lower dimensions tmv wins clearly. For d = 500, cor = CS(0.9), tmvt takes 10^5 iterations and 100 secs to get min ESS 218. While hzz suffers from "*** recursive gc invocation"(haven't found what this exactly means) with larger stepsize (like 10). And stepsize = 1 takes forever to get to minESS 200. Maybe I should fix the garbage collection in my code?
+
+2. What's the limit (if any) of tmv? 
+I tested on CS(0.9) for 
+d = 1000: 
+(tmv) 885 sec, 2*10^5 iterations, minESS = 370 (tn) 31 secs, 500 iterations, minESS 270
+tn wins obviously. And their marginal distributions are quite similar.
+d = 2000: CS(0.99) tn takes 500 iterations 210 secs to get 404minESS 
+...
+Okay I realize (from Botev's paper) tn works great for positive correlated dimensions. 
+
+For a random correlation matrix (eg. from rWishart, it has very low acceptance probability. d = 200 is all right, but d = 300 I cannot get even one single sample.)
+
+Botev mentioned their methods can be 
+
+### Package TruncatedNormal
+1. CS(0.9) d = 200, piece of cake; d = 500, 1000 iterations, 10 sec, gives min ESS 630, clearly beats tmv.
+Note: another pacakge "truncnorm" only works on MVN with independent dimensions.
+```{r compare with package truncnorm}
+require(hzz)
+require(tmvtnorm)
+require(TruncatedNormal)
+
+require(coda)
+require(magrittr)
+
+# n_tn = 100
+# 
+# t0 = proc.time()
+# samples_tn <- TruncatedNormal::rtmvnorm(n = n_tn, mu = mu, sigma = cor_mat, lb = rep(0, d), ub = rep(Inf, d))
+# t1 = proc.time()
+# 
+# cat(n_tn, "tn samples with dimension", d, "takes", t1[3] - t0[3], 'secs', '\n')
+# 
+# mcmc(samples_tn, thin = 1) %>% effectiveSize() %>% summary()
+# 
+# plot(samples_tn[,1], samples_tn[,2])
+
+n_hzz = 100
+t0 = proc.time()
+samples = rcmg(n = n_hzz, mean = mu, prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = rep(0.1, d))
+t1 = proc.time()
+cat(n_hzz, "hzz samples with dimension", d, "takes", t1[3] - t0[3], 'secs', '\n')
+
+mcmc(t(samples), thin = 1) %>% effectiveSize() %>% summary()
+
+
+# n_tmv = 200000
+# t0 = proc.time()
+# samples_tmv <- tmvtnorm::rtmvnorm(n = n_tmv, mean = mu, H = prec, lower = rep(0, d), upper = rep(Inf, d), algorithm="gibbs")
+# t1 = proc.time()
+# cat(n_tmv, "tmvn samples with dimension", d, "takes", t1[3] - t0[3], 'secs')
+# 
+# mcmc(samples_tmv, thin = 1) %>% effectiveSize() %>% summary()
+# 
+# index <- sample(1:d, 1)
+# 
+# breaks <- seq(0, max(samples_tn, samples_tmv) + 0.1, length=21)
+# hist(samples_tn[, index], breaks=breaks, probability=T, col=rgb(1, 0, 0, 1/4), xlim=c(0, 5))
+# hist(samples_tmv[, index], breaks=breaks, probability=T, col=rgb(0, 0, 1, 1/4), xlim=c(0, 5), add=T)
+```
+```{r compare with package TruncatedNormal}
+
+```
 
 
