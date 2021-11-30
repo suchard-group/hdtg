@@ -5,6 +5,8 @@
 #' @param position a d-dimensional vector of the initial position
 #' @param momentum a d-dimensional vector of the initial momentum
 #' @param t time length to simulate the Markov process
+#' @param constraits
+#' @param cpp_flg
 #'
 #' @return
 #'
@@ -14,7 +16,8 @@ hzz <- function(get_prec_product,
                 position,
                 constraits,
                 momentum,
-                t) {
+                t,
+                cpp_flg) {
   debug_flg = F
   ndim = length(position)
   position <- .get_initial_position(position, constraits)
@@ -36,20 +39,36 @@ hzz <- function(get_prec_product,
       event_type = NULL
     )
   
+  if (cpp_flg) {
+    engine = createEngine(dimension = ndim, mask = rep(1, ndim), observed = rep(1, ndim), parameterSign = constraits, flags = 128, info = 1, seed = 1)
+  }
+  
   time_remaining <- t
   while (time_remaining > 0) {
-    first_bounce <-
-      .get_next_bounce(
-        dynamics$position,
-        dynamics$velocity,
-        dynamics$action,
-        dynamics$gradient,
-        dynamics$momentum,
-        constraits
-      )
-    event_time <- first_bounce$t_event
-    event_idx <- first_bounce$index
-    event_type <- first_bounce$event_type
+    if (cpp_flg) {
+      first_bounce <- getNextEvent(engine$engine, position = dynamics$position, velocity = dynamics$velocity, action = dynamics$action, logpdfGradient = - dynamics$gradient, momentum = dynamics$momentum)
+    } else {
+      first_bounce <-
+        .get_next_bounce(
+          dynamics$position,
+          dynamics$velocity,
+          dynamics$action,
+          dynamics$gradient,
+          dynamics$momentum,
+          constraits
+        )
+    }
+    
+    if (cpp_flg){
+      event_time <- first_bounce$time
+      event_idx <- first_bounce$index + 1
+      event_type <- ifelse(first_bounce$type == 1, 'boundary', 'gradient')
+    } else {
+      event_time <- first_bounce$t_event
+      event_idx <- first_bounce$index
+      event_type <- first_bounce$event_type
+    }
+
     if (debug_flg) {
       print(paste("event time", paste(event_time, collapse = " ")))
       print(paste("event type", paste(event_type, collapse = " ")))
@@ -64,7 +83,8 @@ hzz <- function(get_prec_product,
       # No event during remaining time
       
       # update position
-      dynamics$position <- dynamics$position + time_remaining * dynamics$velocity
+      dynamics$position <-
+        dynamics$position + time_remaining * dynamics$velocity
       # update momentum
       # TODO: this update of momentum is only necessary when using NUTS
       half_time_squared = time_remaining * time_remaining / 2
@@ -86,7 +106,7 @@ hzz <- function(get_prec_product,
       dynamics$column <- get_prec_product(event_idx)
       dynamics$event_time <- event_time
       dynamics$event_idx = event_idx
-      dynamics$event_type = first_bounce$event_type
+      dynamics$event_type = event_type
       # update dynamics
       dynamics <- .update_dynamics(dynamics)
       # reflect velocity element
@@ -136,12 +156,12 @@ hzz <- function(get_prec_product,
 
 
 .update_dynamics <- function(dy) {
-  
   half_time_squared = dy$event_time ^ 2 / 2
   two_v1 = 2 * dy$velocity[dy$event_idx]
   
   dy$position <- dy$position + dy$event_time * dy$velocity
-  dy$momentum <- dy$momentum - dy$event_time * dy$gradient - half_time_squared * dy$action
+  dy$momentum <-
+    dy$momentum - dy$event_time * dy$gradient - half_time_squared * dy$action
   dy$gradient <- dy$gradient + dy$event_time * dy$action
   dy$action <- dy$action - two_v1 * dy$column
   

@@ -49,8 +49,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // getNextEvent
-Rcpp::List getNextEvent(SEXP sexp, NumericVector& position, NumericVector& velocity, NumericVector& action, NumericVector& gradient, NumericVector& momentum);
-RcppExport SEXP _hzz_getNextEvent(SEXP sexpSEXP, SEXP positionSEXP, SEXP velocitySEXP, SEXP actionSEXP, SEXP gradientSEXP, SEXP momentumSEXP) {
+Rcpp::List getNextEvent(SEXP sexp, NumericVector& position, NumericVector& velocity, NumericVector& action, NumericVector& logpdfGradient, NumericVector& momentum);
+RcppExport SEXP _hzz_getNextEvent(SEXP sexpSEXP, SEXP positionSEXP, SEXP velocitySEXP, SEXP actionSEXP, SEXP logpdfGradientSEXP, SEXP momentumSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -58,9 +58,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector& >::type position(positionSEXP);
     Rcpp::traits::input_parameter< NumericVector& >::type velocity(velocitySEXP);
     Rcpp::traits::input_parameter< NumericVector& >::type action(actionSEXP);
-    Rcpp::traits::input_parameter< NumericVector& >::type gradient(gradientSEXP);
+    Rcpp::traits::input_parameter< NumericVector& >::type logpdfGradient(logpdfGradientSEXP);
     Rcpp::traits::input_parameter< NumericVector& >::type momentum(momentumSEXP);
-    rcpp_result_gen = Rcpp::wrap(getNextEvent(sexp, position, velocity, action, gradient, momentum));
+    rcpp_result_gen = Rcpp::wrap(getNextEvent(sexp, position, velocity, action, logpdfGradient, momentum));
     return rcpp_result_gen;
 END_RCPP
 }

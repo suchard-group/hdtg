@@ -51,8 +51,13 @@ burnin = 20
 ```{r to profile}
 require(profvis)
 require(hzz)
-profvis({samples_2 = rcmg(n = 3, mean = mu, prec, constraits = rep(1, d), t = 100, burnin = 0, p0 = rep(0.1, d))})
+samples_2 = rcmg(n = 30, mean = mu, prec, constraits = rep(1, d), t = 1, burnin = 0, p0 = rep(0.1, d), cpp_flg = TRUE)
+
+samples_1 = rcmg(n = 30, mean = mu, prec, constraits = rep(1, d), t = 1, burnin = 0, p0 = rep(0.1, d), cpp_flg = FALSE)
+
+profvis({samples_2 = rcmg(n = 3, mean = mu, prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = rep(0.1, d), cpp_flg = F)})
 ```
+
 ```{r tmp test out things}
 t0 = proc.time()
 for (i in 1:1000000) {
@@ -69,7 +74,47 @@ for (i in 1:1000000) {
 }
 t1 = proc.time()
 cat(" it takes", t1[3] - t0[3], 'secs')
+```
 
+```{r debug rcpp}
+load_all()
+
+get_prec_product <- function (x) {
+  if (length(x) == 1){
+    return(prec[, x])
+  } else {
+    return(drop(prec %*% x))
+  }
+}
+
+# momentum <-
+#     (2 * (runif(d) > .5) - 1) * rexp(d, rate = 1)
+# position <- rep(0.1, d)
+# velocity <- sign(momentum)
+# gradient <- get_prec_product(position)
+# action <- get_prec_product(velocity)
+
+engine0 = hzz::createEngine(dimension = d, mask = rep(1, d), observed = rep(1, d), parameterSign = rep(1, d), flags = 1, info = 1, seed = 1)
+
+
+hzz::.get_next_bounce(
+  position,
+  velocity,
+  action,
+  gradient,
+  momentum,
+  constraits = rep(1, d)
+)
+
+engine = hzz::.getNextEvent(engine0$engine, position = position, velocity = velocity, action = action, logpdfGradient = - gradient, momentum = momentum)
+
+
+a = -59.9899 
+b = 0.0100908 
+c = 0.3293999 
+(-b - sqrt(b^2 - 4* a * c)) / (2 * a)
+
+hzz::
 ```
 
 

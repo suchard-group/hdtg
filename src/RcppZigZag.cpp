@@ -94,20 +94,31 @@ void doSomething(SEXP sexp,
   //ptr->doSomething(data.data(), data.size());
 }
 
-// [[Rcpp::export(.getNextEvent)]]
+// [[Rcpp::export(getNextEvent)]]
 Rcpp::List getNextEvent(SEXP sexp, 
                         NumericVector& position,
                         NumericVector& velocity,
                         NumericVector& action,
-                        NumericVector& gradient,
+                        NumericVector& logpdfGradient,
                         NumericVector& momentum) {
   
   auto ptr = parsePtr(sexp);
+  // Rcout << "action";
+  // Rf_PrintValue(action);
+  // Rcout << "\n";
+  // 
+  // Rcout << "logpdfGradient";
+  // Rf_PrintValue(logpdfGradient);
+  // Rcout << "\n";
+  // 
+  // Rcout << "momentum";
+  // Rf_PrintValue(momentum);
+  // Rcout << "\n";
   auto firstBounce =  ptr->getNextBounce(
     zz::DblSpan(position.begin(), position.end()),
     zz::DblSpan(velocity.begin(), velocity.end()),
     zz::DblSpan(action.begin(), action.end()),
-    zz::DblSpan(gradient.begin(), gradient.end()),
+    zz::DblSpan(logpdfGradient.begin(), logpdfGradient.end()),
     zz::DblSpan(momentum.begin(), momentum.end()));
   
   Rcpp::List list = Rcpp::List::create(

@@ -9,12 +9,13 @@
 #' @param p0 a d-dimensional vector of the initial value. It must satisfy all constraints. If not specified a random initial value will be used
 #' @param burnin the number of burn-in iterations
 #' @param t time length to simulate the Markov process
+#' @param cpp_flg 
 #'
 #' @return An n-by-d matrix where each row is a multivariate sample
 #' @export
 #'
 #' @examples rcmg(1,1,1,1,1)
-rcmg <- function(n, mean, prec, constraits, t, burnin, p0 = NULL) {
+rcmg <- function(n, mean, prec, constraits, t, burnin, p0 = NULL, cpp_flg = FALSE) {
   debug_flg = T
   stopifnot("n > burnin must be integers!" = (n %% 1 == 0 && burnin %% 1 == 0 && n > burnin))
   stopifnot("mean and prec must be numeric" = (is.numeric(mean) && is.numeric(prec)))
@@ -37,7 +38,7 @@ rcmg <- function(n, mean, prec, constraits, t, burnin, p0 = NULL) {
     momentum <-
       (2 * (runif(ndim) > .5) - 1) * rexp(ndim, rate = 1)
     t_jittered <- t
-    p0 <- hzz(get_prec_product, mean, p0, constraits, momentum, t_jittered)
+    p0 <- hzz(get_prec_product, mean, p0, constraits, momentum, t_jittered, cpp_flg)
     samples[, i] <- p0
     if (debug_flg) {
       cat('iteration', i, 'done \n')
@@ -45,3 +46,4 @@ rcmg <- function(n, mean, prec, constraits, t, burnin, p0 = NULL) {
   }
   return(samples)
 }
+

@@ -29,8 +29,8 @@ createEngine <- function(dimension, mask, observed, parameterSign, flags, info, 
     invisible(.Call(`_hzz_doSomething`, sexp, data))
 }
 
-.getNextEvent <- function(sexp, position, velocity, action, gradient, momentum) {
-    .Call(`_hzz_getNextEvent`, sexp, position, velocity, action, gradient, momentum)
+getNextEvent <- function(sexp, position, velocity, action, logpdfGradient, momentum) {
+    .Call(`_hzz_getNextEvent`, sexp, position, velocity, action, logpdfGradient, momentum)
 }
 
 .operate <- function(sexp, rCallback, position, velocity, action, gradient, momentum, time) {
