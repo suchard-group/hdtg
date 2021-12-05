@@ -29,7 +29,7 @@ require(coda)
 require(matrixcalc)
 require(clusterGeneration)
 
-d = 1000
+d = 10
 mu = rep(0, d)
 set.seed(666)
 cov_mat = rWishart(1, 2 * d, diag(d))[ , , 1]
@@ -51,11 +51,14 @@ burnin = 20
 ```{r to profile}
 require(profvis)
 require(hzz)
+require(tmvtnorm)
 samples_2 = rcmg(n = 30, mean = mu, prec, constraits = rep(1, d), t = 1, burnin = 0, p0 = rep(0.1, d), cpp_flg = TRUE)
 
 samples_1 = rcmg(n = 30, mean = mu, prec, constraits = rep(1, d), t = 1, burnin = 0, p0 = rep(0.1, d), cpp_flg = FALSE)
 
-profvis({samples_2 = rcmg(n = 3, mean = mu, prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = rep(0.1, d), cpp_flg = F)})
+profvis({samples_2 = rcmg(n = 3, mean = mu, prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = rep(0.1, d), cpp_flg = T)})
+
+tmvtnorm::rtmvnorm(n = 3, mean = mu, H = prec, lower = rep(0, d), upper = rep(Inf, d), algorithm="gibbs")
 ```
 
 ```{r tmp test out things}
@@ -87,14 +90,17 @@ get_prec_product <- function (x) {
   }
 }
 
-# momentum <-
-#     (2 * (runif(d) > .5) - 1) * rexp(d, rate = 1)
-# position <- rep(0.1, d)
-# velocity <- sign(momentum)
-# gradient <- get_prec_product(position)
-# action <- get_prec_product(velocity)
+momentum <-
+    (2 * (runif(d) > .5) - 1) * rexp(d, rate = 1)
+position <- rep(0.1, d)
+velocity <- sign(momentum)
+gradient <- get_prec_product(position)
+action <- get_prec_product(velocity)
 
-engine0 = hzz::createEngine(dimension = d, mask = rep(1, d), observed = rep(1, d), parameterSign = rep(1, d), flags = 1, info = 1, seed = 1)
+engine0 = hzz::createEngineR(dimension = d, mean = rep(0, d), covMatrix = cor_mat, parameterSign = rep(1, d), flags = 128, info = 1, seed = 1)
+
+first_bounce = hzz::getNextEvent(engine0$engine, position = position, velocity = velocity, action = action, logpdfGradient = - gradient, momentum = momentum)
+
 
 
 hzz::.get_next_bounce(
@@ -108,6 +114,8 @@ hzz::.get_next_bounce(
 
 engine = hzz::.getNextEvent(engine0$engine, position = position, velocity = velocity, action = action, logpdfGradient = - gradient, momentum = momentum)
 
+t = hzz::hzz_cpp(engine0$engine, mean = rep(0, d), covMatrix = cor_mat, position = position, velocity = velocity, action = action, logpdfGradient = - gradient, momentum = momentum, time = 1)
+       
 
 a = -59.9899 
 b = 0.0100908 
@@ -180,11 +188,13 @@ Okay I realize (from Botev's paper) tn works great for positive correlated dimen
 
 For a random correlation matrix (eg. from rWishart, it has very low acceptance probability. d = 200 is all right, but d = 300 I cannot get even one single sample.)
 
-Botev mentioned their methods can be 
+Botev mentioned their methods can be a step within a Gibbs sampler to speed it up.
 
 ### Package TruncatedNormal
 1. CS(0.9) d = 200, piece of cake; d = 500, 1000 iterations, 10 sec, gives min ESS 630, clearly beats tmv.
+
 Note: another pacakge "truncnorm" only works on MVN with independent dimensions.
+
 ```{r compare with package truncnorm}
 require(hzz)
 require(tmvtnorm)
@@ -205,22 +215,24 @@ require(magrittr)
 # 
 # plot(samples_tn[,1], samples_tn[,2])
 
-n_hzz = 100
+n_hzz = 1000
 t0 = proc.time()
-samples = rcmg(n = n_hzz, mean = mu, prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = rep(0.1, d))
+samples = rcmg(n = n_hzz, mean = mu, prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = rep(0.1, d), cpp_flg = T)
 t1 = proc.time()
 cat(n_hzz, "hzz samples with dimension", d, "takes", t1[3] - t0[3], 'secs', '\n')
 
-mcmc(t(samples), thin = 1) %>% effectiveSize() %>% summary()
+mcmc(samples, thin = 1) %>% effectiveSize() %>% summary()
+plot(ts(samples[1, ]))
+```
 
+```{r continued}
+n_tmv = 200000
+t0 = proc.time()
+samples_tmv <- tmvtnorm::rtmvnorm(n = n_tmv, mean = mu, H = prec, lower = rep(0, d), upper = rep(Inf, d), algorithm="gibbs")
+t1 = proc.time()
+cat(n_tmv, "tmvn samples with dimension", d, "takes", t1[3] - t0[3], 'secs')
 
-# n_tmv = 200000
-# t0 = proc.time()
-# samples_tmv <- tmvtnorm::rtmvnorm(n = n_tmv, mean = mu, H = prec, lower = rep(0, d), upper = rep(Inf, d), algorithm="gibbs")
-# t1 = proc.time()
-# cat(n_tmv, "tmvn samples with dimension", d, "takes", t1[3] - t0[3], 'secs')
-# 
-# mcmc(samples_tmv, thin = 1) %>% effectiveSize() %>% summary()
+mcmc(samples_tmv, thin = 1) %>% effectiveSize() %>% summary()
 # 
 # index <- sample(1:d, 1)
 # 

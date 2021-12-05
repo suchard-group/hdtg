@@ -12,6 +12,7 @@
 #include <cmath>
 
 #define TBB_PREVIEW_GLOBAL_CONTROL 1
+
 #include "tbb/parallel_reduce.h"
 #include "tbb/blocked_range.h"
 #include "tbb/parallel_for.h"
@@ -21,9 +22,11 @@
 #define TIMING
 
 #ifdef TIMING
+
 #include <map>
 #include <iomanip>
 #include "Timing.h"
+
 #endif // TIMING
 
 #include "threefry.h"
@@ -35,7 +38,7 @@
 
 namespace zz {
 
-    template <typename TypeInfo>
+    template<typename TypeInfo>
     class ZigZag : public AbstractZigZag {
     public:
         using RealType = typename TypeInfo::BaseType;
@@ -53,18 +56,18 @@ namespace zz {
                long flags,
                int nThreads,
                long seed) : AbstractZigZag(),
-                               dimension(dimension),
-                               mask(constructMask(rawMask, dimension, true)),
-                               observed(constructMask(rawObserved, dimension, true)),
-                               parameterSign(constructMask(rawParameterSign, dimension, false)),
-                               mmPosition(dimension),
-                               mmVelocity(dimension),
-                               mmAction(dimension),
-                               mmGradient(dimension),
-                               mmMomentum(dimension),
-                               flags(flags),
-                               nThreads(nThreads),
-                               seed(seed) {
+                            dimension(dimension),
+                            mask(constructMask(rawMask, dimension, true)),
+                            observed(constructMask(rawObserved, dimension, true)),
+                            parameterSign(constructMask(rawParameterSign, dimension, false)),
+                            mmPosition(dimension),
+                            mmVelocity(dimension),
+                            mmAction(dimension),
+                            mmGradient(dimension),
+                            mmMomentum(dimension),
+                            flags(flags),
+                            nThreads(nThreads),
+                            seed(seed) {
             std::cerr << "c'tor ZigZag" << std::endl;
 
             if (flags & zz::Flags::TBB) {
@@ -86,75 +89,75 @@ namespace zz {
         virtual ~ZigZag() {
 #ifdef TIMING
             std::cerr << std::endl;
-            for (auto& d : duration) {
+            for (auto &d: duration) {
                 std::cerr << d.first << " " << std::scientific <<
-                static_cast<double>(d.second) * 0.001 << std::endl;
+                          static_cast<double>(d.second) * 0.001 << std::endl;
             }
 #endif
         };
 
-        template <typename T>
+        template<typename T>
         struct Dynamics {
 
-            template <typename V, typename W>
-            Dynamics(V& position,
-                     V& velocity,
-                     V& action,
-                     V& gradient,
-                     V& momentum,
-                     const W& observed,
-                     const W& parameterSign) : position(position.data()),
-                                          velocity(velocity.data()),
-                                          action(action.data()),
-                                          gradient(gradient.data()),
-                                          momentum(momentum.data()),
-                                          observed(observed.data()),
-                                          parameterSign(parameterSign.data()),
-                                          column(nullptr) { }
+            template<typename V, typename W>
+            Dynamics(V &position,
+                     V &velocity,
+                     V &action,
+                     V &gradient,
+                     V &momentum,
+                     const W &observed,
+                     const W &parameterSign) : position(position.data()),
+                                               velocity(velocity.data()),
+                                               action(action.data()),
+                                               gradient(gradient.data()),
+                                               momentum(momentum.data()),
+                                               observed(observed.data()),
+                                               parameterSign(parameterSign.data()),
+                                               column(nullptr) {}
 
-            template <typename V, typename W>
-            Dynamics(V& position,
-                     V& velocity,
-                     V& action,
-                     V& gradient,
+            template<typename V, typename W>
+            Dynamics(V &position,
+                     V &velocity,
+                     V &action,
+                     V &gradient,
                      std::nullptr_t,
-                     const W& observed,
-                     const W& parameterSign) : position(position.data()),
-                                          velocity(velocity.data()),
-                                          action(action.data()),
-                                          gradient(gradient.data()),
-                                          momentum(nullptr),
-                                          observed(observed.data()),
-                                          parameterSign(parameterSign.data()),
-                                          column(nullptr) { }
+                     const W &observed,
+                     const W &parameterSign) : position(position.data()),
+                                               velocity(velocity.data()),
+                                               action(action.data()),
+                                               gradient(gradient.data()),
+                                               momentum(nullptr),
+                                               observed(observed.data()),
+                                               parameterSign(parameterSign.data()),
+                                               column(nullptr) {}
 
-            template <typename V, typename W>
-            Dynamics(V& position,
-                     V& velocity,
-                     V& action,
-                     V& gradient,
-                     V& momentum,
-                     const W& observed,
-                     const W& parameterSign,
-                     V& column) :position(position.data()),
+            template<typename V, typename W>
+            Dynamics(V &position,
+                     V &velocity,
+                     V &action,
+                     V &gradient,
+                     V &momentum,
+                     const W &observed,
+                     const W &parameterSign,
+                     V &column) :position(position.data()),
                                  velocity(velocity.data()),
                                  action(action.data()),
                                  gradient(gradient.data()),
                                  momentum(momentum.data()),
                                  observed(observed.data()),
                                  parameterSign(parameterSign.data()),
-                                 column(column.data()) { }
+                                 column(column.data()) {}
 
             ~Dynamics() = default;
 
-            T* position;
-            T* velocity;
-            T* action;
-            T* gradient;
-            T* momentum;
-            const T* observed;
-            const T* parameterSign;
-            T* column;
+            T *position;
+            T *velocity;
+            T *action;
+            T *gradient;
+            T *momentum;
+            const T *observed;
+            const T *parameterSign;
+            T *column;
         };
 
         double operate(DblSpan position,
@@ -163,10 +166,10 @@ namespace zz {
                        DblSpan gradient,
                        DblSpan momentum,
                        double time,
-                       PrecisionColumnCallback& precisionColumn) {
+                       double *covMat) {
 
             Dynamics<double> dynamics(position, velocity, action, gradient, momentum, observed, parameterSign);
-            return operateImpl(dynamics, time, precisionColumn);
+            return operateImpl(dynamics, time, covMat);
         }
 
         void innerBounce(DblSpan position,
@@ -189,12 +192,12 @@ namespace zz {
         }
 
         void updateDynamics(DblSpan position,
-                                    DblSpan velocity,
-                                    DblSpan action,
-                                    DblSpan gradient,
-                                    DblSpan momentum,
-                                    DblSpan column,
-                                    double time, int index) {
+                            DblSpan velocity,
+                            DblSpan action,
+                            DblSpan gradient,
+                            DblSpan momentum,
+                            DblSpan column,
+                            double time, int index) {
 
 #ifdef TIMING
             auto start = zz::chrono::steady_clock::now();
@@ -211,7 +214,7 @@ namespace zz {
         }
 
         template <typename T>
-        double operateImpl(Dynamics<T>& dynamics, double time, PrecisionColumnCallback& precisionColumn) {
+        double operateImpl(Dynamics<T>& dynamics, double time, double *covMat) {
 
 #ifdef TIMING
             auto start = zz::chrono::steady_clock::now();
@@ -223,7 +226,7 @@ namespace zz {
 
                 const auto firstBounce = getNextBounce(dynamics);
 
-                bounceState = doBounce(bounceState, firstBounce, dynamics, precisionColumn);
+                bounceState = doBounce(bounceState, firstBounce, dynamics);
             }
 
 #ifdef TIMING
@@ -256,20 +259,22 @@ namespace zz {
             return getNextBounce(
                     Dynamics<double>(mmPosition, mmVelocity, mmAction, mmGradient, mmMomentum, observed, parameterSign, dimension));
 #else
-            return getNextBounce(Dynamics<double>(position, velocity, action, gradient, momentum, observed, parameterSign));
+            return getNextBounce(
+                    Dynamics<double>(position, velocity, action, gradient, momentum, observed, parameterSign));
 #endif
         }
 
         MinTravelInfo getNextBounceIrreversible(DblSpan position,
-                                    DblSpan velocity,
-                                    DblSpan action,
-                                    DblSpan gradient) {
+                                                DblSpan velocity,
+                                                DblSpan action,
+                                                DblSpan gradient) {
 
-            return getNextBounceIrreversible(Dynamics<double>(position, velocity, action, gradient, nullptr, observed, parameterSign));
+            return getNextBounceIrreversible(
+                    Dynamics<double>(position, velocity, action, gradient, nullptr, observed, parameterSign));
         }
 
-        template <typename R>
-        MinTravelInfo getNextBounceIrreversible(const Dynamics<R>& dynamics) {
+        template<typename R>
+        MinTravelInfo getNextBounceIrreversible(const Dynamics<R> &dynamics) {
 
 #ifdef TIMING
             auto start = zz::chrono::steady_clock::now();
@@ -311,8 +316,8 @@ namespace zz {
             return travel;
         }
 
-        template <typename R>
-        MinTravelInfo getNextBounce(const Dynamics<R>& dynamics) {
+        template<typename R>
+        MinTravelInfo getNextBounce(const Dynamics<R> &dynamics) {
 
 #ifdef TIMING
             auto start = zz::chrono::steady_clock::now();
@@ -350,7 +355,7 @@ namespace zz {
             return travel;
         }
 
-        template <typename T, typename F, typename G>
+        template<typename T, typename F, typename G>
         inline T parallel_task_reduce(size_t begin, const size_t end, T sum, F transform, G reduce) {
 
 #if 0
@@ -362,9 +367,9 @@ namespace zz {
 #else
             return tbb::parallel_reduce(
                     tbb::blocked_range<size_t>(begin, end, (end - begin) / nThreads
-                            ),
+                    ),
                     sum,
-                    [transform, reduce](const tbb::blocked_range<size_t>& r, T sum) { // TODO Test &transform, &reduce
+                    [transform, reduce](const tbb::blocked_range<size_t> &r, T sum) { // TODO Test &transform, &reduce
                         return reduce(sum, transform(r.begin(), r.end()));
                     },
                     reduce
@@ -372,12 +377,12 @@ namespace zz {
 #endif
         }
 
-        template <typename F>
+        template<typename F>
         inline void parallel_task_for(size_t begin, const size_t end, F transform) {
 
             tbb::parallel_for(
                     tbb::blocked_range<size_t>(begin, end, (end - begin) / nThreads),
-                    [transform](const tbb::blocked_range<size_t>& r) {
+                    [transform](const tbb::blocked_range<size_t> &r) {
                         transform(r.begin(), r.end());
                     }
             );
@@ -387,9 +392,9 @@ namespace zz {
 
     private:
 
-        template <typename S, int SimdSize, typename R, typename I, typename Int>
+        template<typename S, int SimdSize, typename R, typename I, typename Int>
         MinTravelInfo vectorized_transform(Int i, const Int end,
-                                           const Dynamics<R>& dynamics, I result) {
+                                           const Dynamics<R> &dynamics, I result) {
 
             const auto *position = dynamics.position;
             const auto *velocity = dynamics.velocity;
@@ -399,7 +404,7 @@ namespace zz {
             const auto *observed = dynamics.observed;
             const auto *parameterSign = dynamics.parameterSign;
 
-            for ( ; i < end; i += SimdSize) {
+            for (; i < end; i += SimdSize) {
 
                 const auto boundaryTime = findBoundaryTime(
                         SimdHelper<S, R>::get(position + i),
@@ -412,8 +417,8 @@ namespace zz {
 
                 const auto gradientTime = minimumPositiveRoot(
                         -SimdHelper<S, R>::get(action + i) / 2,
-                         SimdHelper<S, R>::get(gradient + i),
-                         SimdHelper<S, R>::get(momentum + i)
+                        SimdHelper<S, R>::get(gradient + i),
+                        SimdHelper<S, R>::get(momentum + i)
                 );
 
                 reduce_min(result, gradientTime, i, BounceType::GRADIENT);
@@ -422,9 +427,9 @@ namespace zz {
             return horizontal_min(result);
         };
 
-        template <typename T>
-        void innerBounceImpl(Dynamics<T>& dynamics,
-                const T eventTime, const int eventIndex, const int eventType) {
+        template<typename T>
+        void innerBounceImpl(Dynamics<T> &dynamics,
+                             const T eventTime, const int eventIndex, const int eventType) {
 
             updatePosition<SimdType, SimdSize>(dynamics, eventTime);
             updateMomentum<SimdType, SimdSize>(dynamics, eventTime);
@@ -444,9 +449,9 @@ namespace zz {
         }
 
 
-        template <typename S, int Size, typename R>
-        void updateDynamicsImpl(Dynamics<R>& dynamics,
-                const R time, const int index) {
+        template<typename S, int Size, typename R>
+        void updateDynamicsImpl(Dynamics<R> &dynamics,
+                                const R time, const int index) {
 
             auto p = dynamics.position;
             auto v = dynamics.velocity;
@@ -461,7 +466,7 @@ namespace zz {
             const R twoV = 2 * v[index];
 
             auto scalar = [p, v, a, g, m, o, ps, c,
-                           time, halfTimeSquared, twoV](size_t i) {
+                    time, halfTimeSquared, twoV](size_t i) {
                 const R gi = g[i];
                 const R ai = a[i];
 
@@ -476,21 +481,21 @@ namespace zz {
             const S twoVS = S(twoV);
 
             auto simd = [p, v, a, g, m, o, ps, c,
-                         timeS, halfTimeSquaredS, twoVS](size_t i) {
-                const S gi = SimdHelper<S,R>::get(g + i);
-                const S ai = SimdHelper<S,R>::get(a + i);
+                    timeS, halfTimeSquaredS, twoVS](size_t i) {
+                const S gi = SimdHelper<S, R>::get(g + i);
+                const S ai = SimdHelper<S, R>::get(a + i);
 
-                SimdHelper<S,R>::put(
-                        SimdHelper<S,R>::get(p + i) + timeS * SimdHelper<S,R>::get(v + i),
+                SimdHelper<S, R>::put(
+                        SimdHelper<S, R>::get(p + i) + timeS * SimdHelper<S, R>::get(v + i),
                         p + i);
-                SimdHelper<S,R>::put(
-                        SimdHelper<S,R>::get(m + i) + timeS * gi - halfTimeSquaredS * ai,
+                SimdHelper<S, R>::put(
+                        SimdHelper<S, R>::get(m + i) + timeS * gi - halfTimeSquaredS * ai,
                         m + i);
-                SimdHelper<S,R>::put(
+                SimdHelper<S, R>::put(
                         gi - timeS * ai,
                         g + i);
-                SimdHelper<S,R>::put(
-                        ai - twoVS * SimdHelper<S,R>::get(c + i),
+                SimdHelper<S, R>::put(
+                        ai - twoVS * SimdHelper<S, R>::get(c + i),
                         a + i);
             };
 
@@ -498,7 +503,7 @@ namespace zz {
                 simd_for_each<Size>(size_t(0), dimension, simd, scalar);
             } else {
                 parallel_task_for(size_t(0), dimension,
-                                  [simd,scalar](size_t begin, size_t end) { // TODO &task?
+                                  [simd, scalar](size_t begin, size_t end) { // TODO &task?
                                       simd_for_each<Size>(begin, end, simd, scalar);
                                   });
             }
@@ -507,9 +512,8 @@ namespace zz {
         }
 
 
-        template <typename R>
-        BounceState doBounce(BounceState initialBounceState, MinTravelInfo firstBounce, Dynamics<R>& dynamics,
-                PrecisionColumnCallback& precisionColumn) {
+        template<typename R>
+        BounceState doBounce(BounceState initialBounceState, MinTravelInfo firstBounce, Dynamics<R> &dynamics) {
 
             double remainingTime = initialBounceState.time;
             double eventTime = firstBounce.time;
@@ -540,7 +544,7 @@ namespace zz {
 
                 reflectVelocity(dynamics, eventIndex);
                 updateGradient(dynamics, eventTime);
-                updateAction(dynamics, eventIndex, precisionColumn);
+                //updateAction(dynamics, eventIndex, precisionColumn); TODO: add back
 
                 finalBounceState = BounceState(eventType, eventIndex, remainingTime - eventTime);
             }
@@ -548,8 +552,8 @@ namespace zz {
             return finalBounceState;
         }
 
-        template <typename S, int Size, typename R>
-        inline void updatePosition(Dynamics<R>& dynamics, R time) {
+        template<typename S, int Size, typename R>
+        inline void updatePosition(Dynamics<R> &dynamics, R time) {
             auto position = dynamics.position;
             const auto velocity = dynamics.velocity;
 
@@ -558,9 +562,9 @@ namespace zz {
             };
 
             auto simd = [position, velocity, time](size_t i) {
-                SimdHelper<S,R>::put(
-                        SimdHelper<S,R>::get(position + i)
-                        + time * SimdHelper<S,R>::get(velocity + i),
+                SimdHelper<S, R>::put(
+                        SimdHelper<S, R>::get(position + i)
+                        + time * SimdHelper<S, R>::get(velocity + i),
                         position + i);
             };
 
@@ -568,14 +572,14 @@ namespace zz {
                 simd_for_each<Size>(size_t(0), dimension, simd, scalar);
             } else {
                 parallel_task_for(size_t(0), dimension,
-                                  [simd,scalar](size_t begin, size_t end) { // TODO &task?
+                                  [simd, scalar](size_t begin, size_t end) { // TODO &task?
                                       simd_for_each<Size>(begin, end, simd, scalar);
                                   });
             }
         }
 
-        template <typename S, int Size, typename R>
-        inline void updateMomentum(Dynamics<R>& dynamics, R time) {
+        template<typename S, int Size, typename R>
+        inline void updateMomentum(Dynamics<R> &dynamics, R time) {
             auto momentum = dynamics.momentum;
             const auto action = dynamics.action;
             const auto gradient = dynamics.gradient;
@@ -610,8 +614,8 @@ namespace zz {
             }
         }
 
-        template <typename R>
-        inline void updateAction(Dynamics<R>& dynamics, int index, PrecisionColumnCallback& callback) {
+        template<typename R>
+        inline void updateAction(Dynamics<R> &dynamics, int index, PrecisionColumnCallback &callback) {
             auto momentum = dynamics.momentum;
             const auto action = dynamics.action;
             const auto velocity = dynamics.velocity;
@@ -642,8 +646,8 @@ namespace zz {
             callback.releaseColumn();
         }
 
-        template <typename R>
-        inline void updateGradient(Dynamics<R>& dynamics, R time) {
+        template<typename R>
+        inline void updateGradient(Dynamics<R> &dynamics, R time) {
             const auto action = dynamics.action;
             auto gradient = dynamics.gradient;
 
@@ -661,8 +665,8 @@ namespace zz {
             }
         }
 
-        template <typename R>
-        static inline void reflectMomentum(Dynamics<R>& dynamics, int index) {
+        template<typename R>
+        static inline void reflectMomentum(Dynamics<R> &dynamics, int index) {
             auto position = dynamics.position;
             auto momentum = dynamics.momentum;
 
@@ -671,21 +675,21 @@ namespace zz {
 
         }
 
-        template <typename R>
-        static inline void setZeroMomentum(Dynamics<R>& dynamics, int index) {
+        template<typename R>
+        static inline void setZeroMomentum(Dynamics<R> &dynamics, int index) {
             auto momentum = dynamics.momentum;
 
             momentum[index] = R(0.0);
         }
 
-        template <typename R>
-        static inline void reflectVelocity(Dynamics<R>& dynamics, int index) {
+        template<typename R>
+        static inline void reflectVelocity(Dynamics<R> &dynamics, int index) {
             auto velocity = dynamics.velocity;
 
             velocity[index] = -velocity[index];
         }
 
-        template <int Size, typename I, typename FV, typename FS>
+        template<int Size, typename I, typename FV, typename FS>
         static inline void simd_for_each(I begin, const I end, FV vector, FS scalar) {
 
             if (Size > 1) { // TODO is this compile-time?
@@ -698,19 +702,19 @@ namespace zz {
                 }
             }
 
-            for ( ; begin < end; ++begin) {
+            for (; begin < end; ++begin) {
                 scalar(begin);
             }
         }
 
-        template <typename I, typename F>
+        template<typename I, typename F>
         static inline void vectorized_for_each(I begin, const I end, F function) {
-            for ( ; begin < end; ++begin) {
+            for (; begin < end; ++begin) {
                 function(begin);
             }
         }
 
-        static inline void reduce_min(MinTravelInfo& result,
+        static inline void reduce_min(MinTravelInfo &result,
                                       const double time, const int index, const int type) {
             if (time < result.time) {
                 result.time = time;
@@ -723,48 +727,54 @@ namespace zz {
             return result;
         }
 
-        static inline void reduce_min(DoubleSseMinTravelInfo& result,
-                const D2 time, const int index, const int type) {
+        static inline void reduce_min(DoubleSseMinTravelInfo &result,
+                                      const D2 time, const int index, const int type) {
             const auto lessThan = time < result.time;
             if (xsimd::any(lessThan)) {
                 result.time = select(lessThan, time, result.time);
                 const auto mask = _mm_castpd_si128(lessThan);
-                result.index = select(mask, makeSimdIndex<D2Index>(index), result.index); // TODO Merge into single register?
+                result.index = select(mask, makeSimdIndex<D2Index>(index),
+                                      result.index); // TODO Merge into single register?
                 result.type = select(mask, D2Index(type), result.type);
             }
         }
 
-        static inline void reduce_min(DoubleAvxMinTravelInfo& result, // TODO Remove code-dup with above
+        static inline void reduce_min(DoubleAvxMinTravelInfo &result, // TODO Remove code-dup with above
                                       const D4 time, const int index, const int type) {
             const auto lessThan = time < result.time;
             if (xsimd::any(lessThan)) {
                 result.time = select(lessThan, time, result.time);
                 const auto mask = _mm256_castpd_si256(lessThan);
-                result.index = select(mask, makeSimdIndex<D4Index>(index), result.index); // TODO Merge into single register?
+                result.index = select(mask, makeSimdIndex<D4Index>(index),
+                                      result.index); // TODO Merge into single register?
                 result.type = select(mask, D4Index(type), result.type);
             }
         }
 
         static inline MinTravelInfo horizontal_min(DoubleSseMinTravelInfo vector) {
             return (vector.time[0] < vector.time[1]) ?
-                MinTravelInfo(static_cast<int>(vector.type[0]), static_cast<int>(vector.index[0]), vector.time[0]) :
-                MinTravelInfo(static_cast<int>(vector.type[1]), static_cast<int>(vector.index[1]), vector.time[1]);
+                   MinTravelInfo(static_cast<int>(vector.type[0]), static_cast<int>(vector.index[0]), vector.time[0]) :
+                   MinTravelInfo(static_cast<int>(vector.type[1]), static_cast<int>(vector.index[1]), vector.time[1]);
         }
 
         static inline MinTravelInfo horizontal_min(DoubleAvxMinTravelInfo vector) {
 
-            auto const firstHalf =  (vector.time[0] < vector.time[1]) ?
-                                    MinTravelInfo(static_cast<int>(vector.type[0]), static_cast<int>(vector.index[0]), vector.time[0]) :
-                                    MinTravelInfo(static_cast<int>(vector.type[1]), static_cast<int>(vector.index[1]), vector.time[1]);
+            auto const firstHalf = (vector.time[0] < vector.time[1]) ?
+                                   MinTravelInfo(static_cast<int>(vector.type[0]), static_cast<int>(vector.index[0]),
+                                                 vector.time[0]) :
+                                   MinTravelInfo(static_cast<int>(vector.type[1]), static_cast<int>(vector.index[1]),
+                                                 vector.time[1]);
 
-            auto const secondHalf =  (vector.time[2] < vector.time[3]) ?
-                                    MinTravelInfo(static_cast<int>(vector.type[2]), static_cast<int>(vector.index[2]), vector.time[2]) :
-                                    MinTravelInfo(static_cast<int>(vector.type[3]), static_cast<int>(vector.index[3]), vector.time[3]);
+            auto const secondHalf = (vector.time[2] < vector.time[3]) ?
+                                    MinTravelInfo(static_cast<int>(vector.type[2]), static_cast<int>(vector.index[2]),
+                                                  vector.time[2]) :
+                                    MinTravelInfo(static_cast<int>(vector.type[3]), static_cast<int>(vector.index[3]),
+                                                  vector.time[3]);
 
             return (firstHalf.time < secondHalf.time) ? firstHalf : secondHalf;
         }
 
-        template <typename T>
+        template<typename T>
         static inline T findBoundaryTime(const T position,
                                          const T velocity,
                                          const T observed,
@@ -775,7 +785,7 @@ namespace zz {
                           infinity<T>());
         }
 
-        template <typename T>
+        template<typename T>
         static inline auto headingTowardsBoundary(const T parameterSign,
                                                   const T velocity,
                                                   const T observed)
@@ -783,7 +793,7 @@ namespace zz {
             return parameterSign * velocity * observed < T(0.0);
         }
 
-        template <typename T>
+        template<typename T>
         static inline T minimumPositiveRoot(const T a, const T b, const T c) {
 
             const auto discriminant = b * b - 4 * a * c;
@@ -851,7 +861,7 @@ namespace zz {
         std::vector<sitmo::threefry_20_64> rng;
 
 #ifdef TIMING
-	std::map<std::string,long long> duration;
+        std::map<std::string, long long> duration;
 #endif
     };
 
@@ -881,29 +891,53 @@ namespace zz {
 //    };
 
 
-std::unique_ptr<zz::AbstractZigZag> dispatch(
-    int dimension,
-    double *rawMask,
-    double *rawObserved,
-    double *rawParameterSign,
-    long flags,
-    int info,
-    long seed) {
-  
-  if (static_cast<unsigned long>(flags) & zz::Flags::AVX) {
-    std::cerr << "Factory: AVX" << std::endl;
-    return zz::make_unique<zz::ZigZag<zz::DoubleAvxTypeInfo>>(
-      dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed);
-  } else if (static_cast<unsigned long>(flags) & zz::Flags::SSE) {
-    std::cerr << "Factory: SSE" << std::endl;
-    return zz::make_unique<zz::ZigZag<zz::DoubleSseTypeInfo>>(
-      dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed);
-  } else {
-    std::cerr << "Factory: No SIMD" << std::endl;
-    return zz::make_unique<zz::ZigZag<zz::DoubleNoSimdTypeInfo>>(
-      dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed);
-  }
-}
+    std::unique_ptr<zz::AbstractZigZag> dispatchR(
+            int dimension,
+            double *mean,
+            double *covMatrix,
+            double *rawParameterSign,
+            long flags,
+            int info,
+            long seed) {
+
+        if (static_cast<unsigned long>(flags) & zz::Flags::AVX) {
+            std::cerr << "Factory: AVX" << std::endl;
+            return zz::make_unique<zz::ZigZag<zz::DoubleAvxTypeInfo>>(
+                    dimension, mean, covMatrix, rawParameterSign, flags, info, seed);
+        } else if (static_cast<unsigned long>(flags) & zz::Flags::SSE) {
+            std::cerr << "Factory: SSE" << std::endl;
+            return zz::make_unique<zz::ZigZag<zz::DoubleSseTypeInfo>>(
+                    dimension, mean, covMatrix, rawParameterSign, flags, info, seed);
+        } else {
+            std::cerr << "Factory: No SIMD" << std::endl;
+            return zz::make_unique<zz::ZigZag<zz::DoubleNoSimdTypeInfo>>(
+                    dimension, mean, covMatrix, rawParameterSign, flags, info, seed);
+        }
+    }
+
+    std::unique_ptr<zz::AbstractZigZag> dispatch(
+            int dimension,
+            double *rawMask,
+            double *rawObserved,
+            double *rawParameterSign,
+            long flags,
+            int info,
+            long seed) {
+
+        if (static_cast<unsigned long>(flags) & zz::Flags::AVX) {
+            std::cerr << "Factory: AVX" << std::endl;
+            return zz::make_unique<zz::ZigZag<zz::DoubleAvxTypeInfo>>(
+                    dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed);
+        } else if (static_cast<unsigned long>(flags) & zz::Flags::SSE) {
+            std::cerr << "Factory: SSE" << std::endl;
+            return zz::make_unique<zz::ZigZag<zz::DoubleSseTypeInfo>>(
+                    dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed);
+        } else {
+            std::cerr << "Factory: No SIMD" << std::endl;
+            return zz::make_unique<zz::ZigZag<zz::DoubleNoSimdTypeInfo>>(
+                    dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed);
+        }
+    }
 }
 
 #pragma clang diagnostic pop

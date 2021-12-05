@@ -59,23 +59,23 @@ ZigZagSharedPtr& parsePtr(SEXP sexp) {
 //' @return zigZag engine object.
 //'
 //' @export
-// [[Rcpp::export(createEngine)]]
-Rcpp::List createEngine(int dimension, 
-                        std::vector<double>& mask, 
-                        std::vector<double>& observed,
+// [[Rcpp::export(createEngineR)]]
+Rcpp::List createEngineR(int dimension, 
+                        std::vector<double>& mean, 
+                        std::vector<double>& covMatrix,
                         std::vector<double>& parameterSign,
                         long flags, long info, long seed) {
   
   auto zigZag = new ZigZagWrapper(
-    zz::dispatch(dimension, mask.data(), observed.data(), parameterSign.data(), flags, info, seed));
+    zz::dispatchR(dimension, mean.data(), covMatrix.data(), parameterSign.data(), flags, info, seed));
   
   XPtrZigZagWrapper engine(zigZag);
   
   Rcpp::List list = Rcpp::List::create(
     Rcpp::Named("engine") = engine,
     Rcpp::Named("dimension") = dimension,
-    Rcpp::Named("mask") = mask,
-    Rcpp::Named("observed") = observed,
+    Rcpp::Named("mean") = mean,
+    Rcpp::Named("covMatrix") = covMatrix,
  //   Rcpp::Named("dataInitialzied") = false,
 //    Rcpp::Named("locationsInitialized") = false,
  //   Rcpp::Named("threads") = threads,
@@ -161,15 +161,13 @@ private:
 
 // [[Rcpp::export(.operate)]]
 Rcpp::List operate(SEXP sexp,
-                   Function rCallback,
                    NumericVector& position,
                    NumericVector& velocity,
                    NumericVector& action,
                    NumericVector& gradient,
                    NumericVector& momentum,
+                   NumericVector& covMat,
                    double time) {
-
-  RCallback callback(rCallback);
 
   auto ptr = parsePtr(sexp);
   auto returnValue =  ptr->operate(
@@ -178,11 +176,46 @@ Rcpp::List operate(SEXP sexp,
     zz::DblSpan(action.begin(), action.end()),
     zz::DblSpan(gradient.begin(), gradient.end()),
     zz::DblSpan(momentum.begin(), momentum.end()),
-    time, callback);
+    time,
+    covMat)
+    );
 
   Rcpp::List list = Rcpp::List::create(
     Rcpp::Named("returnValue") = returnValue,
     Rcpp::Named("position") = position);
 
   return list;
+}
+
+// [[Rcpp::export(hzz_cpp)]]
+Rcpp::List hzz_cpp(SEXP sexp,
+                        NumericVector& mean,
+                        NumericMatrix& covMatrix,
+                        NumericVector& position,
+                        NumericVector& velocity,
+                        NumericVector& action,
+                        NumericVector& logpdfGradient,
+                        NumericVector& momentum,
+                        double time){
+  Rcpp::NumericVector t = 12;
+  int mat_size = covMatrix.size();
+  NumericMatrix::Column col = covMatrix( _ , 1);  
+  Rcout << mat_size;
+  for(int i = 0; i < 10; i++){
+    Rcout << col[i] << " ";
+  }
+  auto ptr = parsePtr(sexp);
+  auto firstBounce =  ptr->getNextBounce(
+    zz::DblSpan(col.begin(), col.end()),
+    zz::DblSpan(velocity.begin(), velocity.end()),
+    zz::DblSpan(action.begin(), action.end()),
+    zz::DblSpan(logpdfGradient.begin(), logpdfGradient.end()),
+    zz::DblSpan(momentum.begin(), momentum.end()));
+  
+  Rcpp::List list = Rcpp::List::create(
+    Rcpp::Named("type") = firstBounce.type,
+    Rcpp::Named("index") = firstBounce.index,
+    Rcpp::Named("time") = firstBounce.time);
+  
+  return list;  
 }
