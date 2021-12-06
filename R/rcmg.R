@@ -15,10 +15,14 @@
 #' @export
 #'
 #' @examples rcmg(1,1,1,1,1)
-rcmg <- function(n, mean, prec, constraits, t, burnin, p0 = NULL, cpp_flg = FALSE) {
+rcmg <- function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = NULL, cpp_flg = FALSE) {
   debug_flg = T
   stopifnot("n > burnin must be integers!" = (n %% 1 == 0 && burnin %% 1 == 0 && n > burnin))
   stopifnot("mean and prec must be numeric" = (is.numeric(mean) && is.numeric(prec)))
+  stopifnot("must provide either covariance or precision" = (!is.null(cov) || !is.null(prec)))
+  if (is.null(cov)){
+    cov <- solve(prec)
+  }
   # TODO add other checks for arguments. all dimensions must match.
   
   ndim = length(mean)
@@ -38,7 +42,7 @@ rcmg <- function(n, mean, prec, constraits, t, burnin, p0 = NULL, cpp_flg = FALS
     momentum <-
       (2 * (runif(ndim) > .5) - 1) * rexp(ndim, rate = 1)
     t_jittered <- t
-    p0 <- hzz(get_prec_product, mean, p0, constraits, momentum, t_jittered, cpp_flg)
+    p0 <- hzz(get_prec_product, mean, cov, p0, constraits, momentum, t_jittered, cpp_flg)
     samples[, i] <- p0
     if (debug_flg) {
       cat('iteration', i, 'done \n')

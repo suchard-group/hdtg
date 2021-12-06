@@ -159,15 +159,15 @@ private:
   NumericVector result;
 };
 
-// [[Rcpp::export(.operate)]]
-Rcpp::List operate(SEXP sexp,
+// [[Rcpp::export(.oneIteration)]]
+Rcpp::List oneIteration(SEXP sexp,
                    NumericVector& position,
                    NumericVector& velocity,
                    NumericVector& action,
                    NumericVector& gradient,
                    NumericVector& momentum,
-                   NumericVector& covMat,
-                   double time) {
+                   double time,
+                   NumericMatrix& precision) {
 
   auto ptr = parsePtr(sexp);
   auto returnValue =  ptr->operate(
@@ -177,7 +177,7 @@ Rcpp::List operate(SEXP sexp,
     zz::DblSpan(gradient.begin(), gradient.end()),
     zz::DblSpan(momentum.begin(), momentum.end()),
     time,
-    covMat)
+    zz::DblSpan(precision.begin(), precision.end())
     );
 
   Rcpp::List list = Rcpp::List::create(
@@ -187,35 +187,41 @@ Rcpp::List operate(SEXP sexp,
   return list;
 }
 
-// [[Rcpp::export(hzz_cpp)]]
-Rcpp::List hzz_cpp(SEXP sexp,
-                        NumericVector& mean,
-                        NumericMatrix& covMatrix,
-                        NumericVector& position,
-                        NumericVector& velocity,
-                        NumericVector& action,
-                        NumericVector& logpdfGradient,
-                        NumericVector& momentum,
-                        double time){
-  Rcpp::NumericVector t = 12;
-  int mat_size = covMatrix.size();
-  NumericMatrix::Column col = covMatrix( _ , 1);  
-  Rcout << mat_size;
-  for(int i = 0; i < 10; i++){
-    Rcout << col[i] << " ";
-  }
-  auto ptr = parsePtr(sexp);
-  auto firstBounce =  ptr->getNextBounce(
-    zz::DblSpan(col.begin(), col.end()),
-    zz::DblSpan(velocity.begin(), velocity.end()),
-    zz::DblSpan(action.begin(), action.end()),
-    zz::DblSpan(logpdfGradient.begin(), logpdfGradient.end()),
-    zz::DblSpan(momentum.begin(), momentum.end()));
-  
-  Rcpp::List list = Rcpp::List::create(
-    Rcpp::Named("type") = firstBounce.type,
-    Rcpp::Named("index") = firstBounce.index,
-    Rcpp::Named("time") = firstBounce.time);
-  
-  return list;  
-}
+// // [[Rcpp::export(hzz_cpp)]]
+// Rcpp::List hzz_cpp(SEXP sexp, double time){
+//   
+//   auto ptr = parsePtr(sexp);
+//   // Rcout << "action";
+//   // Rf_PrintValue(action);
+//   // Rcout << "\n";
+//   // 
+//   // Rcout << "logpdfGradient";
+//   // Rf_PrintValue(logpdfGradient);
+//   // Rcout << "\n";
+//   // 
+//   // Rcout << "momentum";
+//   // Rf_PrintValue(momentum);
+//   // Rcout << "\n";
+// 
+//   Rcpp::NumericVector t = 12;
+//   int mat_size = covMatrix.size();
+//   NumericMatrix::Column col = covMatrix( _ , 1);  
+//   Rcout << mat_size;
+//   for(int i = 0; i < 10; i++){
+//     Rcout << col[i] << " ";
+//   }
+//   auto ptr = parsePtr(sexp);
+//   auto firstBounce =  ptr->getNextBounce(
+//     zz::DblSpan(col.begin(), col.end()),
+//     zz::DblSpan(velocity.begin(), velocity.end()),
+//     zz::DblSpan(action.begin(), action.end()),
+//     zz::DblSpan(logpdfGradient.begin(), logpdfGradient.end()),
+//     zz::DblSpan(momentum.begin(), momentum.end()));
+//   
+//   Rcpp::List list = Rcpp::List::create(
+//     Rcpp::Named("type") = firstBounce.type,
+//     Rcpp::Named("index") = firstBounce.index,
+//     Rcpp::Named("time") = firstBounce.time);
+//   
+//   return list;  
+// }

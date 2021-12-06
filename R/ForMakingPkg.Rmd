@@ -35,7 +35,7 @@ set.seed(666)
 cov_mat = rWishart(1, 2 * d, diag(d))[ , , 1]
 cor_mat = cov2cor(cov_mat)
 # rcorrmatrix(d, alphad = 1) # from the lkj prior. runs slow though.
-cor_mat = CSgenerate(d, 0.99)
+cor_mat = CSgenerate(d, 0.9)
 prec = solve(cor_mat)
 
 #cor_mat = diag(d)
@@ -56,7 +56,7 @@ samples_2 = rcmg(n = 30, mean = mu, prec, constraits = rep(1, d), t = 1, burnin 
 
 samples_1 = rcmg(n = 30, mean = mu, prec, constraits = rep(1, d), t = 1, burnin = 0, p0 = rep(0.1, d), cpp_flg = FALSE)
 
-profvis({samples_2 = rcmg(n = 3, mean = mu, prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = rep(0.1, d), cpp_flg = T)})
+profvis({samples_2 = rcmg(n = 3, mean = mu, prec = prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = rep(0.1, d), cpp_flg = T)})
 
 tmvtnorm::rtmvnorm(n = 3, mean = mu, H = prec, lower = rep(0, d), upper = rep(Inf, d), algorithm="gibbs")
 ```
@@ -114,8 +114,16 @@ hzz::.get_next_bounce(
 
 engine = hzz::.getNextEvent(engine0$engine, position = position, velocity = velocity, action = action, logpdfGradient = - gradient, momentum = momentum)
 
-t = hzz::hzz_cpp(engine0$engine, mean = rep(0, d), covMatrix = cor_mat, position = position, velocity = velocity, action = action, logpdfGradient = - gradient, momentum = momentum, time = 1)
-       
+t = hzz::.oneIteration(engine0$engine, position = position, velocity = velocity, action = action, gradient = - gradient, momentum = momentum, time = 1, precision = prec)
+
+Rcpp::List oneIteration(SEXP sexp,
+                   NumericVector& position,
+                   NumericVector& velocity,
+                   NumericVector& action,
+                   NumericVector& gradient,
+                   NumericVector& momentum,
+                   double time,
+                   NumericMatrix& precision
 
 a = -59.9899 
 b = 0.0100908 

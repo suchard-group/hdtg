@@ -30,7 +30,6 @@
 #endif // TIMING
 
 #include "threefry.h"
-
 //#include "dr_evomodel_operators_NativeZigZag.h"
 #include "MemoryManagement.hpp"
 #include "Simd.hpp"
@@ -166,10 +165,10 @@ namespace zz {
                        DblSpan gradient,
                        DblSpan momentum,
                        double time,
-                       double *covMat) {
+                       DblSpan precisionMat) {
 
             Dynamics<double> dynamics(position, velocity, action, gradient, momentum, observed, parameterSign);
-            return operateImpl(dynamics, time, covMat);
+            return operateImpl(dynamics, time, precisionMat);
         }
 
         void innerBounce(DblSpan position,
@@ -213,8 +212,8 @@ namespace zz {
 #endif
         }
 
-        template <typename T>
-        double operateImpl(Dynamics<T>& dynamics, double time, double *covMat) {
+        template<typename T>
+        double operateImpl(Dynamics<T> &dynamics, double time, DblSpan precisionMat) {
 
 #ifdef TIMING
             auto start = zz::chrono::steady_clock::now();
@@ -226,7 +225,7 @@ namespace zz {
 
                 const auto firstBounce = getNextBounce(dynamics);
 
-                bounceState = doBounce(bounceState, firstBounce, dynamics);
+                bounceState = doBounce(bounceState, firstBounce, dynamics, precisionMat);
             }
 
 #ifdef TIMING
@@ -513,7 +512,8 @@ namespace zz {
 
 
         template<typename R>
-        BounceState doBounce(BounceState initialBounceState, MinTravelInfo firstBounce, Dynamics<R> &dynamics) {
+        BounceState doBounce(BounceState initialBounceState, MinTravelInfo firstBounce, Dynamics<R> &dynamics,
+                             const DblSpan precisionMat) {
 
             double remainingTime = initialBounceState.time;
             double eventTime = firstBounce.time;
@@ -531,6 +531,10 @@ namespace zz {
 
                 const int eventType = firstBounce.type;
                 const int eventIndex = firstBounce.index;
+                DblSpan precisionColumn = precisionMat.subspan(1, 10);
+                for(const auto &e : precisionColumn) {
+                    std::cout << e << ' ';
+                }
 
                 if (eventType == BounceType::BOUNDARY) {
 
@@ -544,7 +548,7 @@ namespace zz {
 
                 reflectVelocity(dynamics, eventIndex);
                 updateGradient(dynamics, eventTime);
-                //updateAction(dynamics, eventIndex, precisionColumn); TODO: add back
+                updateAction(dynamics, eventIndex, precisionColumn);
 
                 finalBounceState = BounceState(eventType, eventIndex, remainingTime - eventTime);
             }
@@ -615,7 +619,7 @@ namespace zz {
         }
 
         template<typename R>
-        inline void updateAction(Dynamics<R> &dynamics, int index, PrecisionColumnCallback &callback) {
+        inline void updateAction(Dynamics<R> &dynamics, int index, const DblSpan precCol) {
             auto momentum = dynamics.momentum;
             const auto action = dynamics.action;
             const auto velocity = dynamics.velocity;
@@ -625,7 +629,7 @@ namespace zz {
             auto start = zz::chrono::steady_clock::now();
 #endif
 
-            const auto column = callback.getColumn(index);
+            //const auto column = callback.getColumn(index);
 
 #ifdef TIMING
             auto end = zz::chrono::steady_clock::now();
@@ -636,14 +640,12 @@ namespace zz {
 
             if (mask.size() > 0) {
                 vectorized_for_each(size_t(0), dimension,
-                                    [action, column, mk, twoV](size_t i) {
-                                        action[i] = mk[i] * (action[i] + twoV * column[i]);
+                                    [action, precCol, mk, twoV](size_t i) {
+                                        action[i] = mk[i] * (action[i] + twoV * precCol[i]);
                                     });
             } else {
                 exit(-1); // TODO Implement
             }
-
-            callback.releaseColumn();
         }
 
         template<typename R>

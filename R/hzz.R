@@ -13,6 +13,7 @@
 #' @examples
 hzz <- function(get_prec_product,
                 mean,
+                cov,
                 position,
                 constraits,
                 momentum,
@@ -40,7 +41,7 @@ hzz <- function(get_prec_product,
     )
   
   if (cpp_flg) {
-    engine = createEngine(dimension = ndim, mask = rep(1, ndim), observed = rep(1, ndim), parameterSign = constraits, flags = 128, info = 1, seed = 1)
+    engine = createEngineR(dimension = ndim, mean = mean, covMatrix = cov, parameterSign = constraits, flags = 128, info = 1, seed = 1)
   }
   
   time_remaining <- t
