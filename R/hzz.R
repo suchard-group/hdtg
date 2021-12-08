@@ -13,7 +13,7 @@
 #' @examples
 hzz <- function(get_prec_product,
                 mean,
-                cov,
+                prec,
                 position,
                 constraits,
                 momentum,
@@ -41,14 +41,12 @@ hzz <- function(get_prec_product,
     )
   
   if (cpp_flg) {
-    engine = createEngineR(dimension = ndim, mean = mean, covMatrix = cov, parameterSign = constraits, flags = 128, info = 1, seed = 1)
-  }
-  
-  time_remaining <- t
-  while (time_remaining > 0) {
-    if (cpp_flg) {
-      first_bounce <- getNextEvent(engine$engine, position = dynamics$position, velocity = dynamics$velocity, action = dynamics$action, logpdfGradient = - dynamics$gradient, momentum = dynamics$momentum)
-    } else {
+    engine = createEngine(dimension = ndim, mask = rep(1, ndim), observed = rep(1, ndim), parameterSign = constraits, flags = 128, info = 1, seed = 1)
+    res = .oneIteration(sexp = engine$engine, position = position, velocity = velocity, action = action, gradient = - gradient, momentum = momentum, time = t, precision = prec, dimension = ndim)
+    return(res$position)
+  } else {
+    time_remaining <- t
+    while (time_remaining > 0) {
       first_bounce <-
         .get_next_bounce(
           dynamics$position,
@@ -58,74 +56,57 @@ hzz <- function(get_prec_product,
           dynamics$momentum,
           constraits
         )
-    }
-    
-    if (cpp_flg){
-      event_time <- first_bounce$time
-      event_idx <- first_bounce$index + 1
-      event_type <- ifelse(first_bounce$type == 1, 'boundary', 'gradient')
-    } else {
+      
       event_time <- first_bounce$t_event
       event_idx <- first_bounce$index
       event_type <- first_bounce$event_type
-    }
-
-    if (debug_flg) {
-      print(paste("event time", paste(event_time, collapse = " ")))
-      print(paste("event type", paste(event_type, collapse = " ")))
-      print(paste("position", paste(dynamics$position, collapse = " ")))
-      print(paste("momentun", paste(dynamics$momentum, collapse = " ")))
-      print(paste("gradient", paste(dynamics$gradient, collapse = " ")))
-      print(paste("action", paste(dynamics$action, collapse = " ")))
-      cat("\n")
-    }
-    
-    if (time_remaining < event_time) {
-      # No event during remaining time
       
-      # update position
-      dynamics$position <-
-        dynamics$position + time_remaining * dynamics$velocity
-      # update momentum
-      # TODO: this update of momentum is only necessary when using NUTS
-      half_time_squared = time_remaining * time_remaining / 2
-      dynamics$momentum <-
-        dynamics$momentum - time_remaining * dynamics$gradient - half_time_squared * dynamics$action
       
-      time_remaining <- 0
-    } else {
-      # dynamics <-
-      #   modifyList(
-      #     dynamics,
-      #     list(
-      #       column = get_prec_product(event_idx),
-      #       event_time = event_time,
-      #       event_idx = event_idx,
-      #       event_type = first_bounce$event_type
-      #     )
-      #   )
-      dynamics$column <- get_prec_product(event_idx)
-      dynamics$event_time <- event_time
-      dynamics$event_idx = event_idx
-      dynamics$event_type = event_type
-      # update dynamics
-      dynamics <- .update_dynamics(dynamics)
-      # reflect velocity element
-      dynamics$velocity[event_idx] <- -dynamics$velocity[event_idx]
-      time_remaining <- time_remaining - event_time
+      if (debug_flg) {
+        print(paste("event time", paste(event_time, collapse = " ")))
+        print(paste("event type", paste(event_type, collapse = " ")))
+        print(paste("position", paste(dynamics$position, collapse = " ")))
+        print(paste("momentun", paste(dynamics$momentum, collapse = " ")))
+        print(paste("gradient", paste(dynamics$gradient, collapse = " ")))
+        print(paste("action", paste(dynamics$action, collapse = " ")))
+        cat("\n")
+      }
+      
+      if (time_remaining < event_time) {
+        # No event during remaining time
+        # update position
+        dynamics$position <-
+          dynamics$position + time_remaining * dynamics$velocity
+        # update momentum
+        # TODO: this update of momentum is only necessary when using NUTS
+        half_time_squared = time_remaining * time_remaining / 2
+        dynamics$momentum <-
+          dynamics$momentum - time_remaining * dynamics$gradient - half_time_squared * dynamics$action
+        
+        time_remaining <- 0
+      } else {
+        dynamics$column <- get_prec_product(event_idx)
+        dynamics$event_time <- event_time
+        dynamics$event_idx = event_idx
+        dynamics$event_type = event_type
+        # update dynamics
+        dynamics <- .update_dynamics(dynamics)
+        # reflect velocity element
+        dynamics$velocity[event_idx] <- -dynamics$velocity[event_idx]
+        time_remaining <- time_remaining - event_time
+      }
+      if (debug_flg) {
+        print("after update")
+        print(paste("position", paste(dynamics$position, collapse = " ")))
+        print(paste("momentun", paste(dynamics$momentum, collapse = " ")))
+        print(paste("gradient", paste(dynamics$gradient, collapse = " ")))
+        print(paste("action", paste(dynamics$action, collapse = " ")))
+        cat("**************************")
+        cat("\n")
+      }
     }
-    if (debug_flg) {
-      print("after update")
-      print(paste("position", paste(dynamics$position, collapse = " ")))
-      print(paste("momentun", paste(dynamics$momentum, collapse = " ")))
-      print(paste("gradient", paste(dynamics$gradient, collapse = " ")))
-      print(paste("action", paste(dynamics$action, collapse = " ")))
-      cat("**************************")
-      cat("\n")
-    }
+    return(dynamics$position)
   }
-  
-  return(dynamics$position)
 }
 
 

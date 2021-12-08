@@ -20,20 +20,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// createEngineR
-Rcpp::List createEngineR(int dimension, std::vector<double>& mean, std::vector<double>& covMatrix, std::vector<double>& parameterSign, long flags, long info, long seed);
-RcppExport SEXP _hzz_createEngineR(SEXP dimensionSEXP, SEXP meanSEXP, SEXP covMatrixSEXP, SEXP parameterSignSEXP, SEXP flagsSEXP, SEXP infoSEXP, SEXP seedSEXP) {
+// createEngine
+Rcpp::List createEngine(int dimension, std::vector<double>& mask, std::vector<double>& observed, std::vector<double>& parameterSign, long flags, long info, long seed);
+RcppExport SEXP _hzz_createEngine(SEXP dimensionSEXP, SEXP maskSEXP, SEXP observedSEXP, SEXP parameterSignSEXP, SEXP flagsSEXP, SEXP infoSEXP, SEXP seedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type dimension(dimensionSEXP);
-    Rcpp::traits::input_parameter< std::vector<double>& >::type mean(meanSEXP);
-    Rcpp::traits::input_parameter< std::vector<double>& >::type covMatrix(covMatrixSEXP);
+    Rcpp::traits::input_parameter< std::vector<double>& >::type mask(maskSEXP);
+    Rcpp::traits::input_parameter< std::vector<double>& >::type observed(observedSEXP);
     Rcpp::traits::input_parameter< std::vector<double>& >::type parameterSign(parameterSignSEXP);
     Rcpp::traits::input_parameter< long >::type flags(flagsSEXP);
     Rcpp::traits::input_parameter< long >::type info(infoSEXP);
     Rcpp::traits::input_parameter< long >::type seed(seedSEXP);
-    rcpp_result_gen = Rcpp::wrap(createEngineR(dimension, mean, covMatrix, parameterSign, flags, info, seed));
+    rcpp_result_gen = Rcpp::wrap(createEngine(dimension, mask, observed, parameterSign, flags, info, seed));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -65,8 +65,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // oneIteration
-Rcpp::List oneIteration(SEXP sexp, NumericVector& position, NumericVector& velocity, NumericVector& action, NumericVector& gradient, NumericVector& momentum, double time, NumericMatrix& precision);
-RcppExport SEXP _hzz_oneIteration(SEXP sexpSEXP, SEXP positionSEXP, SEXP velocitySEXP, SEXP actionSEXP, SEXP gradientSEXP, SEXP momentumSEXP, SEXP timeSEXP, SEXP precisionSEXP) {
+Rcpp::List oneIteration(SEXP sexp, NumericVector& position, NumericVector& velocity, NumericVector& action, NumericVector& gradient, NumericVector& momentum, double time, NumericMatrix& precision, int dimension);
+RcppExport SEXP _hzz_oneIteration(SEXP sexpSEXP, SEXP positionSEXP, SEXP velocitySEXP, SEXP actionSEXP, SEXP gradientSEXP, SEXP momentumSEXP, SEXP timeSEXP, SEXP precisionSEXP, SEXP dimensionSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -78,17 +78,18 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector& >::type momentum(momentumSEXP);
     Rcpp::traits::input_parameter< double >::type time(timeSEXP);
     Rcpp::traits::input_parameter< NumericMatrix& >::type precision(precisionSEXP);
-    rcpp_result_gen = Rcpp::wrap(oneIteration(sexp, position, velocity, action, gradient, momentum, time, precision));
+    Rcpp::traits::input_parameter< int >::type dimension(dimensionSEXP);
+    rcpp_result_gen = Rcpp::wrap(oneIteration(sexp, position, velocity, action, gradient, momentum, time, precision, dimension));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_hzz_rcpp_hello_world", (DL_FUNC) &_hzz_rcpp_hello_world, 0},
-    {"_hzz_createEngineR", (DL_FUNC) &_hzz_createEngineR, 7},
+    {"_hzz_createEngine", (DL_FUNC) &_hzz_createEngine, 7},
     {"_hzz_doSomething", (DL_FUNC) &_hzz_doSomething, 2},
     {"_hzz_getNextEvent", (DL_FUNC) &_hzz_getNextEvent, 6},
-    {"_hzz_oneIteration", (DL_FUNC) &_hzz_oneIteration, 8},
+    {"_hzz_oneIteration", (DL_FUNC) &_hzz_oneIteration, 9},
     {NULL, NULL, 0}
 };
 

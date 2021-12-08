@@ -23,19 +23,19 @@ document()
 ```
 
 ```{r prepare inputs}
-require(MixMatrix)
+#require(MixMatrix)
 require(magrittr)
-require(coda)
-require(matrixcalc)
-require(clusterGeneration)
+#require(coda)
+#require(matrixcalc)
+#require(clusterGeneration)
 
-d = 10
+d = 200
 mu = rep(0, d)
 set.seed(666)
 cov_mat = rWishart(1, 2 * d, diag(d))[ , , 1]
 cor_mat = cov2cor(cov_mat)
 # rcorrmatrix(d, alphad = 1) # from the lkj prior. runs slow though.
-cor_mat = CSgenerate(d, 0.9)
+# cor_mat = CSgenerate(d, 0.9)
 prec = solve(cor_mat)
 
 #cor_mat = diag(d)
@@ -52,31 +52,32 @@ burnin = 20
 require(profvis)
 require(hzz)
 require(tmvtnorm)
-samples_2 = rcmg(n = 30, mean = mu, prec, constraits = rep(1, d), t = 1, burnin = 0, p0 = rep(0.1, d), cpp_flg = TRUE)
+set.seed(666)
+p0 <- runif(d, 0, 0.2)
 
+t0 = proc.time()
+
+samples_rcpp = rcmg(n = 10, mean = mu, prec = prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = p0, cpp_flg = T)
+t1 = proc.time()
+cat("cpp code takes", t1[3] - t0[3], 'secs')
+################################################################
+set.seed(666)
+p0 <- runif(d, 0, 0.2)
+t0 = proc.time()
+
+samples_r = rcmg(n = 10, mean = mu, prec = prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = p0, cpp_flg = F)
+
+t1 = proc.time()
+cat("r code takes", t1[3] - t0[3], 'secs')
+################################################################
+```
+
+```{r}
 samples_1 = rcmg(n = 30, mean = mu, prec, constraits = rep(1, d), t = 1, burnin = 0, p0 = rep(0.1, d), cpp_flg = FALSE)
 
 profvis({samples_2 = rcmg(n = 3, mean = mu, prec = prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = rep(0.1, d), cpp_flg = T)})
 
 tmvtnorm::rtmvnorm(n = 3, mean = mu, H = prec, lower = rep(0, d), upper = rep(Inf, d), algorithm="gibbs")
-```
-
-```{r tmp test out things}
-t0 = proc.time()
-for (i in 1:1000000) {
-  p = rep(Inf, 1000)
-}
-t1 = proc.time()
-cat(" it takes", t1[3] - t0[3], 'secs')
-
-
-t0 = proc.time()
-for (i in 1:1000000) {
-  p = vector(length = 1000)
-  p[] <- 0
-}
-t1 = proc.time()
-cat(" it takes", t1[3] - t0[3], 'secs')
 ```
 
 ```{r debug rcpp}
@@ -90,47 +91,26 @@ get_prec_product <- function (x) {
   }
 }
 
+set.seed(666)
+position <- runif(d, 0, 0.2)
+print(position)
+set.seed(666)
 momentum <-
     (2 * (runif(d) > .5) - 1) * rexp(d, rate = 1)
-position <- rep(0.1, d)
 velocity <- sign(momentum)
 gradient <- get_prec_product(position)
 action <- get_prec_product(velocity)
 
-engine0 = hzz::createEngineR(dimension = d, mean = rep(0, d), covMatrix = cor_mat, parameterSign = rep(1, d), flags = 128, info = 1, seed = 1)
+engine0 = hzz::createEngine(dimension = d, mask = rep(1, d), observed = rep(1, d), parameterSign = rep(1, d), flags = 1, info = 1, seed = 1)
 
-first_bounce = hzz::getNextEvent(engine0$engine, position = position, velocity = velocity, action = action, logpdfGradient = - gradient, momentum = momentum)
+t0 = proc.time()
 
+t = hzz::.oneIteration(sexp = engine0$engine, position = position, velocity = velocity, action = action, gradient = - gradient, momentum = momentum, time = 20, precision = prec, dimension = d)
 
+t1 = proc.time()
+cat("c++ code takes", t1[3] - t0[3], 'secs')
 
-hzz::.get_next_bounce(
-  position,
-  velocity,
-  action,
-  gradient,
-  momentum,
-  constraits = rep(1, d)
-)
-
-engine = hzz::.getNextEvent(engine0$engine, position = position, velocity = velocity, action = action, logpdfGradient = - gradient, momentum = momentum)
-
-t = hzz::.oneIteration(engine0$engine, position = position, velocity = velocity, action = action, gradient = - gradient, momentum = momentum, time = 1, precision = prec)
-
-Rcpp::List oneIteration(SEXP sexp,
-                   NumericVector& position,
-                   NumericVector& velocity,
-                   NumericVector& action,
-                   NumericVector& gradient,
-                   NumericVector& momentum,
-                   double time,
-                   NumericMatrix& precision
-
-a = -59.9899 
-b = 0.0100908 
-c = 0.3293999 
-(-b - sqrt(b^2 - 4* a * c)) / (2 * a)
-
-hzz::
+print(t)
 ```
 
 

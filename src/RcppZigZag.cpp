@@ -167,7 +167,8 @@ Rcpp::List oneIteration(SEXP sexp,
                    NumericVector& gradient,
                    NumericVector& momentum,
                    double time,
-                   NumericMatrix& precision) {
+                   NumericMatrix& precision,
+                   int dimension) {
 
   auto ptr = parsePtr(sexp);
   auto returnValue =  ptr->operate(
@@ -177,7 +178,8 @@ Rcpp::List oneIteration(SEXP sexp,
     zz::DblSpan(gradient.begin(), gradient.end()),
     zz::DblSpan(momentum.begin(), momentum.end()),
     time,
-    zz::DblSpan(precision.begin(), precision.end())
+    zz::DblSpan(precision.begin(), precision.end()),
+    dimension
     );
 
   Rcpp::List list = Rcpp::List::create(
