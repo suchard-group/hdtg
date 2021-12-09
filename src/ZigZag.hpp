@@ -54,7 +54,8 @@ namespace zz {
                double *rawParameterSign,
                long flags,
                int nThreads,
-               long seed) : AbstractZigZag(),
+               long seed,
+               DblSpan precision = DblSpan()) : AbstractZigZag(),
                             dimension(dimension),
                             mask(constructMask(rawMask, dimension, true)),
                             observed(constructMask(rawObserved, dimension, true)),
@@ -66,9 +67,15 @@ namespace zz {
                             mmMomentum(dimension),
                             flags(flags),
                             nThreads(nThreads),
-                            seed(seed) {
+                            seed(seed),
+                            fixedPrecision(precision){
             std::cerr << "c'tor ZigZag" << std::endl;
-
+            for (const auto &e: fixedPrecision) {
+                std::cout << e << ' ';
+            }
+            std::cout << '\n';
+            //std::cerr << "precision0 is " << fixedPrecision[0] << " p3 is " << fixedPrecision[3] << " p8 is " << fixedPrecision[8] << std::endl;
+            //fixedPrecision = precision;
             if (flags & zz::Flags::TBB) {
                 if (nThreads <= 0) {
                     nThreads = tbb::task_scheduler_init::default_num_threads();
@@ -541,7 +548,9 @@ namespace zz {
                 const int eventIndex = firstBounce.index;
                 //std::cerr << " event Index " << eventIndex << " event Type " << eventType << " event Time " << firstBounce.time << std::endl;
 
-                DblSpan precisionColumn = precisionMat.subspan(eventIndex * dimension, dimension);
+                //DblSpan precisionColumn = precisionMat.subspan(eventIndex * dimension, dimension);
+                DblSpan precisionColumn = fixedPrecision.subspan(eventIndex * dimension, dimension);
+
 //                for(const auto &e : precisionColumn) {
 //                    std::cout << e << ' ';
 //                }
@@ -865,6 +874,7 @@ namespace zz {
         mm::MemoryManager<double> mmGradient;
         mm::MemoryManager<double> mmMomentum;
 
+        DblSpan fixedPrecision;
         long flags;
         int nThreads;
         long seed;
@@ -910,20 +920,21 @@ namespace zz {
             double *rawParameterSign,
             long flags,
             int info,
-            long seed) {
+            long seed,
+            DblSpan precision=DblSpan()) {
 
         if (static_cast<unsigned long>(flags) & zz::Flags::AVX) {
             std::cerr << "Factory: AVX" << std::endl;
             return zz::make_unique<zz::ZigZag<zz::DoubleAvxTypeInfo>>(
-                    dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed);
+                    dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed, precision);
         } else if (static_cast<unsigned long>(flags) & zz::Flags::SSE) {
             std::cerr << "Factory: SSE" << std::endl;
             return zz::make_unique<zz::ZigZag<zz::DoubleSseTypeInfo>>(
-                    dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed);
+                    dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed, precision);
         } else {
             std::cerr << "Factory: No SIMD" << std::endl;
             return zz::make_unique<zz::ZigZag<zz::DoubleNoSimdTypeInfo>>(
-                    dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed);
+                    dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed, precision);
         }
     }
 }

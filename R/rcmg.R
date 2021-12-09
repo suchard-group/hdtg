@@ -36,12 +36,19 @@ rcmg <- function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = N
   samples <- array(0, c(ndim, n))
   set.seed(random_seed)
 
+  if (cpp_flg) {
+    engine <- createEngine(dimension = ndim, mask = rep(1, ndim), observed = rep(1, ndim), parameterSign = constraits, flags = 128, info = 1, seed = 1, precision = prec)
+  } else {
+    engine <- NULL
+  }
+
   for (i in 1:n) {
     momentum <-
       (2 * (runif(ndim) > .5) - 1) * rexp(ndim, rate = 1)
     t_jittered <- t
     
-    p0 <- hzz(get_prec_product = get_prec_product, mean = mean, prec = prec, position = p0, constraits = constraits, momentum = momentum, t_jittered, cpp_flg)
+    p0 <- hzz(get_prec_product = get_prec_product, mean = mean, prec = prec, position = p0, constraits = constraits, momentum = momentum, t = t_jittered, cpp_flg = cpp_flg, engine = engine)
+    
     samples[, i] <- p0
     if (debug_flg) {
       cat('iteration', i, 'done \n')

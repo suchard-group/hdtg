@@ -18,7 +18,8 @@ hzz <- function(get_prec_product,
                 constraits,
                 momentum,
                 t,
-                cpp_flg) {
+                cpp_flg,
+                engine = NULL) {
   debug_flg = F
   ndim = length(position)
   position <- .get_initial_position(position, constraits)
@@ -41,7 +42,7 @@ hzz <- function(get_prec_product,
     )
   
   if (cpp_flg) {
-    engine = createEngine(dimension = ndim, mask = rep(1, ndim), observed = rep(1, ndim), parameterSign = constraits, flags = 128, info = 1, seed = 1)
+    # engine = createEngine(dimension = ndim, mask = rep(1, ndim), observed = rep(1, ndim), parameterSign = constraits, flags = 128, info = 1, seed = 1)
     res = .oneIteration(sexp = engine$engine, position = position, velocity = velocity, action = action, gradient = - gradient, momentum = momentum, time = t, precision = prec, dimension = ndim)
     return(res$position)
   } else {

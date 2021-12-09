@@ -64,10 +64,11 @@ Rcpp::List createEngine(int dimension,
                         std::vector<double>& mask,
                         std::vector<double>& observed,
                         std::vector<double>& parameterSign,
-                        long flags, long info, long seed) {
+                        long flags, long info, long seed,
+                        NumericMatrix& precision) {
   
   auto zigZag = new ZigZagWrapper(
-    zz::dispatch(dimension, mask.data(), observed.data(), parameterSign.data(), flags, info, seed));
+    zz::dispatch(dimension, mask.data(), observed.data(), parameterSign.data(), flags, info, seed, zz::DblSpan(precision.begin(), precision.end())));
   
   XPtrZigZagWrapper engine(zigZag);
   
