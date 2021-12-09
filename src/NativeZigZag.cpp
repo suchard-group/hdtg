@@ -170,7 +170,7 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_operate(
 
     (void)obj;
 
-    JniCallback callback(env, provider);
+    //JniCallback callback(env, provider); 
 
     jboolean isPositionCopy, isVelocityCopy, isActionCopy, isGradientCopy, isMomentumCopy;
 
@@ -187,7 +187,7 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_operate(
     implementation[instanceNumber]->operate(
             zz::DblSpan(position, dim), zz::DblSpan(velocity, dim),
             zz::DblSpan(action, dim), zz::DblSpan(gradient, dim), zz::DblSpan(momentum, dim),
-            time, callback);
+            time);
 
     auto release = [&](jdoubleArray parent, double *child, jboolean isCopy, jint mode) {
 //        if (isCopy == JNI_TRUE) {
