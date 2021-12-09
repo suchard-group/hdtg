@@ -166,10 +166,9 @@ namespace zz {
                        DblSpan action,
                        DblSpan gradient,
                        DblSpan momentum,
-                       double time,
-                       int dimension) {
+                       double time) {
             Dynamics<double> dynamics(position, velocity, action, gradient, momentum, observed, parameterSign);
-            return operateImpl(dynamics, time, dimension);
+            return operateImpl(dynamics, time);
         }
 
         void innerBounce(DblSpan position,
@@ -214,7 +213,7 @@ namespace zz {
         }
 
         template<typename T>
-        double operateImpl(Dynamics<T> &dynamics, double time, int dimension) {
+        double operateImpl(Dynamics<T> &dynamics, double time) {
 
 #ifdef TIMING
             auto start = zz::chrono::steady_clock::now();
@@ -226,7 +225,7 @@ namespace zz {
 
                 const auto firstBounce = getNextBounce(dynamics);
 
-                bounceState = doBounce(bounceState, firstBounce, dynamics, dimension);
+                bounceState = doBounce(bounceState, firstBounce, dynamics);
             }
 
 #ifdef TIMING
@@ -510,8 +509,7 @@ namespace zz {
 
 
         template<typename R>
-        BounceState doBounce(BounceState initialBounceState, MinTravelInfo firstBounce, Dynamics<R> &dynamics,
-                             int dimension) {
+        BounceState doBounce(BounceState initialBounceState, MinTravelInfo firstBounce, Dynamics<R> &dynamics) {
 
             double remainingTime = initialBounceState.time;
             double eventTime = firstBounce.time;

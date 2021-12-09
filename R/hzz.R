@@ -42,7 +42,7 @@ hzz <- function(get_prec_product,
     )
   
   if (cpp_flg) {
-    res = .oneIteration(sexp = engine$engine, position = position, velocity = velocity, action = action, gradient = - gradient, momentum = momentum, time = t, dimension = ndim)
+    res = .oneIteration(sexp = engine$engine, position = position, velocity = velocity, action = action, gradient = - gradient, momentum = momentum, time = t)
     return(res$position)
   } else {
     time_remaining <- t
