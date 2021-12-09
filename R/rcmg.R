@@ -15,8 +15,7 @@
 #' @export
 #'
 #' @examples rcmg(1,1,1,1,1)
-rcmg <- function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = NULL, cpp_flg = FALSE, random_seed = 666) {
-  debug_flg = T
+rcmg <- function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = NULL, cpp_flg = FALSE, random_seed = 666, debug_flg = F) {
   stopifnot("n > burnin must be integers!" = (n %% 1 == 0 && burnin %% 1 == 0 && n > burnin))
   stopifnot("mean and prec must be numeric" = (is.numeric(mean) && is.numeric(prec)))
   stopifnot("must provide either covariance or precision" = (!is.null(cov) || !is.null(prec)))

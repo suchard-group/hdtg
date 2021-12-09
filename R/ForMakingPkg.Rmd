@@ -37,15 +37,6 @@ cor_mat = cov2cor(cov_mat)
 # rcorrmatrix(d, alphad = 1) # from the lkj prior. runs slow though.
 # cor_mat = CSgenerate(d, 0.9)
 prec = solve(cor_mat)
-
-#cor_mat = diag(d)
-#prec = diag(d)
-
-constraits = 0
-p0 = runif(d, 0, 1)
-t = 2
-burnin = 20
-#debugSource("~/zigzag/R/hzz.R", echo=TRUE)
 ```
 
 ```{r to profile}
@@ -57,18 +48,18 @@ p0 <- runif(d, 0, 0.2)
 
 t0 = proc.time()
 
-samples_rcpp = rcmg(n = 10, mean = mu, prec = prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = p0, cpp_flg = T)
+samples_rcpp = rcmg(n = 10, mean = mu, prec = prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = p0, cpp_flg = T, debug_flg = F)
 t1 = proc.time()
 cat("cpp code takes", t1[3] - t0[3], 'secs')
 ################################################################
-set.seed(666)
-p0 <- runif(d, 0, 0.2)
-t0 = proc.time()
-
-samples_r = rcmg(n = 10, mean = mu, prec = prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = p0, cpp_flg = F)
-
-t1 = proc.time()
-cat("r code takes", t1[3] - t0[3], 'secs')
+# set.seed(666)
+# p0 <- runif(d, 0, 0.2)
+# t0 = proc.time()
+# 
+# samples_r = rcmg(n = 10, mean = mu, prec = prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = p0, cpp_flg = F, debug_flg = F)
+# 
+# t1 = proc.time()
+# cat("r code takes", t1[3] - t0[3], 'secs')
 ################################################################
 ```
 
