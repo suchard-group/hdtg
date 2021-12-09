@@ -50,7 +50,6 @@ namespace zz {
                                DblSpan initialGradient,
                                DblSpan initialMomentum,
                                double time,
-                               DblSpan precisionMat,
                                int dimension) = 0;
 
         virtual MinTravelInfo getNextBounce(DblSpan position,

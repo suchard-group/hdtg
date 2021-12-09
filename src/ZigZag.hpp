@@ -69,13 +69,8 @@ namespace zz {
                             nThreads(nThreads),
                             seed(seed),
                             fixedPrecision(precision){
-            std::cerr << "c'tor ZigZag" << std::endl;
-            for (const auto &e: fixedPrecision) {
-                std::cout << e << ' ';
-            }
+            std::cerr << "ZigZag constructed" << std::endl;
             std::cout << '\n';
-            //std::cerr << "precision0 is " << fixedPrecision[0] << " p3 is " << fixedPrecision[3] << " p8 is " << fixedPrecision[8] << std::endl;
-            //fixedPrecision = precision;
             if (flags & zz::Flags::TBB) {
                 if (nThreads <= 0) {
                     nThreads = tbb::task_scheduler_init::default_num_threads();
@@ -172,10 +167,9 @@ namespace zz {
                        DblSpan gradient,
                        DblSpan momentum,
                        double time,
-                       DblSpan precisionMat,
                        int dimension) {
             Dynamics<double> dynamics(position, velocity, action, gradient, momentum, observed, parameterSign);
-            return operateImpl(dynamics, time, precisionMat, dimension);
+            return operateImpl(dynamics, time, dimension);
         }
 
         void innerBounce(DblSpan position,
@@ -220,7 +214,7 @@ namespace zz {
         }
 
         template<typename T>
-        double operateImpl(Dynamics<T> &dynamics, double time, DblSpan precisionMat, int dimension) {
+        double operateImpl(Dynamics<T> &dynamics, double time, int dimension) {
 
 #ifdef TIMING
             auto start = zz::chrono::steady_clock::now();
@@ -232,7 +226,7 @@ namespace zz {
 
                 const auto firstBounce = getNextBounce(dynamics);
 
-                bounceState = doBounce(bounceState, firstBounce, dynamics, precisionMat, dimension);
+                bounceState = doBounce(bounceState, firstBounce, dynamics, dimension);
             }
 
 #ifdef TIMING
@@ -328,14 +322,10 @@ namespace zz {
 #ifdef TIMING
             auto start = zz::chrono::steady_clock::now();
 #endif
-            //std::cerr << "here!" << std::endl;
             auto task = [&](const size_t begin, const size_t end) -> MinTravelInfo {
-                //std::cerr << "end is " << end << std::endl;
-                //std::cerr << "begin is " << begin << std::endl;
 
                 const auto length = end - begin;
                 const auto vectorCount = length - length % SimdSize;
-                //std::cerr << "length is " << length << std::endl;
 
                 MinTravelInfo travel = vectorized_transform<SimdType, SimdSize>(begin, begin + vectorCount, dynamics,
                                                                                 InfoType());
@@ -412,23 +402,16 @@ namespace zz {
             const auto *momentum = dynamics.momentum;
             const auto *observed = dynamics.observed;
             const auto *parameterSign = dynamics.parameterSign;
-            //std::cerr << "here2" << std::endl;
-            //std::cerr << "end is " << end << " simdsize is " << SimdSize << std::endl;
-
 
             for (; i < end; i += SimdSize) {
 
-                //std::cerr << "i is " << i << " p_i is " << SimdHelper<S, R>::get(position + i) << " v_i is " << SimdHelper<S, R>::get(velocity + i) << " observed_i "
-                //<< SimdHelper<S, R>::get(observed + i) << " paramSign_i " << SimdHelper<S, R>::get(parameterSign + i) << std::endl;
                 const auto boundaryTime = findBoundaryTime(
                         SimdHelper<S, R>::get(position + i),
                         SimdHelper<S, R>::get(velocity + i),
                         SimdHelper<S, R>::get(observed + i),
                         SimdHelper<S, R>::get(parameterSign + i)
                 );
-                //std::cerr << " i is " << i << " b-time is " << boundaryTime << std::endl;
                 reduce_min(result, boundaryTime, i, BounceType::BOUNDARY); // TODO Try: result = reduce_min(result, ...)
-                //std::cerr << "min b-time is " << result.time << std::endl;
                 const auto gradientTime = minimumPositiveRoot(
                         -SimdHelper<S, R>::get(action + i) / 2,
                         SimdHelper<S, R>::get(gradient + i),
@@ -528,14 +511,13 @@ namespace zz {
 
         template<typename R>
         BounceState doBounce(BounceState initialBounceState, MinTravelInfo firstBounce, Dynamics<R> &dynamics,
-                             const DblSpan precisionMat, int dimension) {
+                             int dimension) {
 
             double remainingTime = initialBounceState.time;
             double eventTime = firstBounce.time;
 
             BounceState finalBounceState;
             if (remainingTime < eventTime) { // No event during remaining time
-                //std::cerr << " remainingTime " << remainingTime << std::endl;
                 updatePosition<SimdType, SimdSize>(dynamics, remainingTime);
                 finalBounceState = BounceState(BounceType::NONE, -1, 0.0);
 
@@ -546,14 +528,8 @@ namespace zz {
 
                 const int eventType = firstBounce.type;
                 const int eventIndex = firstBounce.index;
-                //std::cerr << " event Index " << eventIndex << " event Type " << eventType << " event Time " << firstBounce.time << std::endl;
 
-                //DblSpan precisionColumn = precisionMat.subspan(eventIndex * dimension, dimension);
                 DblSpan precisionColumn = fixedPrecision.subspan(eventIndex * dimension, dimension);
-
-//                for(const auto &e : precisionColumn) {
-//                    std::cout << e << ' ';
-//                }
 
                 if (eventType == BounceType::BOUNDARY) {
 
@@ -800,7 +776,6 @@ namespace zz {
                                          const T velocity,
                                          const T observed,
                                          const T parameterSign) {
-            //std::cerr << "parameterSign " << parameterSign << " velocity " << velocity << " observed " << observed << std::endl;
             return select(headingTowardsBoundary(parameterSign, velocity, observed),
                           fabs(position / velocity),
                           infinity<T>());
@@ -811,7 +786,6 @@ namespace zz {
                                                   const T velocity,
                                                   const T observed)
         -> decltype(T(1.0) > T(0.0)) {
-            //std::cerr << "parameterSign " << parameterSign << " velocity " << velocity << " observed " << observed << std::endl;
             return parameterSign * velocity * observed < T(0.0);
         }
 

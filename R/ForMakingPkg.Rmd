@@ -29,7 +29,7 @@ require(magrittr)
 #require(matrixcalc)
 #require(clusterGeneration)
 
-d = 200
+d = 300
 mu = rep(0, d)
 set.seed(666)
 cov_mat = rWishart(1, 2 * d, diag(d))[ , , 1]
@@ -41,25 +41,26 @@ prec = solve(cor_mat)
 
 ```{r to profile}
 require(profvis)
-require(hzz)
+#require(hzz)
+load_all(export_all=FALSE)
 require(tmvtnorm)
 set.seed(666)
 p0 <- runif(d, 0, 0.2)
 
 t0 = proc.time()
 
-samples_rcpp = rcmg(n = 10, mean = mu, prec = prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = p0, cpp_flg = T, debug_flg = F)
+samples_rcpp = rcmg(n = 100, mean = mu, prec = prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = p0, cpp_flg = T, debug_flg = F)
 t1 = proc.time()
 cat("cpp code takes", t1[3] - t0[3], 'secs')
 ################################################################
-# set.seed(666)
-# p0 <- runif(d, 0, 0.2)
-# t0 = proc.time()
-# 
-# samples_r = rcmg(n = 10, mean = mu, prec = prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = p0, cpp_flg = F, debug_flg = F)
-# 
-# t1 = proc.time()
-# cat("r code takes", t1[3] - t0[3], 'secs')
+set.seed(666)
+p0 <- runif(d, 0, 0.2)
+t0 = proc.time()
+
+samples_r = rcmg(n = 100, mean = mu, prec = prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = p0, cpp_flg = F, debug_flg = F)
+
+t1 = proc.time()
+cat("r code takes", t1[3] - t0[3], 'secs')
 ################################################################
 ```
 

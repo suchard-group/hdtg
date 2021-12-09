@@ -42,8 +42,7 @@ hzz <- function(get_prec_product,
     )
   
   if (cpp_flg) {
-    # engine = createEngine(dimension = ndim, mask = rep(1, ndim), observed = rep(1, ndim), parameterSign = constraits, flags = 128, info = 1, seed = 1)
-    res = .oneIteration(sexp = engine$engine, position = position, velocity = velocity, action = action, gradient = - gradient, momentum = momentum, time = t, precision = prec, dimension = ndim)
+    res = .oneIteration(sexp = engine$engine, position = position, velocity = velocity, action = action, gradient = - gradient, momentum = momentum, time = t, dimension = ndim)
     return(res$position)
   } else {
     time_remaining <- t
