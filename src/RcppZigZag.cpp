@@ -88,6 +88,10 @@ Rcpp::List createEngine(int dimension,
   return list;
 }
 
+setprecision(){
+    
+}
+
 // [[Rcpp::export(.doSomething)]]
 void doSomething(SEXP sexp,
                      std::vector<double>& data) {

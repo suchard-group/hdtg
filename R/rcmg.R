@@ -37,7 +37,9 @@ rcmg <- function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = N
   set.seed(random_seed)
 
   if (cpp_flg) {
+    
     engine <- createEngine(dimension = ndim, mask = rep(1, ndim), observed = rep(1, ndim), parameterSign = constraits, flags = 128, info = 1, seed = 1, precision = prec)
+    setprecision()
   } else {
     engine <- NULL
   }
