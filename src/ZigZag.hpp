@@ -26,7 +26,7 @@
 #include <map>
 #include <iomanip>
 #include "Timing.h"
-
+#include "Eigen/Dense"
 #endif // TIMING
 
 #include "threefry.h"
@@ -803,17 +803,6 @@ namespace zz {
             return select(discriminant < T(0.0), infinity<T>(), root);
         }
 
-//        template <typename T>
-//        static inline T sign(const T x) {
-//            const auto zero = T(0.0);
-//            return select(x == zero,
-//                          x,
-//                          select(x < zero,
-//                                 T(-1.0),
-//                                 T(+1.0))
-//            );
-//        }
-
         static mm::MemoryManager<MaskType> constructMask(double *raw, size_t length, bool zeroOneFlg) {
 
             mm::MemoryManager<MaskType> mask;
@@ -831,9 +820,62 @@ namespace zz {
             return mask;
         }
 
-//        static double doMask(MaskType mask, double x) {
-//            return mask * x;
-//        }
+        double reversiblePositionMomentumUpdate(DblSpan position,
+                       DblSpan velocity,
+                       DblSpan action,
+                       DblSpan gradient,
+                       DblSpan momentum,
+                       int direction,
+                       double time) {
+            if (direction == -1){
+                std::transform(momentum.begin(), momentum.end(), momentum.begin(), std::negate<double>());
+            }
+            operate(position, velocity, action, gradient, momentum, time);
+            if (direction == -1){
+                std::transform(momentum.begin(), momentum.end(), momentum.begin(), std::negate<double>());
+            }
+        }
+
+        double getJointProbability(DblSpan position, DblSpan momentum){
+            const int dim = position.size();
+            std::vector<double> delta(dim);
+            std::vector<double> tmp(dim);
+
+            for (int i = 0; i < dim; i++) {
+                delta[i] = x[i] - mean[i];
+            }
+
+            for (int i = 0; i < dim; i++) {
+                for (int j = 0; j < dim; j++) {
+                    tmp[i] += delta[j] * precision.coeff(j, i);
+                }
+            }
+
+            double SSE = 0;
+
+            for (int i = 0; i < dim; i++)
+                SSE += tmp[i] * delta[i];
+
+            double logPrecisionDet = getLogPrecisionDet();
+            // 1. logpdf of MVN
+            double likelihood = dim * logNormalize + 0.5 * (logPrecisionDet - SSE);
+            // 2. add kinetic energy
+            return likelihood - getKineticEnergy(momentum);
+        }
+
+        double getLogPrecisionDet(){
+            //todo: make sure to avoid unnecessary det calculation
+            return precision.determinant();
+        }
+
+        double getKineticEnergy(DblSpan momentum){
+            double energy = 0;
+            const int dim = momentum.size();
+            for (int i = 0; i < dim; ++i) {
+                energy += abs(momentum[i]);
+            }
+            return energy;
+        }
 
         size_t dimension;
         mm::MemoryManager<MaskType> mask;
@@ -847,6 +889,11 @@ namespace zz {
         mm::MemoryManager<double> mmMomentum;
 
         DblSpan fixedPrecision;
+        std::vector<double> mean;
+        Eigen::MatrixXd precision;
+        constexpr static double PI = 3.14159265358979323846;
+        const double logNormalize = -0.5 * log(2.0 * PI);
+
         long flags;
         int nThreads;
         long seed;
