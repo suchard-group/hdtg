@@ -152,7 +152,7 @@ namespace nuts {
 
         ~NoUTurn() = default;
 
-        void takeOneStep(DblSpan initialPosition, DblSpan initialMomentum, DblSpan gradient) {
+        static void takeOneStep(DblSpan initialPosition, DblSpan initialMomentum, DblSpan gradient) {
 
             DblSpan endPosition = initialPosition;
 

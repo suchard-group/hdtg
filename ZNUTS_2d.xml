@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<beast>
+  <parameter id="startingValue" value = "0.1 0.1" lower = "0 0" upper = "Infinity Infinity"/>
+  <compoundSymmetryNormalDistributionModel id="normal" dim="2">
+     <variance>
+      <parameter value="1"/>
+    </variance>
+    <rho>
+      <parameter value="0.1"/>
+    </rho>
+  </compoundSymmetryNormalDistributionModel>
+  <multivariateDistributionLikelihood id="distribution">
+    <distribution>
+      <compoundSymmetryNormalDistributionModel idref="normal"/>
+    </distribution>
+    <data>
+      <parameter idref="startingValue"/>
+    </data>
+  </multivariateDistributionLikelihood>
+  <operators id="operators.HZZ">
+    <NoUTurnOperator id="NUTS" weight="1" adaptiveStepsize="false">
+      <zigZagOperator id="HZZ" weight="1" threadCount="1" reversibleFlag="true" randomTimeWidth="0">
+        <gradient>
+          <distributionLikelihood idref="distribution"/>
+        </gradient>
+        <precisionVectorProduct id="product" roughTravelTimeGuess="15.182" type="cs">
+          <compoundSymmetryNormalDistributionModel idref="normal"/>
+        </precisionVectorProduct>
+        <precisionColumn useCache="false" type="cs">
+          <compoundSymmetryNormalDistributionModel idref="normal"/>
+        </precisionColumn>
+      </zigZagOperator>
+    </NoUTurnOperator>
+  </operators>
+  <mcmc id="mcmc.hmc" chainLength="10" autoOptimize="true">
+    <posterior>
+      <likelihood id="likelihood.hmc">
+        <distributionLikelihood idref="distribution"/>
+      </likelihood>
+    </posterior>
+    <operators idref="operators.HZZ"/>
+    <log logEvery="1000">
+      <column label="posterior" dp="4" width="12">
+        <likelihood idref="likelihood.hmc"/>
+      </column>
+      <column label="startingValue" sf="6" width="12">
+        <parameter idref="startingValue"/>
+      </column>
+    </log>
+    <log logEvery="1" fileName="ZNUTS_2d.log">
+      <likelihood idref="likelihood.hmc"/>
+      <parameter idref="startingValue"/>
+    </log>
+    <log logEvery="1" fileName="ZNUTS_2d_numEvent.log">
+      <NoUTurnOperator idref="NUTS"/>
+    </log>
+  </mcmc>
+  <report>
+    <property name="timer">
+      <object idref="mcmc.hmc"/>
+    </property>
+    <zigZagOperator idref="HZZ"/>
+  </report>
+</beast>

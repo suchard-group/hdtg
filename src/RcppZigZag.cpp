@@ -88,8 +88,8 @@ Rcpp::List createEngine(int dimension,
   return list;
 }
 
-setprecision(){
-    
+void setprecision(){
+    //todo:fill
 }
 
 // [[Rcpp::export(.doSomething)]]

@@ -842,7 +842,7 @@ namespace zz {
             std::vector<double> tmp(dim);
 
             for (int i = 0; i < dim; i++) {
-                delta[i] = x[i] - mean[i];
+                delta[i] = position[i] - mean[i];
             }
 
             for (int i = 0; i < dim; i++) {
@@ -891,8 +891,8 @@ namespace zz {
         DblSpan fixedPrecision;
         std::vector<double> mean;
         Eigen::MatrixXd precision;
-        constexpr static double PI = 3.14159265358979323846;
-        const double logNormalize = -0.5 * log(2.0 * PI);
+        double pi = 3.14159265358979323846;
+        const double logNormalize = -0.5 * log(2.0 * pi);
 
         long flags;
         int nThreads;
