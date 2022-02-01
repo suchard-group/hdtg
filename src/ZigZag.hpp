@@ -27,6 +27,7 @@
 #include <iomanip>
 #include "Timing.h"
 #include "Eigen/Dense"
+#include "makeUnique.hpp"
 #endif // TIMING
 
 #include "threefry.h"
@@ -167,6 +168,32 @@ namespace zz {
                        DblSpan gradient,
                        DblSpan momentum,
                        double time) {
+            Dynamics<double> dynamics(position, velocity, action, gradient, momentum, observed, parameterSign);
+            return operateImpl(dynamics, time);
+        }
+
+        std::unique_ptr<std::vector<double>> getVelocity(DblSpan momentum){
+            std::vector<double> tmp(dimension);
+            for (int i = 0; i < dimension; ++i) {
+                tmp[i] = (momentum[i] > 0)? 1: -1;
+            }
+            return std::make_unique<std::vector<double>>(tmp);
+        }
+
+        std::unique_ptr<Eigen::VectorXd> getAction(DblSpan velocity){
+            Eigen::Map<Eigen::VectorXd> vVec(velocity.begin(), dimension);
+            Eigen::VectorXd productVec= precision*vVec;
+            return std::make_unique<Eigen::VectorXd>(productVec);
+        }
+
+        double operate(DblSpan position,
+                       DblSpan gradient,
+                       DblSpan momentum,
+                       double time) {
+            std::unique_ptr<std::vector<double>> vPtr = getVelocity(momentum);
+            DblSpan velocity(*vPtr);
+            std::unique_ptr<Eigen::VectorXd> aPtr = getAction(velocity);
+            DblSpan action(*aPtr);
             Dynamics<double> dynamics(position, velocity, action, gradient, momentum, observed, parameterSign);
             return operateImpl(dynamics, time);
         }
@@ -386,7 +413,55 @@ namespace zz {
             );
         }
 
-    protected:
+        double reversiblePositionMomentumUpdate(DblSpan position,
+                                                DblSpan gradient,
+                                                DblSpan momentum,
+                                                int direction,
+                                                double time) {// todo only give WrappedVector position, WrappedVector momentum, WrappedVector gradient,int direction, double time
+            if (direction == -1){
+                std::transform(momentum.begin(), momentum.end(), momentum.begin(), std::negate<double>());
+            }
+            operate(position, gradient, momentum, time);
+            if (direction == -1){
+                std::transform(momentum.begin(), momentum.end(), momentum.begin(), std::negate<double>());
+            }
+        }
+
+        double getJointProbability(DblSpan position, DblSpan momentum){
+            const int dim = position.size();
+            std::vector<double> delta(dim);
+            std::vector<double> tmp(dim);
+
+            for (int i = 0; i < dim; i++) {
+                delta[i] = position[i] - mean[i];
+            }
+
+            for (int i = 0; i < dim; i++) {
+                for (int j = 0; j < dim; j++) {
+                    tmp[i] += delta[j] * precision.coeff(j, i);
+                }
+            }
+
+            double SSE = 0;
+
+            for (int i = 0; i < dim; i++)
+                SSE += tmp[i] * delta[i];
+
+            double logPrecisionDet = precision.determinant();//todo: make sure to avoid unnecessary det calculation
+            // 1. logpdf of MVN
+            double likelihood = dim * logNormalize + 0.5 * (logPrecisionDet - SSE);
+            // 2. add kinetic energy
+            return likelihood - getKineticEnergy(momentum);
+        }
+
+        double getKineticEnergy(DblSpan momentum){
+            double energy = 0;
+            const int dim = momentum.size();
+            for (int i = 0; i < dim; ++i) {
+                energy += abs(momentum[i]);
+            }
+            return energy;
+        }
 
     private:
 
@@ -816,65 +891,7 @@ namespace zz {
                                    return (x == 1.0) ? MaskType(1.0) : MaskType(-1.0);
                                }
                            });
-
             return mask;
-        }
-
-        double reversiblePositionMomentumUpdate(DblSpan position,
-                       DblSpan velocity,
-                       DblSpan action,
-                       DblSpan gradient,
-                       DblSpan momentum,
-                       int direction,
-                       double time) {
-            if (direction == -1){
-                std::transform(momentum.begin(), momentum.end(), momentum.begin(), std::negate<double>());
-            }
-            operate(position, velocity, action, gradient, momentum, time);
-            if (direction == -1){
-                std::transform(momentum.begin(), momentum.end(), momentum.begin(), std::negate<double>());
-            }
-        }
-
-        double getJointProbability(DblSpan position, DblSpan momentum){
-            const int dim = position.size();
-            std::vector<double> delta(dim);
-            std::vector<double> tmp(dim);
-
-            for (int i = 0; i < dim; i++) {
-                delta[i] = position[i] - mean[i];
-            }
-
-            for (int i = 0; i < dim; i++) {
-                for (int j = 0; j < dim; j++) {
-                    tmp[i] += delta[j] * precision.coeff(j, i);
-                }
-            }
-
-            double SSE = 0;
-
-            for (int i = 0; i < dim; i++)
-                SSE += tmp[i] * delta[i];
-
-            double logPrecisionDet = getLogPrecisionDet();
-            // 1. logpdf of MVN
-            double likelihood = dim * logNormalize + 0.5 * (logPrecisionDet - SSE);
-            // 2. add kinetic energy
-            return likelihood - getKineticEnergy(momentum);
-        }
-
-        double getLogPrecisionDet(){
-            //todo: make sure to avoid unnecessary det calculation
-            return precision.determinant();
-        }
-
-        double getKineticEnergy(DblSpan momentum){
-            double energy = 0;
-            const int dim = momentum.size();
-            for (int i = 0; i < dim; ++i) {
-                energy += abs(momentum[i]);
-            }
-            return energy;
         }
 
         size_t dimension;

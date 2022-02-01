@@ -19,6 +19,7 @@ hzz <- function(get_prec_product,
                 momentum,
                 t,
                 cpp_flg,
+                nuts_flg,
                 engine = NULL) {
   debug_flg = F
   ndim = length(position)
@@ -42,7 +43,11 @@ hzz <- function(get_prec_product,
     )
   
   if (cpp_flg) {
-    res = .oneIteration(sexp = engine$engine, position = position, velocity = velocity, action = action, gradient = - gradient, momentum = momentum, time = t)
+    if(nuts_flg){
+      res = NULL
+    } else {
+      res = .oneIteration(sexp = engine$engine, position = position, velocity = velocity, action = action, gradient = - gradient, momentum = momentum, time = t)
+    }
     return(res$position)
   } else {
     time_remaining <- t

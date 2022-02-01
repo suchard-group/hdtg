@@ -8,6 +8,7 @@ using namespace Rcpp;
 #include <RcppParallel.h>
 
 #include "ZigZag.hpp"
+#include "NoUTurn.hpp"
 
 //' @export
 // [[Rcpp::export]]
@@ -49,7 +50,6 @@ ZigZagSharedPtr& parsePtr(SEXP sexp) {
 //' Helper function creates zigZag engine object with given latent dimension, location count and various
 //' implementation details. Called by \code{MassivezigZag::engineInitial()}.
 //'
-//' @param embeddingDimension Dimension of latent locations.
 //' @param locationCount Number of locations and size of distance matrix.
 //' @param tbb Number of CPU cores to be used.
 //' @param simd For CPU implementation: no SIMD (\code{0}), SSE (\code{1}) or AVX (\code{2}).
@@ -166,32 +166,37 @@ private:
 
 // [[Rcpp::export(.oneIteration)]]
 Rcpp::List oneIteration(SEXP sexp,
-                   NumericVector& position,
-                   NumericVector& velocity,
-                   NumericVector& action,
-                   NumericVector& gradient,
-                   NumericVector& momentum,
-                   double time) {
-
-  auto ptr = parsePtr(sexp);
+                        NumericVector& position,
+                        NumericVector& velocity,
+                        NumericVector& action,
+                        NumericVector& gradient,
+                        NumericVector& momentum,
+                        double time,
+                        bool nutsFlg) {
   
-  try
-  {
-    auto returnValue =  ptr->operate(
-      zz::DblSpan(position.begin(), position.end()),
-      zz::DblSpan(velocity.begin(), velocity.end()),
-      zz::DblSpan(action.begin(), action.end()),
-      zz::DblSpan(gradient.begin(), gradient.end()),
-      zz::DblSpan(momentum.begin(), momentum.end()),
-      time
-    );
-    
-    Rcpp::List list = Rcpp::List::create(
-      Rcpp::Named("returnValue") = returnValue,
-      Rcpp::Named("position") = position);
-    
-    return list;
+  auto ptr = parsePtr(sexp);
+  try{
+    if(nutsFlg){
+      int t = 1;
+    } else {
+      
+      auto returnValue =  ptr->operate(
+        zz::DblSpan(position.begin(), position.end()),
+        zz::DblSpan(velocity.begin(), velocity.end()),
+        zz::DblSpan(action.begin(), action.end()),
+        zz::DblSpan(gradient.begin(), gradient.end()),
+        zz::DblSpan(momentum.begin(), momentum.end()),
+        time
+      );
+      
+      Rcpp::List list = Rcpp::List::create(
+        Rcpp::Named("returnValue") = returnValue,
+        Rcpp::Named("position") = position);
+      
+      return list;
+    }
   }
+  
   catch (Rcpp::internal::InterruptedException& e)
   {
     Rcout << "Caught an interrupt!" << std::endl;

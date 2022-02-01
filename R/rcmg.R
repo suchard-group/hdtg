@@ -15,7 +15,7 @@
 #' @export
 #'
 #' @examples rcmg(1,1,1,1,1)
-rcmg <- function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = NULL, cpp_flg = FALSE, random_seed = 666, debug_flg = F) {
+rcmg <- function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = NULL, cpp_flg = FALSE, nuts_flg = FALSE, random_seed = 666, debug_flg = F) {
   stopifnot("n > burnin must be integers!" = (n %% 1 == 0 && burnin %% 1 == 0 && n > burnin))
   stopifnot("mean and prec must be numeric" = (is.numeric(mean) && is.numeric(prec)))
   stopifnot("must provide either covariance or precision" = (!is.null(cov) || !is.null(prec)))
@@ -37,7 +37,6 @@ rcmg <- function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = N
   set.seed(random_seed)
 
   if (cpp_flg) {
-    
     engine <- createEngine(dimension = ndim, mask = rep(1, ndim), observed = rep(1, ndim), parameterSign = constraits, flags = 128, info = 1, seed = 1, precision = prec)
   } else {
     engine <- NULL
@@ -48,7 +47,7 @@ rcmg <- function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = N
       (2 * (runif(ndim) > .5) - 1) * rexp(ndim, rate = 1)
     t_jittered <- t
     
-    p0 <- hzz(get_prec_product = get_prec_product, mean = mean, prec = prec, position = p0, constraits = constraits, momentum = momentum, t = t_jittered, cpp_flg = cpp_flg, engine = engine)
+    p0 <- hzz(get_prec_product = get_prec_product, mean = mean, prec = prec, position = p0, constraits = constraits, momentum = momentum, t = t_jittered, cpp_flg = cpp_flg, nuts_flg = nuts_flg, engine = engine)
     
     samples[, i] <- p0
     if (debug_flg) {

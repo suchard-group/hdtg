@@ -11,7 +11,6 @@ rcpp_hello_world <- function() {
 #' Helper function creates zigZag engine object with given latent dimension, location count and various
 #' implementation details. Called by \code{MassivezigZag::engineInitial()}.
 #'
-#' @param embeddingDimension Dimension of latent locations.
 #' @param locationCount Number of locations and size of distance matrix.
 #' @param tbb Number of CPU cores to be used.
 #' @param simd For CPU implementation: no SIMD (\code{0}), SSE (\code{1}) or AVX (\code{2}).
@@ -33,7 +32,7 @@ getNextEvent <- function(sexp, position, velocity, action, logpdfGradient, momen
     .Call(`_hzz_getNextEvent`, sexp, position, velocity, action, logpdfGradient, momentum)
 }
 
-.oneIteration <- function(sexp, position, velocity, action, gradient, momentum, time) {
-    .Call(`_hzz_oneIteration`, sexp, position, velocity, action, gradient, momentum, time)
+.oneIteration <- function(sexp, position, velocity, action, gradient, momentum, time, nutsFlg) {
+    .Call(`_hzz_oneIteration`, sexp, position, velocity, action, gradient, momentum, time, nutsFlg)
 }
 

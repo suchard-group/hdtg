@@ -49,7 +49,7 @@ add_library (zig_zag SHARED
         src/NativeZigZag.cpp
         src/AbstractZigZag.hpp src/ZigZag.hpp src/NoUTurn.hpp src/Timing.h
         src/aligned_allocator.hpp src/MemoryManagement.hpp src/Simd.hpp src/PrecisionColumn.hpp
-        src/threefry.h)
+        src/threefry.h src/NutsTreeState.hpp)
 
 target_link_libraries (zig_zag ${JAVA_JVM_LIBRARY} ${TBB_LIBRARIES})
 target_include_directories(zig_zag PRIVATE
