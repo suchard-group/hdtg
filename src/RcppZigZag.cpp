@@ -45,6 +45,9 @@ ZigZagSharedPtr& parsePtr(SEXP sexp) {
   return ptr->get();
 }
 
+
+
+
 //' Create ZigZag engine object
 //'
 //' Helper function creates zigZag engine object with given latent dimension, location count and various
@@ -176,10 +179,16 @@ Rcpp::List oneIteration(SEXP sexp,
   
   auto ptr = parsePtr(sexp);
   try{
-    if(nutsFlg){
-      int t = 1;
-    } else {
-      
+    // if(nutsFlg){
+    //   auto returnValue =  ptr->operate(
+    //     zz::DblSpan(position.begin(), position.end()),
+    //     zz::DblSpan(velocity.begin(), velocity.end()),
+    //     zz::DblSpan(action.begin(), action.end()),
+    //     zz::DblSpan(gradient.begin(), gradient.end()),
+    //     zz::DblSpan(momentum.begin(), momentum.end()),
+    //     time
+    //   );
+    // } else {
       auto returnValue =  ptr->operate(
         zz::DblSpan(position.begin(), position.end()),
         zz::DblSpan(velocity.begin(), velocity.end()),
@@ -188,13 +197,14 @@ Rcpp::List oneIteration(SEXP sexp,
         zz::DblSpan(momentum.begin(), momentum.end()),
         time
       );
+    //}
       
       Rcpp::List list = Rcpp::List::create(
         Rcpp::Named("returnValue") = returnValue,
         Rcpp::Named("position") = position);
       
       return list;
-    }
+    
   }
   
   catch (Rcpp::internal::InterruptedException& e)

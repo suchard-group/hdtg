@@ -27,7 +27,6 @@
 #include <iomanip>
 #include "Timing.h"
 #include "Eigen/Dense"
-#include "makeUnique.hpp"
 #endif // TIMING
 
 #include "threefry.h"
@@ -177,13 +176,13 @@ namespace zz {
             for (int i = 0; i < dimension; ++i) {
                 tmp[i] = (momentum[i] > 0)? 1: -1;
             }
-            return std::make_unique<std::vector<double>>(tmp);
+            return zz::make_unique<std::vector<double>>(tmp);
         }
 
         std::unique_ptr<Eigen::VectorXd> getAction(DblSpan velocity){
             Eigen::Map<Eigen::VectorXd> vVec(velocity.begin(), dimension);
             Eigen::VectorXd productVec= precision*vVec;
-            return std::make_unique<Eigen::VectorXd>(productVec);
+            return zz::make_unique<Eigen::VectorXd>(productVec);
         }
 
         double operate(DblSpan position,
