@@ -1,4 +1,4 @@
-
+\
 #include <unordered_map>
 
 #include <Rcpp.h>
@@ -13,12 +13,12 @@ using namespace Rcpp;
 //' @export
 // [[Rcpp::export]]
 List rcpp_hello_world() {
-
-    CharacterVector x = CharacterVector::create( "foo", "bar" )  ;
-    NumericVector y   = NumericVector::create( 0.0, 1.0 ) ;
-    List z            = List::create( x, y ) ;
-
-    return z ;
+  
+  CharacterVector x = CharacterVector::create( "foo", "bar" )  ;
+  NumericVector y   = NumericVector::create( 0.0, 1.0 ) ;
+  List z            = List::create( x, y ) ;
+  
+  return z ;
 }
 
 using ZigZagSharedPtr = std::shared_ptr<zz::AbstractZigZag>;
@@ -44,7 +44,56 @@ ZigZagSharedPtr& parsePtr(SEXP sexp) {
   }
   return ptr->get();
 }
+// copied XPtr for sse. todo: make a template
+using SseSharedPtr = std::shared_ptr<zz::ZigZag<zz::DoubleSseTypeInfo>>;
 
+class SseWrapper {
+private:
+  SseSharedPtr Sse;
+  
+public:
+  SseWrapper(SseSharedPtr Sse) : Sse(Sse) { }
+  
+  SseSharedPtr& get() {
+    return Sse;
+  }
+};
+
+using XPtrSseWrapper = Rcpp::XPtr<SseWrapper>;
+
+SseSharedPtr& parsePtrSse(SEXP sexp) {
+  XPtrSseWrapper ptr(sexp);
+  if (!ptr) {
+    Rcpp::stop("External pointer is uninitialized");
+  }
+  return ptr->get();
+}
+
+// copied XPtr for Nuts. todo: make a template
+
+using NutsSharedPtr = std::shared_ptr<nuts::NoUTurn>;
+
+class NutsWrapper {
+private:
+  NutsSharedPtr Nuts;
+  
+public:
+  NutsWrapper(NutsSharedPtr Nuts) : Nuts(Nuts) { }
+  
+  NutsSharedPtr& get() {
+    return Nuts;
+  }
+};
+
+using XPtrNutsWrapper = Rcpp::XPtr<NutsWrapper>;
+
+NutsSharedPtr& parsePtrNuts(SEXP sexp) {
+  XPtrNutsWrapper ptr(sexp);
+  if (!ptr) {
+    Rcpp::stop("External pointer is uninitialized");
+  }
+  return ptr->get();
+}
 
 
 
@@ -76,14 +125,14 @@ Rcpp::List createEngine(int dimension,
   XPtrZigZagWrapper engine(zigZag);
   
   Rcpp::List list = Rcpp::List::create(
-    Rcpp::Named("engine") = engine,
+    Rcpp::Named("engine") = engine,//todo it seems only the ptr("engine") was used by hzz?
     Rcpp::Named("dimension") = dimension,
     Rcpp::Named("mask") = mask,
     Rcpp::Named("observed") = observed,
- //   Rcpp::Named("dataInitialzied") = false,
-//    Rcpp::Named("locationsInitialized") = false,
- //   Rcpp::Named("threads") = threads,
- //   Rcpp::Named("deviceNumber") = deviceNumber,
+    //   Rcpp::Named("dataInitialzied") = false,
+    //    Rcpp::Named("locationsInitialized") = false,
+    //   Rcpp::Named("threads") = threads,
+    //   Rcpp::Named("deviceNumber") = deviceNumber,
     Rcpp::Named("flags") = flags,
     Rcpp::Named("info") = info
   );
@@ -92,12 +141,12 @@ Rcpp::List createEngine(int dimension,
 }
 
 void setprecision(){
-    //todo:fill
+  //todo:fill
 }
 
 // [[Rcpp::export(.doSomething)]]
 void doSomething(SEXP sexp,
-                     std::vector<double>& data) {
+                 std::vector<double>& data) {
   auto ptr = parsePtr(sexp);
   //ptr->doSomething(data.data(), data.size());
 }
@@ -174,37 +223,23 @@ Rcpp::List oneIteration(SEXP sexp,
                         NumericVector& action,
                         NumericVector& gradient,
                         NumericVector& momentum,
-                        double time,
-                        bool nutsFlg) {
+                        double time) {
   
   auto ptr = parsePtr(sexp);
   try{
-    // if(nutsFlg){
-    //   auto returnValue =  ptr->operate(
-    //     zz::DblSpan(position.begin(), position.end()),
-    //     zz::DblSpan(velocity.begin(), velocity.end()),
-    //     zz::DblSpan(action.begin(), action.end()),
-    //     zz::DblSpan(gradient.begin(), gradient.end()),
-    //     zz::DblSpan(momentum.begin(), momentum.end()),
-    //     time
-    //   );
-    // } else {
-      auto returnValue =  ptr->operate(
-        zz::DblSpan(position.begin(), position.end()),
-        zz::DblSpan(velocity.begin(), velocity.end()),
-        zz::DblSpan(action.begin(), action.end()),
-        zz::DblSpan(gradient.begin(), gradient.end()),
-        zz::DblSpan(momentum.begin(), momentum.end()),
-        time
-      );
-    //}
-      
-      Rcpp::List list = Rcpp::List::create(
-        Rcpp::Named("returnValue") = returnValue,
-        Rcpp::Named("position") = position);
-      
-      return list;
+    auto returnValue =  ptr->operate(
+      zz::DblSpan(position.begin(), position.end()),
+      zz::DblSpan(velocity.begin(), velocity.end()),
+      zz::DblSpan(action.begin(), action.end()),
+      zz::DblSpan(gradient.begin(), gradient.end()),
+      zz::DblSpan(momentum.begin(), momentum.end()),
+      time
+    );
+    Rcpp::List list = Rcpp::List::create(
+      Rcpp::Named("returnValue") = returnValue,
+      Rcpp::Named("position") = position);
     
+    return list;
   }
   
   catch (Rcpp::internal::InterruptedException& e)
@@ -213,41 +248,29 @@ Rcpp::List oneIteration(SEXP sexp,
   }
 }
 
-// // [[Rcpp::export(hzz_cpp)]]
-// Rcpp::List hzz_cpp(SEXP sexp, double time){
-//   
-//   auto ptr = parsePtr(sexp);
-//   // Rcout << "action";
-//   // Rf_PrintValue(action);
-//   // Rcout << "\n";
-//   // 
-//   // Rcout << "logpdfGradient";
-//   // Rf_PrintValue(logpdfGradient);
-//   // Rcout << "\n";
-//   // 
-//   // Rcout << "momentum";
-//   // Rf_PrintValue(momentum);
-//   // Rcout << "\n";
-// 
-//   Rcpp::NumericVector t = 12;
-//   int mat_size = covMatrix.size();
-//   NumericMatrix::Column col = covMatrix( _ , 1);  
-//   Rcout << mat_size;
-//   for(int i = 0; i < 10; i++){
-//     Rcout << col[i] << " ";
-//   }
-//   auto ptr = parsePtr(sexp);
-//   auto firstBounce =  ptr->getNextBounce(
-//     zz::DblSpan(col.begin(), col.end()),
-//     zz::DblSpan(velocity.begin(), velocity.end()),
-//     zz::DblSpan(action.begin(), action.end()),
-//     zz::DblSpan(logpdfGradient.begin(), logpdfGradient.end()),
-//     zz::DblSpan(momentum.begin(), momentum.end()));
-//   
-//   Rcpp::List list = Rcpp::List::create(
-//     Rcpp::Named("type") = firstBounce.type,
-//     Rcpp::Named("index") = firstBounce.index,
-//     Rcpp::Named("time") = firstBounce.time);
-//   
-//   return list;  
-// }
+// [[Rcpp::export(.oneNutsIteration)]]
+Rcpp::List oneNutsIteration(SEXP sexp,
+                            NumericVector& position,
+                            NumericVector& momentum,
+                            NumericVector& gradient,
+                            double stepsize){
+  // ptr to a zigzag obj
+  Rcout << "loc1";
+  auto ptr = parsePtrSse(sexp);
+  Rcout << "loc2";
+  // create a NUTS obj:
+  auto nuts = new NutsWrapper(nuts::dispatchNuts(100, 100, 10, 666, 0.01, ptr));
+  Rcout << "loc3";
+  
+  XPtrNutsWrapper engineNuts(nuts);
+  auto ptrNuts = parsePtrNuts(engineNuts);
+  Rcout << "loc4";
+  
+  auto returnValue = ptrNuts -> takeOneStep(zz::DblSpan(position.begin(), position.end()),
+                                            zz::DblSpan(momentum.begin(), momentum.end()),
+                                            zz::DblSpan(gradient.begin(), gradient.end()));
+  
+  Rcpp::List list = Rcpp::List::create(
+    Rcpp::Named("returnValue") = returnValue);
+  return list;
+}
