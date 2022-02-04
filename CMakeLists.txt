@@ -58,6 +58,12 @@ target_include_directories(zig_zag PRIVATE
     ${JNI_INCLUDE_DIRS}
 )
 
+add_executable(main
+        extra/main.cpp)
+
+target_link_libraries(main
+        zig_zag)
+
 #add_jar(${PROJECT_NAME}
 #        DemoFuncs.java
 #        Main.java
