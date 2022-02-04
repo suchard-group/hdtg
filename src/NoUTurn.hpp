@@ -53,14 +53,30 @@ public:
     }
     
     ~NoUTurn() = default;
+
+    void testOneStep(DblSpan initialPosition, DblSpan initialMomentum, DblSpan gradient){
+        DblSpan endPosition = initialPosition;
+        double initialJointDensity = zzEngine.getJointProbability(initialPosition, initialMomentum);
+        double logSliceU = log(uniGenerator.getUniform()) + 1;
+        TreeState trajectoryTree = TreeState(initialPosition, initialMomentum, gradient, 1, true,
+                                             0, 0, ++uniSeed); //todo to check
+        std::cerr << "first tree built" << std::endl;
+        int height = 0;
+        while (trajectoryTree.flagContinue) {
+            testupdateTrajectoryTree(trajectoryTree, height, logSliceU, initialJointDensity);
+            height++;
+
+            if (height > 5) {
+                trajectoryTree.flagContinue = false;
+            }
+        }
+    }
     
     DblSpan takeOneStep(DblSpan initialPosition, DblSpan initialMomentum, DblSpan gradient) {
-        
         DblSpan endPosition = initialPosition;
         
         const double initialJointDensity = zzEngine.getJointProbability(initialPosition,
-                                                                        initialMomentum); //todo to check
-        
+                                                                        initialMomentum);
         double logSliceU = log(uniGenerator.getUniform()) + initialJointDensity;
         
         TreeState trajectoryTree = TreeState(initialPosition, initialMomentum, gradient, 1, true,
@@ -69,7 +85,6 @@ public:
         int height = 0;
         
         while (trajectoryTree.flagContinue) {
-            
             DblSpan tmp = updateTrajectoryTree(trajectoryTree, height, logSliceU, initialJointDensity);
             if (!tmp.empty()) {
                 endPosition = tmp;
@@ -82,6 +97,29 @@ public:
             }
         }
         return endPosition;
+    }
+
+    void testupdateTrajectoryTree(TreeState trajectoryTree,
+                                 int depth,
+                                 double logSliceU,
+                                 double initialJointDensity) {
+        int direction = (uniGenerator.getUniform() < 0.5) ? -1 : 1;
+        UniPtrTreeState nextTrajectoryTree = buildTree(
+                trajectoryTree.getPosition(direction), trajectoryTree.getMomentum(direction),
+                trajectoryTree.getGradient(direction),
+                direction, logSliceU, depth, stepSize, initialJointDensity);
+//
+//        if ((*nextTrajectoryTree).flagContinue) {
+//
+//            const double acceptProb = (double) (*nextTrajectoryTree).numNodes / (double) trajectoryTree.numNodes;
+//            if (uniGenerator.getUniform() < acceptProb) {
+//                endPosition = (*nextTrajectoryTree).getSample();
+//            }
+//        }
+//
+//        trajectoryTree.mergeNextTree((*nextTrajectoryTree), direction);
+//
+//        return endPosition;
     }
     
     DblSpan updateTrajectoryTree(TreeState trajectoryTree,
@@ -111,7 +149,7 @@ public:
     
     UniPtrTreeState buildTree(DblSpan position, DblSpan momentum, DblSpan gradient, int direction,
                               double logSliceU, int height, double stepSize, double initialJointDensity) {
-        
+        std::cerr << "height is" << height << std::endl;
         if (height == 0) {
             return buildBaseCase(position, momentum, gradient, direction, logSliceU, stepSize, initialJointDensity);
         } else {
@@ -137,7 +175,8 @@ public:
         
         // "one reversibleHMC integral
         zzEngine.reversiblePositionMomentumUpdate(position, momentum, gradient, direction, stepSize);
-        
+        std::cerr << "one reversiblePositionMomentumUpdate" << std::endl;
+
         double logJointProbAfter = zzEngine.getJointProbability(position, momentum);
         
         const int numNodes = (logSliceU <= logJointProbAfter ? 1 : 0);

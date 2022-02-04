@@ -1,4 +1,3 @@
-\
 #include <unordered_map>
 
 #include <Rcpp.h>
@@ -117,10 +116,12 @@ Rcpp::List createEngine(int dimension,
                         std::vector<double>& observed,
                         std::vector<double>& parameterSign,
                         long flags, long info, long seed,
+                        NumericVector& mean,
                         NumericMatrix& precision) {
   
   auto zigZag = new ZigZagWrapper(
-    zz::dispatch(dimension, mask.data(), observed.data(), parameterSign.data(), flags, info, seed, zz::DblSpan(precision.begin(), precision.end())));
+          zz::dispatch(dimension, mask.data(), observed.data(), parameterSign.data(), flags, info, seed,
+                       zz::DblSpan(mean.begin(), mean.end()), zz::DblSpan(precision.begin(), precision.end())));
   
   XPtrZigZagWrapper engine(zigZag);
   
@@ -224,7 +225,6 @@ Rcpp::List oneIteration(SEXP sexp,
                         NumericVector& gradient,
                         NumericVector& momentum,
                         double time) {
-  
   auto ptr = parsePtr(sexp);
   try{
     auto returnValue =  ptr->operate(
@@ -255,22 +255,29 @@ Rcpp::List oneNutsIteration(SEXP sexp,
                             NumericVector& gradient,
                             double stepsize){
   // ptr to a zigzag obj
-  Rcout << "loc1";
   auto ptr = parsePtrSse(sexp);
-  Rcout << "loc2";
   // create a NUTS obj:
   auto nuts = new NutsWrapper(nuts::dispatchNuts(100, 100, 10, 666, 0.01, ptr));
-  Rcout << "loc3";
-  
+
   XPtrNutsWrapper engineNuts(nuts);
   auto ptrNuts = parsePtrNuts(engineNuts);
-  Rcout << "loc4";
+
+  try {
+    // auto returnValue = ptrNuts -> takeOneStep(zz::DblSpan(position.begin(), position.end()),
+    //                                           zz::DblSpan(momentum.begin(), momentum.end()),
+    //                                           zz::DblSpan(gradient.begin(), gradient.end()));
+    ptrNuts -> testOneStep(zz::DblSpan(position.begin(), position.end()),
+                           zz::DblSpan(momentum.begin(), momentum.end()),
+                           zz::DblSpan(gradient.begin(), gradient.end()));
+    
+    Rcpp::List list = Rcpp::List::create(
+      Rcpp::Named("returnValue") = 1);
+    return list;
+  }
   
-  auto returnValue = ptrNuts -> takeOneStep(zz::DblSpan(position.begin(), position.end()),
-                                            zz::DblSpan(momentum.begin(), momentum.end()),
-                                            zz::DblSpan(gradient.begin(), gradient.end()));
-  
-  Rcpp::List list = Rcpp::List::create(
-    Rcpp::Named("returnValue") = returnValue);
-  return list;
+  catch (Rcpp::internal::InterruptedException& e)
+  {
+    Rcout << "Caught an interrupt!" << std::endl;
+  }
+
 }

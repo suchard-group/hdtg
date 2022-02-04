@@ -31,7 +31,7 @@ namespace nuts {
     class TreeState {
         friend class NoUTurn;
 
-    private:
+    public:
 
         TreeState(DblSpan position, DblSpan momentum, DblSpan gradient,
                   int numNodes, bool flagContinue,

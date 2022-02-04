@@ -13,7 +13,6 @@
 #' @examples
 hzz <- function(get_prec_product,
                 mean,
-                prec,
                 position,
                 constraits,
                 momentum,
@@ -44,12 +43,9 @@ hzz <- function(get_prec_product,
   
   if (cpp_flg) {
     if(nuts_flg){
-      return(1)
-      # print("here1")
-      # cat("here1")
-      # res = .oneNutsIteration(sexp = engine$engine, position = position, momentum = momentum, gradient = gradient, stepsize = 0.01)
-      # print("here2")
-      # cat("here2")
+      # return(1)
+      res = .oneNutsIteration(sexp = engine$engine, position = position, momentum = momentum, gradient = gradient, stepsize = 0.01)
+      return(rep(1, ndim))
     } else {
       res = .oneIteration(sexp = engine$engine, position = position, velocity = velocity, action = action, gradient = - gradient, momentum = momentum, time = t)
     }

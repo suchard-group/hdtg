@@ -37,7 +37,7 @@ rcmg <- function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = N
   set.seed(random_seed)
 
   if (cpp_flg) {
-    engine <- createEngine(dimension = ndim, mask = rep(1, ndim), observed = rep(1, ndim), parameterSign = constraits, flags = 128, info = 1, seed = 1, precision = prec)
+    engine <- createEngine(dimension = ndim, mask = rep(1, ndim), observed = rep(1, ndim), parameterSign = constraits, flags = 128, info = 1, seed = 1, mean = mean, precision = prec)
   } else {
     engine <- NULL
   }
@@ -47,7 +47,7 @@ rcmg <- function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = N
       (2 * (runif(ndim) > .5) - 1) * rexp(ndim, rate = 1)
     t_jittered <- t
     
-    p0 <- hzz(get_prec_product = get_prec_product, mean = mean, prec = prec, position = p0, constraits = constraits, momentum = momentum, t = t_jittered, cpp_flg = cpp_flg, nuts_flg = nuts_flg, engine = engine)
+    p0 <- hzz(get_prec_product = get_prec_product, mean = mean, position = p0, constraits = constraits, momentum = momentum, t = t_jittered, cpp_flg = cpp_flg, nuts_flg = nuts_flg, engine = engine)
     
     samples[, i] <- p0
     if (debug_flg) {

@@ -55,20 +55,23 @@ namespace zz {
                long flags,
                int nThreads,
                long seed,
+               DblSpan mean = DblSpan(),
                DblSpan precision = DblSpan()) : AbstractZigZag(),
-                            dimension(dimension),
-                            mask(constructMask(rawMask, dimension, true)),
-                            observed(constructMask(rawObserved, dimension, true)),
-                            parameterSign(constructMask(rawParameterSign, dimension, false)),
-                            mmPosition(dimension),
-                            mmVelocity(dimension),
-                            mmAction(dimension),
-                            mmGradient(dimension),
-                            mmMomentum(dimension),
-                            flags(flags),
-                            nThreads(nThreads),
-                            seed(seed),
-                            fixedPrecision(precision){
+                                                dimension(dimension),
+                                                mask(constructMask(rawMask, dimension, true)),
+                                                observed(constructMask(rawObserved, dimension, true)),
+                                                parameterSign(constructMask(rawParameterSign, dimension, false)),
+                                                mmPosition(dimension),
+                                                mmVelocity(dimension),
+                                                mmAction(dimension),
+                                                mmGradient(dimension),
+                                                mmMomentum(dimension),
+                                                flags(flags),
+                                                nThreads(nThreads),
+                                                seed(seed),
+                                                meanV(mean.data(), dimension),
+                                                precisionMat(precision.data(), dimension, dimension),
+                                                logPrecDet(log(precisionMat.determinant())){
             std::cerr << "ZigZag constructed" << std::endl;
             std::cout << '\n';
             if (flags & zz::Flags::TBB) {
@@ -181,7 +184,7 @@ namespace zz {
 
         std::unique_ptr<Eigen::VectorXd> getAction(DblSpan velocity){
             Eigen::Map<Eigen::VectorXd> vVec(velocity.begin(), dimension);
-            Eigen::VectorXd productVec= precision*vVec;
+            Eigen::VectorXd productVec= precisionMat * vVec;
             return zz::make_unique<Eigen::VectorXd>(productVec);
         }
 
@@ -426,37 +429,42 @@ namespace zz {
             }
         }
 
+        void print(DblSpan position, DblSpan momentum){
+            std::cerr << "just to show a message" << std::endl;
+            Eigen::Map<Eigen::VectorXd> positionV(position.data(), dimension);
+
+            Eigen::VectorXd delta = positionV - meanV;
+            Eigen::VectorXd tmp = precisionMat * delta;
+
+            double SSE = delta.dot(tmp);
+
+            //double logPrecisionDet = precision.determinant();//todo: make sure to avoid unnecessary det calculation
+            std::cerr << "log precision Det" << logPrecDet << std::endl;
+
+//            // 1. logpdf of MVN
+            double likelihood = dimension * logNormalize + 0.5 * (logPrecDet - SSE);
+//            // 2. add kinetic energy
+            double res = likelihood - getKineticEnergy(momentum);
+
+            std::cerr << "res is" << res << std::endl;
+
+        }
+
         double getJointProbability(DblSpan position, DblSpan momentum){
-            const int dim = position.size();
-            std::vector<double> delta(dim);
-            std::vector<double> tmp(dim);
 
-            for (int i = 0; i < dim; i++) {
-                delta[i] = position[i] - mean[i];
-            }
-
-            for (int i = 0; i < dim; i++) {
-                for (int j = 0; j < dim; j++) {
-                    tmp[i] += delta[j] * precision.coeff(j, i);
-                }
-            }
-
-            double SSE = 0;
-
-            for (int i = 0; i < dim; i++)
-                SSE += tmp[i] * delta[i];
-
-            double logPrecisionDet = precision.determinant();//todo: make sure to avoid unnecessary det calculation
+            Eigen::Map<Eigen::VectorXd> positionV(position.data(), dimension);
+            Eigen::VectorXd delta = positionV - meanV;
+            Eigen::VectorXd tmp = precisionMat * delta;
+            double SSE = delta.dot(tmp);
             // 1. logpdf of MVN
-            double likelihood = dim * logNormalize + 0.5 * (logPrecisionDet - SSE);
+            double likelihood = dimension * logNormalize + 0.5 * (logPrecDet - SSE);
             // 2. add kinetic energy
             return likelihood - getKineticEnergy(momentum);
         }
 
         double getKineticEnergy(DblSpan momentum){
             double energy = 0;
-            const int dim = momentum.size();
-            for (int i = 0; i < dim; ++i) {
+            for (int i = 0; i < momentum.size(); ++i) {
                 energy += abs(momentum[i]);
             }
             return energy;
@@ -601,8 +609,8 @@ namespace zz {
                 const int eventType = firstBounce.type;
                 const int eventIndex = firstBounce.index;
 
-                DblSpan precisionColumn = fixedPrecision.subspan(eventIndex * dimension, dimension);
-
+                DblSpan precisionColumn = DblSpan(&precisionMat(0, eventIndex), dimension);
+                        //fixedPrecision.subspan(eventIndex * dimension, dimension);
                 if (eventType == BounceType::BOUNDARY) {
 
                     reflectMomentum(dynamics, eventIndex);
@@ -904,10 +912,13 @@ namespace zz {
         mm::MemoryManager<double> mmGradient;
         mm::MemoryManager<double> mmMomentum;
 
-        DblSpan fixedPrecision;
-        std::vector<double> mean;
-        Eigen::MatrixXd precision;
+        //DblSpan fixedMean;
+        //DblSpan fixedPrecision;
+        Eigen::Map<Eigen::VectorXd> meanV;
+        Eigen::Map<Eigen::MatrixXd> precisionMat;
+
         double pi = 3.14159265358979323846;
+        const double logPrecDet;
         const double logNormalize = -0.5 * log(2.0 * pi);
 
         long flags;
@@ -956,20 +967,21 @@ namespace zz {
             long flags,
             int info,
             long seed,
+            DblSpan mean=DblSpan(),
             DblSpan precision=DblSpan()) {
 
         if (static_cast<unsigned long>(flags) & zz::Flags::AVX) {
             std::cerr << "Factory: AVX" << std::endl;
             return zz::make_unique<zz::ZigZag<zz::DoubleAvxTypeInfo>>(
-                    dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed, precision);
+                    dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed, mean, precision);
         } else if (static_cast<unsigned long>(flags) & zz::Flags::SSE) {
             std::cerr << "Factory: SSE" << std::endl;
             return zz::make_unique<zz::ZigZag<zz::DoubleSseTypeInfo>>(
-                    dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed, precision);
+                    dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed, mean, precision);
         } else {
             std::cerr << "Factory: No SIMD" << std::endl;
             return zz::make_unique<zz::ZigZag<zz::DoubleNoSimdTypeInfo>>(
-                    dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed, precision);
+                    dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed, mean, precision);
         }
     }
 }

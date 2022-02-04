@@ -21,8 +21,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // createEngine
-Rcpp::List createEngine(int dimension, std::vector<double>& mask, std::vector<double>& observed, std::vector<double>& parameterSign, long flags, long info, long seed, NumericMatrix& precision);
-RcppExport SEXP _hzz_createEngine(SEXP dimensionSEXP, SEXP maskSEXP, SEXP observedSEXP, SEXP parameterSignSEXP, SEXP flagsSEXP, SEXP infoSEXP, SEXP seedSEXP, SEXP precisionSEXP) {
+Rcpp::List createEngine(int dimension, std::vector<double>& mask, std::vector<double>& observed, std::vector<double>& parameterSign, long flags, long info, long seed, NumericVector& mean, NumericMatrix& precision);
+RcppExport SEXP _hzz_createEngine(SEXP dimensionSEXP, SEXP maskSEXP, SEXP observedSEXP, SEXP parameterSignSEXP, SEXP flagsSEXP, SEXP infoSEXP, SEXP seedSEXP, SEXP meanSEXP, SEXP precisionSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -33,8 +33,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< long >::type flags(flagsSEXP);
     Rcpp::traits::input_parameter< long >::type info(infoSEXP);
     Rcpp::traits::input_parameter< long >::type seed(seedSEXP);
+    Rcpp::traits::input_parameter< NumericVector& >::type mean(meanSEXP);
     Rcpp::traits::input_parameter< NumericMatrix& >::type precision(precisionSEXP);
-    rcpp_result_gen = Rcpp::wrap(createEngine(dimension, mask, observed, parameterSign, flags, info, seed, precision));
+    rcpp_result_gen = Rcpp::wrap(createEngine(dimension, mask, observed, parameterSign, flags, info, seed, mean, precision));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -100,7 +101,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_hzz_rcpp_hello_world", (DL_FUNC) &_hzz_rcpp_hello_world, 0},
-    {"_hzz_createEngine", (DL_FUNC) &_hzz_createEngine, 8},
+    {"_hzz_createEngine", (DL_FUNC) &_hzz_createEngine, 9},
     {"_hzz_doSomething", (DL_FUNC) &_hzz_doSomething, 2},
     {"_hzz_getNextEvent", (DL_FUNC) &_hzz_getNextEvent, 6},
     {"_hzz_oneIteration", (DL_FUNC) &_hzz_oneIteration, 7},
