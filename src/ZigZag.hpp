@@ -415,13 +415,25 @@ namespace zz {
             );
         }
 
-        double reversiblePositionMomentumUpdate(DblSpan position,
+        void reversiblePositionMomentumUpdate(DblSpan position,
                                                 DblSpan gradient,
                                                 DblSpan momentum,
                                                 int direction,
                                                 double time) {// todo only give WrappedVector position, WrappedVector momentum, WrappedVector gradient,int direction, double time
             if (direction == -1){
                 std::transform(momentum.begin(), momentum.end(), momentum.begin(), std::negate<double>());
+            }
+            std::cout << "position:" << std::endl;
+            for (int i = 0; i < position.size(); ++i) {
+                std::cout << position[i] << std::endl;
+            }
+            std::cout << "gradient:" << std::endl;
+            for (int i = 0; i < position.size(); ++i) {
+                std::cout << gradient[i] << std::endl;
+            }
+            std::cout << "momentum:" << std::endl;
+            for (int i = 0; i < position.size(); ++i) {
+                std::cout << momentum[i] << std::endl;
             }
             operate(position, gradient, momentum, time);
             if (direction == -1){

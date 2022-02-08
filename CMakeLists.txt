@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -g -msse4.2 -mfma -mavx")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -g -msse4.2 -mfma -mavx")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -g -msse4.2 -mfma -mavx")
 
 find_package(Java REQUIRED)
 find_package(JNI REQUIRED)

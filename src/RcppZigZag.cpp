@@ -266,7 +266,7 @@ Rcpp::List oneNutsIteration(SEXP sexp,
     // auto returnValue = ptrNuts -> takeOneStep(zz::DblSpan(position.begin(), position.end()),
     //                                           zz::DblSpan(momentum.begin(), momentum.end()),
     //                                           zz::DblSpan(gradient.begin(), gradient.end()));
-    ptrNuts -> testOneStep(zz::DblSpan(position.begin(), position.end()),
+    ptrNuts->testOneStep(zz::DblSpan(position.begin(), position.end()),
                            zz::DblSpan(momentum.begin(), momentum.end()),
                            zz::DblSpan(gradient.begin(), gradient.end()));
     

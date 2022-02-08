@@ -71,14 +71,24 @@ public:
             }
         }
     }
+
+    void printDblSpan(zz::DblSpan span){
+        for (int i = 0; i < span.size(); ++i) {
+            std::cout << span[i] << std::endl;
+        }
+    }
     
     DblSpan takeOneStep(DblSpan initialPosition, DblSpan initialMomentum, DblSpan gradient) {
         DblSpan endPosition = initialPosition;
         
         const double initialJointDensity = zzEngine.getJointProbability(initialPosition,
                                                                         initialMomentum);
-        double logSliceU = log(uniGenerator.getUniform()) + initialJointDensity;
-        
+        //double tmp = log(uniGenerator.getUniform());
+        double tmp1 = -1.4142475544669573;
+        double logSliceU = tmp1 + initialJointDensity;
+        std::cerr << "logSlice u is " << logSliceU << std::endl;
+        std::cout << "momentum in takeOnestep:" << std::endl;
+        printDblSpan(initialMomentum);
         TreeState trajectoryTree = TreeState(initialPosition, initialMomentum, gradient, 1, true,
                                              0, 0, ++uniSeed); //todo to check
         
@@ -127,7 +137,9 @@ public:
                                  double logSliceU,
                                  double initialJointDensity) {
         DblSpan endPosition;
-        
+        zz::DblSpan tmpspan = trajectoryTree.getMomentum(-1);
+        std::cout << "momentum in updateTrajectoryTree:" << std::endl;
+        printDblSpan(tmpspan);
         int direction = (uniGenerator.getUniform() < 0.5) ? -1 : 1;
         UniPtrTreeState nextTrajectoryTree = buildTree(
             trajectoryTree.getPosition(direction), trajectoryTree.getMomentum(direction),
@@ -150,6 +162,8 @@ public:
     UniPtrTreeState buildTree(DblSpan position, DblSpan momentum, DblSpan gradient, int direction,
                               double logSliceU, int height, double stepSize, double initialJointDensity) {
         std::cerr << "height is" << height << std::endl;
+        std::cout << "momentum in buildTree:" << std::endl;
+        printDblSpan(momentum);
         if (height == 0) {
             return buildBaseCase(position, momentum, gradient, direction, logSliceU, stepSize, initialJointDensity);
         } else {
@@ -174,6 +188,11 @@ public:
         DblSpan gradient{gradientVec};
         
         // "one reversibleHMC integral
+        std::cout << "position before reversible update:" << std::endl;
+        printDblSpan(inPosition);
+        std::cout << "momentum before reversible update:" << std::endl;
+        printDblSpan(inMomentum);
+
         zzEngine.reversiblePositionMomentumUpdate(position, momentum, gradient, direction, stepSize);
         std::cerr << "one reversiblePositionMomentumUpdate" << std::endl;
 

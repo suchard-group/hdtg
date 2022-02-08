@@ -55,6 +55,11 @@ namespace nuts {
             positionTriSpan = DblSpan{positionTri};
             momentumTriSpan = DblSpan{momentumTri};
             gradientTriSpan = DblSpan{gradientTri};
+
+            std::cout << "momentum in treeState:" << std::endl;
+            for (int i = 0; i < momentumTriSpan.size(); ++i) {
+                std::cout << momentumTriSpan[i] << std::endl;
+            }
         }
 
         DblSpan getPosition(int direction) {

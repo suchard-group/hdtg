@@ -45,7 +45,9 @@
     #pragma clang diagnostic ignored "-Wabsolute-value"
   #endif
   #if __clang_major__ >= 10
-    #pragma clang diagnostic ignored "-Wimplicit-int-float-conversion"
+    #if !defined(__has_warning) || __has_warning("-Wmaybe-uninitialized")
+    #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+    #endif
   #endif
   #if ( defined(__ALTIVEC__) || defined(__VSX__) ) && __cplusplus < 201103L
     // warning: generic selections are a C11-specific feature

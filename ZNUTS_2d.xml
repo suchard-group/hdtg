@@ -6,7 +6,7 @@
       <parameter value="1"/>
     </variance>
     <rho>
-      <parameter value="0.1"/>
+      <parameter value="0"/>
     </rho>
   </compoundSymmetryNormalDistributionModel>
   <multivariateDistributionLikelihood id="distribution">
@@ -32,7 +32,7 @@
       </zigZagOperator>
     </NoUTurnOperator>
   </operators>
-  <mcmc id="mcmc.hmc" chainLength="10" autoOptimize="true">
+  <mcmc id="mcmc.hmc" chainLength="1" autoOptimize="true">
     <posterior>
       <likelihood id="likelihood.hmc">
         <distributionLikelihood idref="distribution"/>
