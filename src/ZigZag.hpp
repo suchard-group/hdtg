@@ -174,12 +174,12 @@ namespace zz {
             return operateImpl(dynamics, time);
         }
 
-        std::unique_ptr<std::vector<double>> getVelocity(DblSpan momentum){
+        std::vector<double> getVelocity(DblSpan momentum){
             std::vector<double> tmp(dimension);
             for (int i = 0; i < dimension; ++i) {
                 tmp[i] = (momentum[i] > 0)? 1: -1;
             }
-            return zz::make_unique<std::vector<double>>(tmp);
+            return tmp;
         }
 
         std::unique_ptr<Eigen::VectorXd> getAction(DblSpan velocity){
@@ -192,8 +192,8 @@ namespace zz {
                        DblSpan gradient,
                        DblSpan momentum,
                        double time) {
-            std::unique_ptr<std::vector<double>> vPtr = getVelocity(momentum);
-            DblSpan velocity(*vPtr);
+            std::vector<double> v = getVelocity(momentum);
+            DblSpan velocity = zz::DblSpan(v);
             std::unique_ptr<Eigen::VectorXd> aPtr = getAction(velocity);
             DblSpan action(*aPtr);
             Dynamics<double> dynamics(position, velocity, action, gradient, momentum, observed, parameterSign);
@@ -416,25 +416,25 @@ namespace zz {
         }
 
         void reversiblePositionMomentumUpdate(DblSpan position,
-                                                DblSpan gradient,
-                                                DblSpan momentum,
-                                                int direction,
+                                              DblSpan momentum,
+                                              DblSpan gradient,
+                                              int direction,
                                                 double time) {// todo only give WrappedVector position, WrappedVector momentum, WrappedVector gradient,int direction, double time
             if (direction == -1){
                 std::transform(momentum.begin(), momentum.end(), momentum.begin(), std::negate<double>());
             }
-            std::cout << "position:" << std::endl;
-            for (int i = 0; i < position.size(); ++i) {
-                std::cout << position[i] << std::endl;
-            }
-            std::cout << "gradient:" << std::endl;
-            for (int i = 0; i < position.size(); ++i) {
-                std::cout << gradient[i] << std::endl;
-            }
-            std::cout << "momentum:" << std::endl;
-            for (int i = 0; i < position.size(); ++i) {
-                std::cout << momentum[i] << std::endl;
-            }
+//            std::cout << "position:" << std::endl;
+//            for (int i = 0; i < position.size(); ++i) {
+//                std::cout << position[i] << std::endl;
+//            }
+//            std::cout << "gradient:" << std::endl;
+//            for (int i = 0; i < position.size(); ++i) {
+//                std::cout << gradient[i] << std::endl;
+//            }
+//            std::cout << "momentum:" << std::endl;
+//            for (int i = 0; i < position.size(); ++i) {
+//                std::cout << momentum[i] << std::endl;
+//            }
             operate(position, gradient, momentum, time);
             if (direction == -1){
                 std::transform(momentum.begin(), momentum.end(), momentum.begin(), std::negate<double>());
@@ -611,6 +611,7 @@ namespace zz {
             BounceState finalBounceState;
             if (remainingTime < eventTime) { // No event during remaining time
                 updatePosition<SimdType, SimdSize>(dynamics, remainingTime);
+                updateMomentum<SimdType, SimdSize>(dynamics, remainingTime);
                 finalBounceState = BounceState(BounceType::NONE, -1, 0.0);
 
             } else {

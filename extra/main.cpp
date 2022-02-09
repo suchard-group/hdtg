@@ -16,10 +16,10 @@ int main(int argCount, char** args) {
     std::vector<double> parameterSign = {1,1};
 
     std::vector<double> position = {0.1,0.1};
-    std::vector<double> velocity = {-1,1};
-    std::vector<double> action = {-1,1};
+    std::vector<double> velocity = {1,-1};
+    std::vector<double> action = {1,-1};
     std::vector<double> gradient = {-0.1,-0.1};
-    std::vector<double> momentum = {-0.3980153048394741, 2.2483327571774736};
+    std::vector<double> momentum = {0.929485837936432, -1.4204282357108213};
 
     long flags = 128L;
     long info = 1L;
@@ -35,22 +35,23 @@ int main(int argCount, char** args) {
             dimension, mask.data(), observed.data(), parameterSign.data(), flags, info, seed, mean, precision);
     std::shared_ptr<zz::ZigZag<zz::DoubleSseTypeInfo>> shared = std::move(zz);
 
-    std::unique_ptr<nuts::NoUTurn> nuts = nuts::dispatchNuts(100, 100, 10, 666, 15.182, shared);
+    std::unique_ptr<nuts::NoUTurn> nuts = nuts::dispatchNuts(100, 100, 10, 666, 0.01, shared);
     cout << "nuts one step starts:" << endl;
 
+//    nuts::TreeState newState = nuts::TreeState(zz::DblSpan(position), zz::DblSpan(momentum), zz::DblSpan(gradient), 1, true,
+//                             0, 0, 666);
 //    nuts->testOneStep(position, momentum, gradient);
-
-    nuts->takeOneStep(position, momentum, gradient);
+    nuts->takeOneStep(zz::DblSpan(position), zz::DblSpan(momentum), zz::DblSpan(gradient));
 //    shared->operate(zz::DblSpan(position),
 //                zz::DblSpan(velocity),
 //                zz::DblSpan(action),
 //                zz::DblSpan(gradient),
 //                zz::DblSpan(momentum),
 //                time);
-    cout << "position after:" << endl;
-    for (int i = 0; i < position.size(); ++i) {
-        cout << position[i] << endl;
-    }
+//    cout << "position after:" << endl;
+//    for (int i = 0; i < position.size(); ++i) {
+//        cout << position[i] << endl;
+//    }
 
     return 666;
 }

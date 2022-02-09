@@ -40,11 +40,10 @@ namespace nuts {
                                                                              cumAcceptProb(cumAcceptProb),
                                                                              numAcceptProbStates(numAcceptProbStates),
                                                                              dim(position.size()),
+                                                                             positionTri(position.size()*3, 0),
+                                                                             momentumTri(position.size()*3, 0),
+                                                                             gradientTri(position.size()*3, 0),
                                                                              uniGenerator(UniformGenerator(seed)) {
-            std::vector<double> positionTri(dim * 3, 0);
-            std::vector<double> momentumTri(dim * 3, 0);
-            std::vector<double> gradientTri(dim * 3, 0);
-
             for (int i = 0; i < 3; ++i) {
                 for (int j = 0; j < dim; ++j) {
                     positionTri[i * dim + j] = position[j];
@@ -52,26 +51,18 @@ namespace nuts {
                     gradientTri[i * dim + j] = gradient[j];
                 }
             }
-            positionTriSpan = DblSpan{positionTri};
-            momentumTriSpan = DblSpan{momentumTri};
-            gradientTriSpan = DblSpan{gradientTri};
-
-            std::cout << "momentum in treeState:" << std::endl;
-            for (int i = 0; i < momentumTriSpan.size(); ++i) {
-                std::cout << momentumTriSpan[i] << std::endl;
-            }
         }
 
         DblSpan getPosition(int direction) {
-            return positionTriSpan.subspan(getIndex(direction) * dim, dim);
+            return DblSpan(&positionTri[getIndex(direction)*dim], dim);
         }
 
         DblSpan getMomentum(int direction) {
-            return momentumTriSpan.subspan(getIndex(direction) * dim, dim);
+            return DblSpan(&momentumTri[getIndex(direction)*dim], dim);
         }
 
         DblSpan getGradient(int direction) {
-            return gradientTriSpan.subspan(getIndex(direction) * dim, dim);
+            return DblSpan(&gradientTri[getIndex(direction)*dim], dim);
         }
 
         DblSpan getSample() {
@@ -84,19 +75,19 @@ namespace nuts {
 
         void setPosition(int direction, DblSpan position) {
             for (int j = 0; j < dim; ++j) {
-                gradientTriSpan[getIndex(direction) * dim + j] = position[j];
+                positionTri[getIndex(direction) * dim + j] = position[j];
             }
         }
 
         void setMomentum(int direction, DblSpan momentum) {
             for (int j = 0; j < dim; ++j) {
-                momentumTriSpan[getIndex(direction) * dim + j] = momentum[j];
+                momentumTri[getIndex(direction) * dim + j] = momentum[j];
             }
         }
 
         void setGradient(int direction, DblSpan gradient) {
             for (int j = 0; j < dim; ++j) {
-                gradientTriSpan[getIndex(direction) * dim + j] = gradient[j];
+                gradientTri[getIndex(direction) * dim + j] = gradient[j];
             }
         }
 
@@ -122,7 +113,7 @@ namespace nuts {
                 sumMinus += positionDiffI * momentumMinus[i];
             }
 
-            return sumPlus && sumMinus;
+            return (sumPlus > 0) && (sumMinus > 0);
         }
 
         void mergeNextTree(TreeState nextTree, int direction) {
@@ -147,11 +138,11 @@ namespace nuts {
             }
         }
 
-        DblSpan positionTriSpan;
-        DblSpan momentumTriSpan;
-        DblSpan gradientTriSpan;
         UniformGenerator uniGenerator;
         int dim;
+        std::vector<double> positionTri;
+        std::vector<double> momentumTri;
+        std::vector<double> gradientTri;
 
         int numNodes;
         bool flagContinue;

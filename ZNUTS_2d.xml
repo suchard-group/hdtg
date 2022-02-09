@@ -23,7 +23,7 @@
         <gradient>
           <distributionLikelihood idref="distribution"/>
         </gradient>
-        <precisionVectorProduct id="product" roughTravelTimeGuess="15.182" type="cs">
+        <precisionVectorProduct id="product" roughTravelTimeGuess="0.01" type="cs">
           <compoundSymmetryNormalDistributionModel idref="normal"/>
         </precisionVectorProduct>
         <precisionColumn useCache="false" type="cs">
