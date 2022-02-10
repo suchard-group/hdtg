@@ -34,7 +34,7 @@ int main(int argCount, char** args) {
     std::shared_ptr<zz::ZigZag<zz::DoubleSseTypeInfo>> shared = std::move(zz);
     std::unique_ptr<nuts::NoUTurn> nuts = nuts::dispatchNuts(100, 100, 10, 666, 100, shared);
 
-    for (int n = 0; n < 40; ++n) {
+    for (int n = 0; n < 1; ++n) {
         cout << " iteration " << n << "started ";
         auto res = nuts->takeOneStep(zz::DblSpan(position), zz::DblSpan(momentum), zz::DblSpan(gradient));
         //auto res1 = nuts->takeOneStep1();

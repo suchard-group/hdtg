@@ -1,31 +1,31 @@
 #' Title
 #'
-#' @param get_prec_product function that returns the precision matrix - vector product
+#' @param energyGrad function that returns the precision matrix - vector product
 #' @param mean a d-dimensional mean vector
 #' @param position a d-dimensional vector of the initial position
 #' @param momentum a d-dimensional vector of the initial momentum
 #' @param t time length to simulate the Markov process
 #' @param constraits
-#' @param cpp_flg
+#' @param cppFlg
 #'
 #' @return
 #'
 #' @examples
-hzz <- function(get_prec_product,
+hzz <- function(energyGrad,
                 mean,
                 position,
                 constraits,
                 momentum,
                 t,
-                cpp_flg,
-                nuts_flg,
+                cppFlg,
+                nutsFlg,
                 engine = NULL) {
   debug_flg = F
   ndim = length(position)
   position <- .get_initial_position(position, constraits)
   velocity <- sign(momentum)
-  gradient <- get_prec_product(position - mean)
-  action <- get_prec_product(velocity + mean)
+  gradient <- energyGrad(position - mean)
+  action <- energyGrad(velocity + mean)
   
   # list to store useful info
   dynamics <-
@@ -41,17 +41,26 @@ hzz <- function(get_prec_product,
       event_type = NULL
     )
   
-  if (cpp_flg) {
-    if(nuts_flg){
-      # return(1)
-#       cat("Before:position is ", position, "momentum is ", momentum, "\n")
-#       cat("\n")
-      res = .oneNutsIteration(sexp = engine$engine, position = position, momentum = momentum, gradient = - gradient, stepsize = t)
-#       cat("After:position is ", res$position, "\n")
+  if (cppFlg) {
+    if (nutsFlg) {
+      res = .oneNutsIteration(
+        sexp = engine$engine,
+        position = position,
+        momentum = momentum,
+        logdGradient = -gradient,
+        stepsize = t
+      )
       
-      #return(rep(1, ndim))
     } else {
-      res = .oneIteration(sexp = engine$engine, position = position, velocity = velocity, action = action, gradient = - gradient, momentum = momentum, time = t)
+      res = .oneIteration(
+        sexp = engine$engine,
+        position = position,
+        velocity = velocity,
+        action = action,
+        logdGradient = -gradient,
+        momentum = momentum,
+        time = t
+      )
     }
     return(res$position)
   } else {
@@ -95,14 +104,15 @@ hzz <- function(get_prec_product,
         
         time_remaining <- 0
       } else {
-        dynamics$column <- get_prec_product(event_idx)
+        dynamics$column <- energyGrad(event_idx)
         dynamics$event_time <- event_time
         dynamics$event_idx = event_idx
         dynamics$event_type = event_type
         # update dynamics
         dynamics <- .update_dynamics(dynamics)
         # reflect velocity element
-        dynamics$velocity[event_idx] <- -dynamics$velocity[event_idx]
+        dynamics$velocity[event_idx] <-
+          -dynamics$velocity[event_idx]
         time_remaining <- time_remaining - event_time
       }
       if (debug_flg) {

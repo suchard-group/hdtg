@@ -6,7 +6,7 @@
       <parameter value="1"/>
     </variance>
     <rho>
-      <parameter value="0.9"/>
+      <parameter value="0.1"/>
     </rho>
   </compoundSymmetryNormalDistributionModel>
   <multivariateDistributionLikelihood id="distribution">
@@ -23,7 +23,7 @@
         <gradient>
           <distributionLikelihood idref="distribution"/>
         </gradient>
-        <precisionVectorProduct id="product" roughTravelTimeGuess="1000" type="cs">
+        <precisionVectorProduct id="product" roughTravelTimeGuess="0.01" type="cs">
           <compoundSymmetryNormalDistributionModel idref="normal"/>
         </precisionVectorProduct>
         <precisionColumn useCache="false" type="cs">

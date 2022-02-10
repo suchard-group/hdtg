@@ -24,7 +24,6 @@
 #endif // TIMING
 
 #include "threefry.h"
-//#include "dr_evomodel_operators_NativeZigZag.h"
 #include "MemoryManagement.hpp"
 #include "Simd.hpp"
 #include "ZigZag.hpp"
@@ -61,29 +60,16 @@ namespace nuts {
             std::cout << "\n";
         }
 
-        std::vector<double> takeOneStep1(){
-                std::vector<double> endPosition(5, 666);
-                return endPosition;
-        };
 
         std::vector<double> takeOneStep(DblSpan initialPosition, DblSpan initialMomentum, DblSpan gradient) {
-            std::vector<double> endPosition(initialPosition.size(), 0);
-            //DblSpan endPosition = initialPosition;
 
-            const double initialJointDensity = zzEngine.getJointProbability(initialPosition,
-                                                                            initialMomentum);
-            //double tmp = log(uniGenerator.getUniform());
-            //double tmp = -1.3230210224799723;
+            std::vector<double> endPosition(initialPosition.size(), 0);
+            const double initialJointDensity = zzEngine.getJointProbability(initialPosition,initialMomentum);
             double logSliceU = log(uniGenerator.getUniform()) + initialJointDensity;
-            //std::cerr << "logSlice u is " << logSliceU << std::endl;
-            //printDblSpan(initialMomentum);
 
             TreeState *newState = new TreeState(initialPosition, initialMomentum, gradient, 1, true,
                                                 0, 0, ++uniSeed);
             SharedPtrTreeState trajectoryTree = std::move(zz::make_unique<TreeState>(*newState));
-
-//        TreeState trajectoryTree = TreeState(initialPosition, initialMomentum, gradient, 1, true,
-//                                             0, 0, ++uniSeed); //todo to check
 
             int height = 0;
 
@@ -94,12 +80,6 @@ namespace nuts {
                     for (int i = 0; i < endPosition.size(); ++i) {
                         endPosition[i] = tmp[i];
                     }
-                    //endPosition = tmp;
-//                    std::cout << "tmp is :";
-//                    printDblSpan(tmp);
-//
-//                    std::cout << "endPosition is :";
-//                    printDblSpan(endPosition);
                 }
 
                 height++;
@@ -116,12 +96,7 @@ namespace nuts {
                                      double logSliceU,
                                      double initialJointDensity) {
             DblSpan endPosition;
-            //zz::DblSpan tmpspan = trajectoryTree->getMomentum(-1);
-            //printDblSpan(tmpspan);
             int direction = (uniGenerator.getUniform() < 0.5) ? -1 : 1;
-//        int direction = 1;
-//        std::cout << "fixed direction:" << direction << std::endl;
-
             UniPtrTreeState nextTrajectoryTree = buildTree(
                     trajectoryTree->getPosition(direction), trajectoryTree->getMomentum(direction),
                     trajectoryTree->getGradient(direction),

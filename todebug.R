@@ -1,7 +1,7 @@
 library(devtools)
 
 d = 20
-n_iter = 1000
+n_iter = 2
 burnin = 0.2
 mu = rep(0, d)
 set.seed(666)
@@ -14,7 +14,8 @@ prec = solve(cor_mat)
 p0 <- runif(d, 0, 0.2)
 
 load_all(export_all=FALSE)
-res = rcmg(n = n_iter, mean = mu, prec = prec, constraits = rep(1, d), t = 50, burnin = 0, p0 = p0, cpp_flg = T, nuts_flg = T, debug_flg = F)
+res = rcmg(n = n_iter, mean = mu, prec = prec, constraits = rep(1, d), t = 1, burnin = 0, p0 = p0, cppFlg = T, nutsFlg = T, debug_flg = F)
 
 plot(ts(res[3,(burnin*n_iter):n_iter]))
+plot(res[1,], res[2,])
 mean(res[1,(burnin*n_iter):n_iter])

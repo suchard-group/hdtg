@@ -1,6 +1,7 @@
 #include <unordered_map>
 
 #include <Rcpp.h>
+
 using namespace Rcpp;
 
 // [[Rcpp::depends(RcppParallel,RcppXsimd)]]
@@ -12,60 +13,60 @@ using namespace Rcpp;
 //' @export
 // [[Rcpp::export]]
 List rcpp_hello_world() {
-  
-  CharacterVector x = CharacterVector::create( "foo", "bar" )  ;
-  NumericVector y   = NumericVector::create( 0.0, 1.0 ) ;
-  List z            = List::create( x, y ) ;
-  
-  return z ;
+
+    CharacterVector x = CharacterVector::create("foo", "bar");
+    NumericVector y = NumericVector::create(0.0, 1.0);
+    List z = List::create(x, y);
+
+    return z;
 }
 
 using ZigZagSharedPtr = std::shared_ptr<zz::AbstractZigZag>;
 
 class ZigZagWrapper {
 private:
-  ZigZagSharedPtr zigZag;
-  
+    ZigZagSharedPtr zigZag;
+
 public:
-  ZigZagWrapper(ZigZagSharedPtr zigZag) : zigZag(zigZag) { }
-  
-  ZigZagSharedPtr& get() {
-    return zigZag;
-  }
+    ZigZagWrapper(ZigZagSharedPtr zigZag) : zigZag(zigZag) {}
+
+    ZigZagSharedPtr &get() {
+        return zigZag;
+    }
 };
 
 using XPtrZigZagWrapper = Rcpp::XPtr<ZigZagWrapper>;
 
-ZigZagSharedPtr& parsePtr(SEXP sexp) {
-  XPtrZigZagWrapper ptr(sexp);
-  if (!ptr) {
-    Rcpp::stop("External pointer is uninitialized");
-  }
-  return ptr->get();
+ZigZagSharedPtr &parsePtr(SEXP sexp) {
+    XPtrZigZagWrapper ptr(sexp);
+    if (!ptr) {
+        Rcpp::stop("External pointer is uninitialized");
+    }
+    return ptr->get();
 }
 // copied XPtr for sse. todo: make a template
 using SseSharedPtr = std::shared_ptr<zz::ZigZag<zz::DoubleSseTypeInfo>>;
 
 class SseWrapper {
 private:
-  SseSharedPtr Sse;
-  
+    SseSharedPtr Sse;
+
 public:
-  SseWrapper(SseSharedPtr Sse) : Sse(Sse) { }
-  
-  SseSharedPtr& get() {
-    return Sse;
-  }
+    SseWrapper(SseSharedPtr Sse) : Sse(Sse) {}
+
+    SseSharedPtr &get() {
+        return Sse;
+    }
 };
 
 using XPtrSseWrapper = Rcpp::XPtr<SseWrapper>;
 
-SseSharedPtr& parsePtrSse(SEXP sexp) {
-  XPtrSseWrapper ptr(sexp);
-  if (!ptr) {
-    Rcpp::stop("External pointer is uninitialized");
-  }
-  return ptr->get();
+SseSharedPtr &parsePtrSse(SEXP sexp) {
+    XPtrSseWrapper ptr(sexp);
+    if (!ptr) {
+        Rcpp::stop("External pointer is uninitialized");
+    }
+    return ptr->get();
 }
 
 // copied XPtr for Nuts. todo: make a template
@@ -74,26 +75,25 @@ using NutsSharedPtr = std::shared_ptr<nuts::NoUTurn>;
 
 class NutsWrapper {
 private:
-  NutsSharedPtr Nuts;
-  
+    NutsSharedPtr Nuts;
+
 public:
-  NutsWrapper(NutsSharedPtr Nuts) : Nuts(Nuts) { }
-  
-  NutsSharedPtr& get() {
-    return Nuts;
-  }
+    NutsWrapper(NutsSharedPtr Nuts) : Nuts(Nuts) {}
+
+    NutsSharedPtr &get() {
+        return Nuts;
+    }
 };
 
 using XPtrNutsWrapper = Rcpp::XPtr<NutsWrapper>;
 
-NutsSharedPtr& parsePtrNuts(SEXP sexp) {
-  XPtrNutsWrapper ptr(sexp);
-  if (!ptr) {
-    Rcpp::stop("External pointer is uninitialized");
-  }
-  return ptr->get();
+NutsSharedPtr &parsePtrNuts(SEXP sexp) {
+    XPtrNutsWrapper ptr(sexp);
+    if (!ptr) {
+        Rcpp::stop("External pointer is uninitialized");
+    }
+    return ptr->get();
 }
-
 
 
 //' Create ZigZag engine object
@@ -111,200 +111,186 @@ NutsSharedPtr& parsePtrNuts(SEXP sexp) {
 //'
 //' @export
 // [[Rcpp::export(createEngine)]]
-Rcpp::List createEngine(int dimension, 
-                        std::vector<double>& mask,
-                        std::vector<double>& observed,
-                        std::vector<double>& parameterSign,
+Rcpp::List createEngine(int dimension,
+                        std::vector<double> &mask,
+                        std::vector<double> &observed,
+                        std::vector<double> &parameterSign,
                         long flags, long info, long seed,
-                        NumericVector& mean,
-                        NumericMatrix& precision) {
-  
-  auto zigZag = new ZigZagWrapper(
-          zz::dispatch(dimension, mask.data(), observed.data(), parameterSign.data(), flags, info, seed,
-                       zz::DblSpan(mean.begin(), mean.end()), zz::DblSpan(precision.begin(), precision.end())));
-  
-  XPtrZigZagWrapper engine(zigZag);
-  
-  Rcpp::List list = Rcpp::List::create(
-    Rcpp::Named("engine") = engine,//todo it seems only the ptr("engine") was used by hzz?
-    Rcpp::Named("dimension") = dimension,
-    Rcpp::Named("mask") = mask,
-    Rcpp::Named("observed") = observed,
-    //   Rcpp::Named("dataInitialzied") = false,
-    //    Rcpp::Named("locationsInitialized") = false,
-    //   Rcpp::Named("threads") = threads,
-    //   Rcpp::Named("deviceNumber") = deviceNumber,
-    Rcpp::Named("flags") = flags,
-    Rcpp::Named("info") = info
-  );
-  
-  return list;
+                        NumericVector &mean,
+                        NumericMatrix &precision) {
+
+    auto zigZag = new ZigZagWrapper(
+            zz::dispatch(dimension, mask.data(), observed.data(), parameterSign.data(), flags, info, seed,
+                         zz::DblSpan(mean.begin(), mean.end()), zz::DblSpan(precision.begin(), precision.end())));
+
+    XPtrZigZagWrapper engine(zigZag);
+
+    Rcpp::List list = Rcpp::List::create(
+            Rcpp::Named("engine") = engine,//todo it seems only the ptr("engine") was used by hzz?
+            Rcpp::Named("dimension") = dimension,
+            Rcpp::Named("mask") = mask,
+            Rcpp::Named("observed") = observed,
+            //   Rcpp::Named("dataInitialzied") = false,
+            //    Rcpp::Named("locationsInitialized") = false,
+            //   Rcpp::Named("threads") = threads,
+            //   Rcpp::Named("deviceNumber") = deviceNumber,
+            Rcpp::Named("flags") = flags,
+            Rcpp::Named("info") = info
+    );
+
+    return list;
 }
 
 // [[Rcpp::export(createNutsEngine)]]
-Rcpp::List createNutsEngine(int dimension, 
-                        std::vector<double>& mask,
-                        std::vector<double>& observed,
-                        std::vector<double>& parameterSign,
-                        long flags, long info, long seed,
-                        double stepSize,
-                        NumericVector& mean,
-                        NumericMatrix& precision) {
-  
-  auto zigZag = new ZigZagWrapper(
-    zz::dispatch(dimension, mask.data(), observed.data(), parameterSign.data(), flags, info, seed,
-                 zz::DblSpan(mean.begin(), mean.end()), zz::DblSpan(precision.begin(), precision.end())));
-  XPtrZigZagWrapper engineZZ(zigZag);
-  
-  // ptr to a zigzag obj
-  auto ptr = parsePtrSse(engineZZ);
-  // create a NUTS obj:
-  auto nuts = new NutsWrapper(nuts::dispatchNuts(100, 100, 10, seed, stepSize, ptr));
-  XPtrNutsWrapper engineNuts(nuts);
-  
-  Rcpp::List list = Rcpp::List::create(Rcpp::Named("engine") = engineNuts);
-  
-  return list;
+Rcpp::List createNutsEngine(int dimension,
+                            std::vector<double> &mask,
+                            std::vector<double> &observed,
+                            std::vector<double> &parameterSign,
+                            long flags, long info, long seed,
+                            double stepSize,
+                            NumericVector &mean,
+                            NumericMatrix &precision) {
+
+    auto zigZag = new ZigZagWrapper(
+            zz::dispatch(dimension, mask.data(), observed.data(), parameterSign.data(), flags, info, seed,
+                         zz::DblSpan(mean.begin(), mean.end()), zz::DblSpan(precision.begin(), precision.end())));
+    XPtrZigZagWrapper engineZZ(zigZag);
+
+    // ptr to a zigzag obj
+    auto ptr = parsePtrSse(engineZZ);
+    // create a NUTS obj:
+    auto nuts = new NutsWrapper(nuts::dispatchNuts(100, 100, 10, seed, stepSize, ptr));
+    XPtrNutsWrapper engineNuts(nuts);
+
+    Rcpp::List list = Rcpp::List::create(Rcpp::Named("engine") = engineNuts);
+
+    return list;
 }
 
-void setprecision(){
-  //todo:fill
+void setprecision() {
+    //todo:fill
 }
 
 // [[Rcpp::export(.doSomething)]]
 void doSomething(SEXP sexp,
-                 std::vector<double>& data) {
-  auto ptr = parsePtr(sexp);
-  //ptr->doSomething(data.data(), data.size());
+                 std::vector<double> &data) {
+    auto ptr = parsePtr(sexp);
+    //ptr->doSomething(data.data(), data.size());
 }
 
 // [[Rcpp::export(getNextEvent)]]
-Rcpp::List getNextEvent(SEXP sexp, 
-                        NumericVector& position,
-                        NumericVector& velocity,
-                        NumericVector& action,
-                        NumericVector& logpdfGradient,
-                        NumericVector& momentum) {
-  
-  auto ptr = parsePtr(sexp);
-  // Rcout << "action";
-  // Rf_PrintValue(action);
-  // Rcout << "\n";
-  // 
-  // Rcout << "logpdfGradient";
-  // Rf_PrintValue(logpdfGradient);
-  // Rcout << "\n";
-  // 
-  // Rcout << "momentum";
-  // Rf_PrintValue(momentum);
-  // Rcout << "\n";
-  auto firstBounce =  ptr->getNextBounce(
-    zz::DblSpan(position.begin(), position.end()),
-    zz::DblSpan(velocity.begin(), velocity.end()),
-    zz::DblSpan(action.begin(), action.end()),
-    zz::DblSpan(logpdfGradient.begin(), logpdfGradient.end()),
-    zz::DblSpan(momentum.begin(), momentum.end()));
-  
-  Rcpp::List list = Rcpp::List::create(
-    Rcpp::Named("type") = firstBounce.type,
-    Rcpp::Named("index") = firstBounce.index,
-    Rcpp::Named("time") = firstBounce.time);
-  
-  return list;  
+Rcpp::List getNextEvent(SEXP sexp,
+                        NumericVector &position,
+                        NumericVector &velocity,
+                        NumericVector &action,
+                        NumericVector &logpdfGradient,
+                        NumericVector &momentum) {
+
+    auto ptr = parsePtr(sexp);
+    // Rcout << "action";
+    // Rf_PrintValue(action);
+    // Rcout << "\n";
+    //
+    // Rcout << "logpdfGradient";
+    // Rf_PrintValue(logpdfGradient);
+    // Rcout << "\n";
+    //
+    // Rcout << "momentum";
+    // Rf_PrintValue(momentum);
+    // Rcout << "\n";
+    auto firstBounce = ptr->getNextBounce(
+            zz::DblSpan(position.begin(), position.end()),
+            zz::DblSpan(velocity.begin(), velocity.end()),
+            zz::DblSpan(action.begin(), action.end()),
+            zz::DblSpan(logpdfGradient.begin(), logpdfGradient.end()),
+            zz::DblSpan(momentum.begin(), momentum.end()));
+
+    Rcpp::List list = Rcpp::List::create(
+            Rcpp::Named("type") = firstBounce.type,
+            Rcpp::Named("index") = firstBounce.index,
+            Rcpp::Named("time") = firstBounce.time);
+
+    return list;
 }
 
 
 class RCallback : public zz::PrecisionColumnCallback {
 public:
-  RCallback(Function callback) : PrecisionColumnCallback(), callback(callback), column(-1) { }
-  
-  ~RCallback() { releaseColumn(); }
-  
-  const double* getColumn(int index) override {
-    
-    auto it = map.find(index);
-    
-    if (it == map.end()) {
-      auto newElement = map.emplace(index, callback(index));
-      return newElement.first->second.begin();
-    } else {
-      return it->second.begin();
+    RCallback(Function callback) : PrecisionColumnCallback(), callback(callback), column(-1) {}
+
+    ~RCallback() { releaseColumn(); }
+
+    const double *getColumn(int index) override {
+
+        auto it = map.find(index);
+
+        if (it == map.end()) {
+            auto newElement = map.emplace(index, callback(index));
+            return newElement.first->second.begin();
+        } else {
+            return it->second.begin();
+        }
     }
-  }
-  
-  void releaseColumn() override {
-    column = -1;
-  }
-  
+
+    void releaseColumn() override {
+        column = -1;
+    }
+
 private:
-  Function callback;
-  int column;
-  std::unordered_map<int, NumericVector> map;
-  NumericVector result;
+    Function callback;
+    int column;
+    std::unordered_map<int, NumericVector> map;
+    NumericVector result;
 };
 
 // [[Rcpp::export(.oneIteration)]]
 Rcpp::List oneIteration(SEXP sexp,
-                        NumericVector& position,
-                        NumericVector& velocity,
-                        NumericVector& action,
-                        NumericVector& gradient,
-                        NumericVector& momentum,
+                        NumericVector &position,
+                        NumericVector &velocity,
+                        NumericVector &action,
+                        NumericVector &logdGradient,
+                        NumericVector &momentum,
                         double time) {
-  auto ptr = parsePtr(sexp);
-  try{
-    auto returnValue =  ptr->operate(
-      zz::DblSpan(position.begin(), position.end()),
-      zz::DblSpan(velocity.begin(), velocity.end()),
-      zz::DblSpan(action.begin(), action.end()),
-      zz::DblSpan(gradient.begin(), gradient.end()),
-      zz::DblSpan(momentum.begin(), momentum.end()),
-      time
-    );
-    Rcpp::List list = Rcpp::List::create(
-      Rcpp::Named("returnValue") = returnValue,
-      Rcpp::Named("position") = position);
-    
-    return list;
-  }
-  
-  catch (Rcpp::internal::InterruptedException& e)
-  {
-    Rcout << "Caught an interrupt!" << std::endl;
-  }
+    auto ptr = parsePtr(sexp);
+    try {
+        auto returnValue = ptr->operate(
+                zz::DblSpan(position.begin(), position.end()),
+                zz::DblSpan(velocity.begin(), velocity.end()),
+                zz::DblSpan(action.begin(), action.end()),
+                zz::DblSpan(logdGradient.begin(), logdGradient.end()),
+                zz::DblSpan(momentum.begin(), momentum.end()),
+                time
+        );
+        Rcpp::List list = Rcpp::List::create(
+                Rcpp::Named("returnValue") = returnValue,
+                Rcpp::Named("position") = position);
+
+        return list;
+    }
+
+    catch (Rcpp::internal::InterruptedException &e) {
+        Rcout << "Caught an interrupt!" << std::endl;
+    }
 }
 
 // [[Rcpp::export(.oneNutsIteration)]]
 Rcpp::List oneNutsIteration(SEXP sexp,
-                            NumericVector& position,
-                            NumericVector& momentum,
-                            NumericVector& gradient,
-                            double stepsize){
-  // // ptr to a zigzag obj
-  // auto ptr = parsePtrSse(sexp);
-  // // create a NUTS obj:
-  // auto nuts = new NutsWrapper(nuts::dispatchNuts(100, 100, 10, 666, 0.01, ptr));
-  // 
-  // XPtrNutsWrapper engineNuts(nuts);
-  auto ptrNuts = parsePtrNuts(sexp);
+                            NumericVector &position,
+                            NumericVector &momentum,
+                            NumericVector &logdGradient,
+                            double stepsize) {
+    auto ptrNuts = parsePtrNuts(sexp);
+    try {
+        auto returnValue = ptrNuts->takeOneStep(zz::DblSpan(position.begin(), position.end()),
+                                                zz::DblSpan(momentum.begin(), momentum.end()),
+                                                zz::DblSpan(logdGradient.begin(), logdGradient.end()));
 
-  try {
-    auto returnValue = ptrNuts -> takeOneStep(zz::DblSpan(position.begin(), position.end()),
-                                              zz::DblSpan(momentum.begin(), momentum.end()),
-                                              zz::DblSpan(gradient.begin(), gradient.end()));
-    // ptrNuts->testOneStep(zz::DblSpan(position.begin(), position.end()),
-    //                        zz::DblSpan(momentum.begin(), momentum.end()),
-    //                        zz::DblSpan(gradient.begin(), gradient.end()));
-    
-    Rcpp::List list = Rcpp::List::create(
-      // Rcpp::Named("returnValue") = 1,
-      Rcpp::Named("position") = returnValue);
-    return list;
-  }
-  
-  catch (Rcpp::internal::InterruptedException& e)
-  {
-    Rcout << "Caught an interrupt!" << std::endl;
-  }
+        Rcpp::List list = Rcpp::List::create(Rcpp::Named("position") = returnValue);
+        return list;
+    }
+
+    catch (Rcpp::internal::InterruptedException &e) {
+        Rcout << "Caught an interrupt!" << std::endl;
+    }
 
 }
