@@ -628,7 +628,7 @@ namespace zz {
 
                     reflectMomentum(dynamics, eventIndex);
                     setZeroPosition(dynamics, eventIndex);
-                    std::cerr << "set zero position at index " << eventIndex << std::endl;
+                    //std::cerr << "set zero position at index " << eventIndex << std::endl;
                 } else {
                     setZeroMomentum(dynamics, eventIndex);
                 }

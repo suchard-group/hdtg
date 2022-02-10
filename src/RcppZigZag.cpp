@@ -147,6 +147,7 @@ Rcpp::List createNutsEngine(int dimension,
                         std::vector<double>& observed,
                         std::vector<double>& parameterSign,
                         long flags, long info, long seed,
+                        double stepSize,
                         NumericVector& mean,
                         NumericMatrix& precision) {
   
@@ -158,7 +159,7 @@ Rcpp::List createNutsEngine(int dimension,
   // ptr to a zigzag obj
   auto ptr = parsePtrSse(engineZZ);
   // create a NUTS obj:
-  auto nuts = new NutsWrapper(nuts::dispatchNuts(100, 100, 10, 666, 0.01, ptr));
+  auto nuts = new NutsWrapper(nuts::dispatchNuts(100, 100, 10, seed, stepSize, ptr));
   XPtrNutsWrapper engineNuts(nuts);
   
   Rcpp::List list = Rcpp::List::create(Rcpp::Named("engine") = engineNuts);

@@ -7,6 +7,7 @@
 #include "../src/AbstractZigZag.hpp"
 #include "../src/ZigZag.hpp"
 #include "../src/NoUTurn.hpp"
+#include "../src/UniformGenerator.h"
 using namespace std;
 int main(int argCount, char** args) {
     int dimension = 2;
@@ -31,10 +32,12 @@ int main(int argCount, char** args) {
     auto zz = zz::make_unique<zz::ZigZag<zz::DoubleSseTypeInfo>>(
             dimension, mask.data(), observed.data(), parameterSign.data(), flags, info, seed, mean, precision);
     std::shared_ptr<zz::ZigZag<zz::DoubleSseTypeInfo>> shared = std::move(zz);
-    std::unique_ptr<nuts::NoUTurn> nuts = nuts::dispatchNuts(100, 100, 10, 666, 0.05, shared);
+    std::unique_ptr<nuts::NoUTurn> nuts = nuts::dispatchNuts(100, 100, 10, 666, 100, shared);
 
-    for (int n = 0; n < 1; ++n) {
+    for (int n = 0; n < 40; ++n) {
+        cout << " iteration " << n << "started ";
         auto res = nuts->takeOneStep(zz::DblSpan(position), zz::DblSpan(momentum), zz::DblSpan(gradient));
+        //auto res1 = nuts->takeOneStep1();
         cout << " iteration " << n << " position after:";
         for (int i = 0; i < res.size(); ++i) {
             cout << res[i] << " ";

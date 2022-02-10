@@ -55,13 +55,20 @@ namespace nuts {
 
         ~NoUTurn() = default;
 
-        void printDblSpan(zz::DblSpan &span) {
+        template<typename T>
+        void printDblSpan(T &span) {
             for (auto e: span) std::cout << e << ' ';
             std::cout << "\n";
         }
 
-        DblSpan takeOneStep(DblSpan initialPosition, DblSpan initialMomentum, DblSpan gradient) {
-            DblSpan endPosition = initialPosition;
+        std::vector<double> takeOneStep1(){
+                std::vector<double> endPosition(5, 666);
+                return endPosition;
+        };
+
+        std::vector<double> takeOneStep(DblSpan initialPosition, DblSpan initialMomentum, DblSpan gradient) {
+            std::vector<double> endPosition(initialPosition.size(), 0);
+            //DblSpan endPosition = initialPosition;
 
             const double initialJointDensity = zzEngine.getJointProbability(initialPosition,
                                                                             initialMomentum);
@@ -84,8 +91,15 @@ namespace nuts {
                 //std::cerr << "***************appear once" << std::endl;
                 DblSpan tmp = updateTrajectoryTree(trajectoryTree, height, logSliceU, initialJointDensity);
                 if (!tmp.empty()) {
-                    endPosition = tmp;
-                    printDblSpan(tmp);
+                    for (int i = 0; i < endPosition.size(); ++i) {
+                        endPosition[i] = tmp[i];
+                    }
+                    //endPosition = tmp;
+//                    std::cout << "tmp is :";
+//                    printDblSpan(tmp);
+//
+//                    std::cout << "endPosition is :";
+//                    printDblSpan(endPosition);
                 }
 
                 height++;
