@@ -44,8 +44,12 @@ hzz <- function(get_prec_product,
   if (cpp_flg) {
     if(nuts_flg){
       # return(1)
+      cat("Before:position is ", position, "momentum is ", momentum, "\n")
+      cat("\n")
       res = .oneNutsIteration(sexp = engine$engine, position = position, momentum = momentum, gradient = gradient, stepsize = 0.01)
-      return(rep(1, ndim))
+      cat("After:position is ", res$position, "\n")
+      
+      #return(rep(1, ndim))
     } else {
       res = .oneIteration(sexp = engine$engine, position = position, velocity = velocity, action = action, gradient = - gradient, momentum = momentum, time = t)
     }

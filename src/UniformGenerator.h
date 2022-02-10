@@ -11,7 +11,7 @@ public:
     UniformGenerator(int seed){
         generator = std::mt19937(seed);
         distribution = std::uniform_real_distribution<double>(0, 1);
-        std::cerr << "uniform generator constructed" << '\n' << std::endl;
+        //std::cerr << "uniform generator constructed" << '\n' << std::endl;
     }
     double getUniform(){
         return distribution(generator);

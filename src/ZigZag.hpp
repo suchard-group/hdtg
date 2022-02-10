@@ -627,11 +627,10 @@ namespace zz {
                 if (eventType == BounceType::BOUNDARY) {
 
                     reflectMomentum(dynamics, eventIndex);
-
+                    setZeroPosition(dynamics, eventIndex);
+                    std::cerr << "set zero position at index " << eventIndex << std::endl;
                 } else {
-
                     setZeroMomentum(dynamics, eventIndex);
-
                 }
 
                 reflectVelocity(dynamics, eventIndex);
@@ -773,6 +772,13 @@ namespace zz {
         }
 
         template<typename R>
+        static inline void setZeroPosition(Dynamics<R> &dynamics, int index) {
+            auto position = dynamics.position;
+
+            position[index] = R(0.0);
+        }
+
+        template<typename R>
         static inline void reflectVelocity(Dynamics<R> &dynamics, int index) {
             auto velocity = dynamics.velocity;
 
@@ -869,6 +875,7 @@ namespace zz {
                                          const T velocity,
                                          const T observed,
                                          const T parameterSign) {
+            //std::cerr << parameterSign << std::endl;
             return select(headingTowardsBoundary(parameterSign, velocity, observed),
                           fabs(position / velocity),
                           infinity<T>());

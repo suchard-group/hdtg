@@ -141,6 +141,31 @@ Rcpp::List createEngine(int dimension,
   return list;
 }
 
+// [[Rcpp::export(createNutsEngine)]]
+Rcpp::List createNutsEngine(int dimension, 
+                        std::vector<double>& mask,
+                        std::vector<double>& observed,
+                        std::vector<double>& parameterSign,
+                        long flags, long info, long seed,
+                        NumericVector& mean,
+                        NumericMatrix& precision) {
+  
+  auto zigZag = new ZigZagWrapper(
+    zz::dispatch(dimension, mask.data(), observed.data(), parameterSign.data(), flags, info, seed,
+                 zz::DblSpan(mean.begin(), mean.end()), zz::DblSpan(precision.begin(), precision.end())));
+  XPtrZigZagWrapper engineZZ(zigZag);
+  
+  // ptr to a zigzag obj
+  auto ptr = parsePtrSse(engineZZ);
+  // create a NUTS obj:
+  auto nuts = new NutsWrapper(nuts::dispatchNuts(100, 100, 10, 666, 0.01, ptr));
+  XPtrNutsWrapper engineNuts(nuts);
+  
+  Rcpp::List list = Rcpp::List::create(Rcpp::Named("engine") = engineNuts);
+  
+  return list;
+}
+
 void setprecision(){
   //todo:fill
 }
@@ -254,24 +279,25 @@ Rcpp::List oneNutsIteration(SEXP sexp,
                             NumericVector& momentum,
                             NumericVector& gradient,
                             double stepsize){
-  // ptr to a zigzag obj
-  auto ptr = parsePtrSse(sexp);
-  // create a NUTS obj:
-  auto nuts = new NutsWrapper(nuts::dispatchNuts(100, 100, 10, 666, 0.01, ptr));
-
-  XPtrNutsWrapper engineNuts(nuts);
-  auto ptrNuts = parsePtrNuts(engineNuts);
+  // // ptr to a zigzag obj
+  // auto ptr = parsePtrSse(sexp);
+  // // create a NUTS obj:
+  // auto nuts = new NutsWrapper(nuts::dispatchNuts(100, 100, 10, 666, 0.01, ptr));
+  // 
+  // XPtrNutsWrapper engineNuts(nuts);
+  auto ptrNuts = parsePtrNuts(sexp);
 
   try {
-    // auto returnValue = ptrNuts -> takeOneStep(zz::DblSpan(position.begin(), position.end()),
-    //                                           zz::DblSpan(momentum.begin(), momentum.end()),
-    //                                           zz::DblSpan(gradient.begin(), gradient.end()));
-    ptrNuts->testOneStep(zz::DblSpan(position.begin(), position.end()),
-                           zz::DblSpan(momentum.begin(), momentum.end()),
-                           zz::DblSpan(gradient.begin(), gradient.end()));
+    auto returnValue = ptrNuts -> takeOneStep(zz::DblSpan(position.begin(), position.end()),
+                                              zz::DblSpan(momentum.begin(), momentum.end()),
+                                              zz::DblSpan(gradient.begin(), gradient.end()));
+    // ptrNuts->testOneStep(zz::DblSpan(position.begin(), position.end()),
+    //                        zz::DblSpan(momentum.begin(), momentum.end()),
+    //                        zz::DblSpan(gradient.begin(), gradient.end()));
     
     Rcpp::List list = Rcpp::List::create(
-      Rcpp::Named("returnValue") = 1);
+      // Rcpp::Named("returnValue") = 1,
+      Rcpp::Named("position") = returnValue);
     return list;
   }
   
