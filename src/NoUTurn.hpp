@@ -68,7 +68,7 @@ namespace nuts {
             double logSliceU = log(uniGenerator.getUniform()) + initialJointDensity;
 
             TreeState *newState = new TreeState(initialPosition, initialMomentum, gradient, 1, true,
-                                                0, 0, ++uniSeed);
+                                                0, 0, uniGenerator);
             SharedPtrTreeState trajectoryTree = std::move(zz::make_unique<TreeState>(*newState));
 
             int height = 0;
@@ -162,7 +162,7 @@ namespace nuts {
             //hmcProvider.setParameter(inPosition);
             TreeState *newState = new TreeState(position, momentum, gradient, numNodes,
                                                 flagContinue, acceptProb,
-                                                numAcceptProbStates, ++uniSeed);
+                                                numAcceptProbStates, uniGenerator);
             return zz::make_unique<TreeState>(*newState);
         }
 

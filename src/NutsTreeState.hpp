@@ -35,7 +35,7 @@ namespace nuts {
 
         TreeState(DblSpan position, DblSpan momentum, DblSpan gradient,
                   int numNodes, bool flagContinue,
-                  double cumAcceptProb, int numAcceptProbStates, int seed) : numNodes(numNodes),
+                  double cumAcceptProb, int numAcceptProbStates, UniformGenerator& generator) : numNodes(numNodes),
                                                                              flagContinue(flagContinue),
                                                                              cumAcceptProb(cumAcceptProb),
                                                                              numAcceptProbStates(numAcceptProbStates),
@@ -43,7 +43,7 @@ namespace nuts {
                                                                              positionTri(position.size()*3, 0),
                                                                              momentumTri(position.size()*3, 0),
                                                                              gradientTri(position.size()*3, 0),
-                                                                             uniGenerator(UniformGenerator(seed)) {
+                                                                             uniGenerator(generator) {
             for (int i = 0; i < 3; ++i) {
                 for (int j = 0; j < dim; ++j) {
                     positionTri[i * dim + j] = position[j];
@@ -138,7 +138,7 @@ namespace nuts {
             }
         }
 
-        UniformGenerator uniGenerator;
+        UniformGenerator& uniGenerator;
         int dim;
         std::vector<double> positionTri;
         std::vector<double> momentumTri;
