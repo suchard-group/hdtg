@@ -15,7 +15,7 @@
 #' @export
 #'
 #' @examples rcmg(1,1,1,1,1)
-rcmg <- function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = NULL, cppFlg = FALSE, nutsFlg = FALSE, random_seed = 666, debug_flg = F) {
+rcmg <- function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = NULL, cppFlg = FALSE, nutsFlg = FALSE, random_seed = 666, randomFlg = TRUE, debug_flg = F) {
   stopifnot("n > burnin must be integers!" = (n %% 1 == 0 && burnin %% 1 == 0 && n > burnin))
   stopifnot("mean and prec must be numeric" = (is.numeric(mean) && is.numeric(prec)))
   stopifnot("must provide either covariance or precision" = (!is.null(cov) || !is.null(prec)))
@@ -38,7 +38,7 @@ rcmg <- function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = N
 
   if (cppFlg) {
     if (nutsFlg){
-      engine <- createNutsEngine(dimension = ndim, mask = rep(1, ndim), observed = rep(1, ndim), parameterSign = constraits, flags = 128, info = 1, seed = random_seed, stepSize = t, mean = mean, precision = prec)
+      engine <- createNutsEngine(dimension = ndim, mask = rep(1, ndim), observed = rep(1, ndim), parameterSign = constraits, flags = 128, info = 1, seed = random_seed, randomFlg = randomFlg, stepSize = t, mean = mean, precision = prec)
     } else {
       engine <- createEngine(dimension = ndim, mask = rep(1, ndim), observed = rep(1, ndim), parameterSign = constraits, flags = 128, info = 1, seed = random_seed, mean = mean, precision = prec)
     }

@@ -24,8 +24,8 @@ createEngine <- function(dimension, mask, observed, parameterSign, flags, info, 
     .Call(`_hzz_createEngine`, dimension, mask, observed, parameterSign, flags, info, seed, mean, precision)
 }
 
-createNutsEngine <- function(dimension, mask, observed, parameterSign, flags, info, seed, stepSize, mean, precision) {
-    .Call(`_hzz_createNutsEngine`, dimension, mask, observed, parameterSign, flags, info, seed, stepSize, mean, precision)
+createNutsEngine <- function(dimension, mask, observed, parameterSign, flags, info, seed, randomFlg, stepSize, mean, precision) {
+    .Call(`_hzz_createNutsEngine`, dimension, mask, observed, parameterSign, flags, info, seed, randomFlg, stepSize, mean, precision)
 }
 
 .doSomething <- function(sexp, data) {
