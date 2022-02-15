@@ -26,7 +26,7 @@ public:
             tmp = count % 10 / 10.;
             ++count;
         }
-        std::cerr << tmp << std::endl;
+        //std::cerr << tmp << std::endl;
         return tmp;
     }
 

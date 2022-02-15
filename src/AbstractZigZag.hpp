@@ -52,7 +52,6 @@ namespace zz {
                                double time) = 0;
 
         virtual double operate(DblSpan initialPosition,
-                               DblSpan initialGradient,
                                DblSpan initialMomentum,
                                double time) = 0;
 

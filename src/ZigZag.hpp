@@ -174,7 +174,7 @@ namespace zz {
             return operateImpl(dynamics, time);
         }
 
-        std::vector<double> getVelocity(DblSpan momentum){
+        std::vector<double> getVelocity(const DblSpan momentum){
             std::vector<double> tmp(dimension);
             for (int i = 0; i < dimension; ++i) {
                 tmp[i] = (momentum[i] > 0)? 1: -1;
@@ -182,20 +182,27 @@ namespace zz {
             return tmp;
         }
 
-        std::unique_ptr<Eigen::VectorXd> getAction(DblSpan velocity){
+        std::unique_ptr<Eigen::VectorXd> getAction(const DblSpan velocity){
             Eigen::Map<Eigen::VectorXd> vVec(velocity.begin(), dimension);
             Eigen::VectorXd productVec= precisionMat * vVec;
             return zz::make_unique<Eigen::VectorXd>(productVec);
         }
 
+        std::unique_ptr<Eigen::VectorXd> getLogdGradient(const DblSpan position){
+            Eigen::Map<Eigen::VectorXd> pVec(position.begin(), dimension);
+            Eigen::VectorXd gradientVec= - precisionMat * pVec;
+            return zz::make_unique<Eigen::VectorXd>(gradientVec);
+        }
+
         double operate(DblSpan position,
-                       DblSpan gradient,
                        DblSpan momentum,
                        double time) {
             std::vector<double> v = getVelocity(momentum);
             DblSpan velocity = zz::DblSpan(v);
             std::unique_ptr<Eigen::VectorXd> aPtr = getAction(velocity);
             DblSpan action(*aPtr);
+            std::unique_ptr<Eigen::VectorXd> gPtr = getLogdGradient(position);
+            DblSpan gradient(*gPtr);
             Dynamics<double> dynamics(position, velocity, action, gradient, momentum, observed, parameterSign);
             return operateImpl(dynamics, time);
         }
@@ -435,7 +442,7 @@ namespace zz {
 //            for (int i = 0; i < position.size(); ++i) {
 //                std::cout << momentum[i] << std::endl;
 //            }
-            operate(position, gradient, momentum, time);
+            operate(position, momentum, time);
             if (direction == -1){
                 std::transform(momentum.begin(), momentum.end(), momentum.begin(), std::negate<double>());
             }

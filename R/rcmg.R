@@ -15,17 +15,17 @@
 #' @export
 #'
 #' @examples rcmg(1,1,1,1,1)
-rcmg <- function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = NULL, cppFlg = FALSE, nutsFlg = FALSE, random_seed = 666, randomFlg = TRUE, debug_flg = F) {
+rcmg = function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = NULL, fixedMomentum = NULL, cppFlg = FALSE, nutsFlg = FALSE, random_seed = 666, randomFlg = TRUE, debug_flg = F) {
   stopifnot("n > burnin must be integers!" = (n %% 1 == 0 && burnin %% 1 == 0 && n > burnin))
   stopifnot("mean and prec must be numeric" = (is.numeric(mean) && is.numeric(prec)))
   stopifnot("must provide either covariance or precision" = (!is.null(cov) || !is.null(prec)))
   if (is.null(cov)){
-    cov <- solve(prec)
+    cov = solve(prec)
   }
   # TODO add other checks for arguments. all dimensions must match.
   
   ndim = length(mean)
-  energyGrad <- function (x) {
+  energyGrad = function (x) {
     if (length(x) == 1){
       return(prec[, x])
     } else {
@@ -33,27 +33,31 @@ rcmg <- function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = N
     }
   }
   
-  samples <- array(0, c(ndim, n))
+  samples = array(0, c(ndim, n))
   set.seed(random_seed)
 
   if (cppFlg) {
     if (nutsFlg){
-      engine <- createNutsEngine(dimension = ndim, mask = rep(1, ndim), observed = rep(1, ndim), parameterSign = constraits, flags = 128, info = 1, seed = random_seed, randomFlg = randomFlg, stepSize = t, mean = mean, precision = prec)
+      engine = createNutsEngine(dimension = ndim, mask = rep(1, ndim), observed = rep(1, ndim), parameterSign = constraits, flags = 128, info = 1, seed = random_seed, randomFlg = randomFlg, stepSize = t, mean = mean, precision = prec)
     } else {
-      engine <- createEngine(dimension = ndim, mask = rep(1, ndim), observed = rep(1, ndim), parameterSign = constraits, flags = 128, info = 1, seed = random_seed, mean = mean, precision = prec)
+      engine = createEngine(dimension = ndim, mask = rep(1, ndim), observed = rep(1, ndim), parameterSign = constraits, flags = 128, info = 1, seed = random_seed, mean = mean, precision = prec)
     }
   } else {
-    engine <- NULL
+    engine = NULL
   }
 
   for (i in 1:n) {
-    momentum <-
-      (2 * (runif(ndim) > .5) - 1) * rexp(ndim, rate = 1)
-    t_jittered <- t
+    if(!is.null(fixedMomentum)){
+      momentum = fixedMomentum
+    } else {
+      momentum =
+        (2 * (runif(ndim) > .5) - 1) * rexp(ndim, rate = 1)
+    }
+
+
+    p0 = hzz(energyGrad = energyGrad, mean = mean, position = p0, constraits = constraits, momentum = momentum, t = t, cppFlg = cppFlg, nutsFlg = nutsFlg, engine = engine)
     
-    p0 <- hzz(energyGrad = energyGrad, mean = mean, position = p0, constraits = constraits, momentum = momentum, t = t_jittered, cppFlg = cppFlg, nutsFlg = nutsFlg, engine = engine)
-    
-    samples[, i] <- p0
+    samples[, i] = p0
     if (debug_flg) {
       cat('iteration', i, 'done \n')
     }

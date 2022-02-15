@@ -38,13 +38,11 @@ namespace nuts {
     class NoUTurn {
     public:
         NoUTurn(double logProbErrorTol,
-                int findMax,
                 int maxHeight,
                 int seed,
                 bool randomFlg,
                 double stepSize,
                 std::shared_ptr<zz::ZigZag<zz::DoubleSseTypeInfo>> zigzag) : logProbErrorTol(logProbErrorTol),
-                                                                             findMax(findMax),
                                                                              maxHeight(maxHeight),
                                                                              uniSeed(seed),
                                                                              uniGenerator(UniformGenerator(seed, randomFlg)),
@@ -58,7 +56,6 @@ namespace nuts {
         template<typename T>
         void printDblSpan(T &span) {
             for (auto e: span) std::cout << e << ' ';
-            std::cout << "\n";
         }
 
 
@@ -143,13 +140,20 @@ namespace nuts {
             DblSpan gradient{gradientVec};
 
             // "one reversibleHMC integral
-//            std::cout << "position before reversible update:" << std::endl;
-//            printDblSpan(inPosition);
+//            std::cout << "before position is:";
+//            printDblSpan(position);
+//            std::cout << "before momentum is:";
+//            printDblSpan(momentum);
+//            std::cout << "\n";
 
             zzEngine.reversiblePositionMomentumUpdate(position, momentum, gradient, direction, stepSize);
 
-//            std::cout << "position after reversible update:" << std::endl;
+//            std::cout << "after position is:";
 //            printDblSpan(position);
+//            std::cout << "after momentum is:";
+//            printDblSpan(momentum);
+//            std::cout << "\n";
+//            std::cout << "\n";
             double logJointProbAfter = zzEngine.getJointProbability(position, momentum);
 
             const int numNodes = (logSliceU <= logJointProbAfter ? 1 : 0);
@@ -189,7 +193,6 @@ namespace nuts {
         }
 
         double logProbErrorTol = 100.0;
-        const int findMax = 100;
         const int maxHeight = 10;
         double stepSize;
         zz::ZigZag<zz::DoubleSseTypeInfo> zzEngine;
@@ -199,7 +202,6 @@ namespace nuts {
 
     std::unique_ptr<nuts::NoUTurn> dispatchNuts(
             double logProbErrorTol,
-            int findMax,
             int maxHeight,
             int seed,
             bool randomFlg,
@@ -207,7 +209,7 @@ namespace nuts {
             std::shared_ptr<zz::ZigZag<zz::DoubleSseTypeInfo>> ptr) {
         std::cerr << "Factory: SSE" << std::endl;
         //NoUTurn *newNuts = new NoUTurn(logProbErrorTol, findMax, maxHeight, seed, stepSize, ptr);
-        return zz::make_unique<nuts::NoUTurn>(logProbErrorTol, findMax, maxHeight, seed, randomFlg, stepSize, ptr);
+        return zz::make_unique<nuts::NoUTurn>(logProbErrorTol, maxHeight, seed, randomFlg, stepSize, ptr);
     }
 }
 
