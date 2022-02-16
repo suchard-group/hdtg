@@ -60,7 +60,7 @@ res = rcmg(n = n_iter, mean = mu, prec = prec, constraits = rep(1, d), t = 0.1, 
 
 df = as.data.frame(fread(file="/Users/zhenyuzhang/beasttest/tempLogfiles/ZNUTS_20d.log", header = TRUE, quote ="")) 
 
-assertthat::assert_that(max(df[2, 3:22] - res) == 0)
+assertthat::assert_that(max(df[2, 3:22] - res) < 1e-10)
 ```
 
 
