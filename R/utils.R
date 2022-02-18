@@ -1,21 +1,3 @@
-#' Get an initial position for HZZ
-#'
-#' @param p0 a d-dimensional vector of the initial value. It must satisfy all constraints. If not specified a random initial value will be used
-#' @param constraits a (list?) of constraints
-#' @NoRd
-#' @return a d-dimensional vector of the initial value
-#'
-#' @examples
-.get_initial_position <- function(p0, constraits){
-  stopifnot('random generated initial position not implemented yet' = !is.null(p0))
-  #if (!is.null(p0)){
-  return(p0)
-  #} else {
-    # TODO generate a random initial position
-  #}
-}
-
-
 #' To find the minimal positive root of ax^2 + bx + c = 0 if it exists. Otherwise return Inf. 
 #'
 #' @param a vector of a

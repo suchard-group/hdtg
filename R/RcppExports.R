@@ -36,11 +36,11 @@ getNextEvent <- function(sexp, position, velocity, action, logpdfGradient, momen
     .Call(`_hzz_getNextEvent`, sexp, position, velocity, action, logpdfGradient, momentum)
 }
 
-.oneIteration <- function(sexp, position, velocity, action, logdGradient, momentum, time) {
-    .Call(`_hzz_oneIteration`, sexp, position, velocity, action, logdGradient, momentum, time)
+.oneIteration <- function(sexp, position, momentum, time) {
+    .Call(`_hzz_oneIteration`, sexp, position, momentum, time)
 }
 
-.oneNutsIteration <- function(sexp, position, momentum, logdGradient, stepsize) {
-    .Call(`_hzz_oneNutsIteration`, sexp, position, momentum, logdGradient, stepsize)
+.oneNutsIteration <- function(sexp, position, momentum, stepsize) {
+    .Call(`_hzz_oneNutsIteration`, sexp, position, momentum, stepsize)
 }
 

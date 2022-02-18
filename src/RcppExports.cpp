@@ -88,34 +88,30 @@ BEGIN_RCPP
 END_RCPP
 }
 // oneIteration
-Rcpp::List oneIteration(SEXP sexp, NumericVector& position, NumericVector& velocity, NumericVector& action, NumericVector& logdGradient, NumericVector& momentum, double time);
-RcppExport SEXP _hzz_oneIteration(SEXP sexpSEXP, SEXP positionSEXP, SEXP velocitySEXP, SEXP actionSEXP, SEXP logdGradientSEXP, SEXP momentumSEXP, SEXP timeSEXP) {
+Rcpp::List oneIteration(SEXP sexp, NumericVector& position, NumericVector& momentum, double time);
+RcppExport SEXP _hzz_oneIteration(SEXP sexpSEXP, SEXP positionSEXP, SEXP momentumSEXP, SEXP timeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type sexp(sexpSEXP);
     Rcpp::traits::input_parameter< NumericVector& >::type position(positionSEXP);
-    Rcpp::traits::input_parameter< NumericVector& >::type velocity(velocitySEXP);
-    Rcpp::traits::input_parameter< NumericVector& >::type action(actionSEXP);
-    Rcpp::traits::input_parameter< NumericVector& >::type logdGradient(logdGradientSEXP);
     Rcpp::traits::input_parameter< NumericVector& >::type momentum(momentumSEXP);
     Rcpp::traits::input_parameter< double >::type time(timeSEXP);
-    rcpp_result_gen = Rcpp::wrap(oneIteration(sexp, position, velocity, action, logdGradient, momentum, time));
+    rcpp_result_gen = Rcpp::wrap(oneIteration(sexp, position, momentum, time));
     return rcpp_result_gen;
 END_RCPP
 }
 // oneNutsIteration
-Rcpp::List oneNutsIteration(SEXP sexp, NumericVector& position, NumericVector& momentum, NumericVector& logdGradient, double stepsize);
-RcppExport SEXP _hzz_oneNutsIteration(SEXP sexpSEXP, SEXP positionSEXP, SEXP momentumSEXP, SEXP logdGradientSEXP, SEXP stepsizeSEXP) {
+Rcpp::List oneNutsIteration(SEXP sexp, NumericVector& position, NumericVector& momentum, double stepsize);
+RcppExport SEXP _hzz_oneNutsIteration(SEXP sexpSEXP, SEXP positionSEXP, SEXP momentumSEXP, SEXP stepsizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type sexp(sexpSEXP);
     Rcpp::traits::input_parameter< NumericVector& >::type position(positionSEXP);
     Rcpp::traits::input_parameter< NumericVector& >::type momentum(momentumSEXP);
-    Rcpp::traits::input_parameter< NumericVector& >::type logdGradient(logdGradientSEXP);
     Rcpp::traits::input_parameter< double >::type stepsize(stepsizeSEXP);
-    rcpp_result_gen = Rcpp::wrap(oneNutsIteration(sexp, position, momentum, logdGradient, stepsize));
+    rcpp_result_gen = Rcpp::wrap(oneNutsIteration(sexp, position, momentum, stepsize));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -126,8 +122,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_hzz_createNutsEngine", (DL_FUNC) &_hzz_createNutsEngine, 11},
     {"_hzz_doSomething", (DL_FUNC) &_hzz_doSomething, 2},
     {"_hzz_getNextEvent", (DL_FUNC) &_hzz_getNextEvent, 6},
-    {"_hzz_oneIteration", (DL_FUNC) &_hzz_oneIteration, 7},
-    {"_hzz_oneNutsIteration", (DL_FUNC) &_hzz_oneNutsIteration, 5},
+    {"_hzz_oneIteration", (DL_FUNC) &_hzz_oneIteration, 4},
+    {"_hzz_oneNutsIteration", (DL_FUNC) &_hzz_oneNutsIteration, 4},
     {NULL, NULL, 0}
 };
 

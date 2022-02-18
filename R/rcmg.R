@@ -19,9 +19,17 @@ rcmg = function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = NU
   stopifnot("n > burnin must be integers!" = (n %% 1 == 0 && burnin %% 1 == 0 && n > burnin))
   stopifnot("mean and prec must be numeric" = (is.numeric(mean) && is.numeric(prec)))
   stopifnot("must provide either covariance or precision" = (!is.null(cov) || !is.null(prec)))
+  stopifnot("must provide mean" = !is.null(mean))
+  
   if (is.null(cov)){
     cov = solve(prec)
   }
+  if (!is.null(p0)){
+    stopifnot("initial value p0 does not comply with constraits" = all(p0*constraits > 0))
+  } else {
+    p0 = .getInitialValue(mean, constraits)
+  }
+  print(mean)
   # TODO add other checks for arguments. all dimensions must match.
   
   ndim = length(mean)
@@ -53,8 +61,7 @@ rcmg = function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = NU
       momentum =
         (2 * (runif(ndim) > .5) - 1) * rexp(ndim, rate = 1)
     }
-
-
+    
     p0 = hzz(energyGrad = energyGrad, mean = mean, position = p0, constraits = constraits, momentum = momentum, t = t, cppFlg = cppFlg, nutsFlg = nutsFlg, engine = engine)
     
     samples[, i] = p0
@@ -63,5 +70,11 @@ rcmg = function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = NU
     }
   }
   return(samples)
+}
+
+
+.getInitialValue <- function(mean, constraits) {
+  mean[mean * constraits < 0] = constraits[mean * constraits < 0]
+  return(mean)
 }
 

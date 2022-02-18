@@ -21,25 +21,6 @@ hzz <- function(energyGrad,
                 nutsFlg,
                 engine = NULL) {
   debug_flg = F
-  ndim = length(position)
-  position <- .get_initial_position(position, constraits)
-  velocity <- sign(momentum)
-  gradient <- energyGrad(position - mean)
-  action <- energyGrad(velocity)
-  
-  # list to store useful info
-  dynamics <-
-    list(
-      position = position,
-      velocity = velocity,
-      action = action,
-      gradient = gradient,
-      momentum = momentum,
-      column = NULL,
-      event_time = NULL,
-      event_idx = NULL,
-      event_type = NULL
-    )
   
   if (cppFlg) {
     if (nutsFlg) {
@@ -47,7 +28,6 @@ hzz <- function(energyGrad,
         sexp = engine$engine,
         position = position,
         momentum = momentum,
-        logdGradient = -gradient,
         stepsize = t
       )
       
@@ -55,15 +35,29 @@ hzz <- function(energyGrad,
       res = .oneIteration(
         sexp = engine$engine,
         position = position,
-        velocity = velocity,
-        action = action,
-        logdGradient = -gradient,
         momentum = momentum,
         time = t
       )
     }
     return(res$position)
   } else {
+    velocity <- sign(momentum)
+    gradient <- energyGrad(position - mean)
+    action <- energyGrad(velocity)
+    
+    dynamics <-
+      list(
+        position = position,
+        velocity = velocity,
+        action = action,
+        gradient = gradient,
+        momentum = momentum,
+        column = NULL,
+        event_time = NULL,
+        event_idx = NULL,
+        event_type = NULL
+      )
+    
     time_remaining <- t
     while (time_remaining > 0) {
       first_bounce <-

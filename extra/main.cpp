@@ -36,7 +36,7 @@ int main(int argCount, char** args) {
 
     for (int n = 0; n < 1; ++n) {
         //cout << " iteration " << n << "started ";
-        auto res = nuts->takeOneStep(zz::DblSpan(position), zz::DblSpan(momentum), zz::DblSpan(gradient));
+        auto res = nuts->takeOneStep(zz::DblSpan(position), zz::DblSpan(momentum));
         //auto res1 = nuts->takeOneStep1();
         cerr << " iteration " << n << " position after:";
         for (int i = 0; i < res.size(); ++i) {

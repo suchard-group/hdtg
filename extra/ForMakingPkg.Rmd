@@ -168,28 +168,26 @@ diag(cov) = rep(1, d)
 prec = solve(cov)
 p0 = rep(0.1, d)
 
-n_hzz = 100000
+n_hzz = 10000
 n_reject = 10^5
 
-samples = rcmg(n = n_hzz, mean = mu, prec = prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = p0, randomFlg = T, cppFlg = T, nutsFlg = T, debug_flg = F)
+samples = rcmg(n = n_hzz, mean = mu, prec = prec, constraits = c(rep(-1, d/2), rep(1, d/2)), t = 10, burnin = 0, p0 = NULL, randomFlg = T, cppFlg = T, nutsFlg = T, debug_flg = F)
 
 true_samples <- t(MASS::mvrnorm(n_reject, mu, cov))
 true_samples <- true_samples[, colSums(true_samples < 0) == 0]
 dim(true_samples)
 
-samples_tn <- TruncatedNormal::rtmvnorm(n = n_hzz, mu = mu, sigma = cov, lb = rep(0, d), ub = rep(Inf, d))
+samples_tn <- TruncatedNormal::rtmvnorm(n = n_hzz, mu = mu, sigma = cov, lb = c(rep(-Inf, d/2),rep(0, d/2)), ub = c(rep(0, d/2), rep(Inf, d/2)))
 
 plot(samples[1,], samples[2,])
-mean(samples[1,])
-mean(samples[2,])
+apply(samples, 1, mean)
 
 plot(true_samples[1,], true_samples[2,])
-mean(true_samples[1,])
-mean(true_samples[2,])
+apply(true_samples, 1, mean)
+
 
 plot(samples_tn[,1], samples_tn[,2])
-mean(samples_tn[,1])
-mean(samples_tn[,2])
+apply(samples_tn, 2, mean)
 ```
 
 ```{r for debug (not reliable results from old code)}

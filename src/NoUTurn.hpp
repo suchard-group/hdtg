@@ -59,11 +59,14 @@ namespace nuts {
         }
 
 
-        std::vector<double> takeOneStep(DblSpan initialPosition, DblSpan initialMomentum, DblSpan gradient) {
+        std::vector<double> takeOneStep(DblSpan initialPosition, DblSpan initialMomentum) {
 
             std::vector<double> endPosition(initialPosition.size(), 0);
             const double initialJointDensity = zzEngine.getJointProbability(initialPosition,initialMomentum);
             double logSliceU = log(uniGenerator.getUniform()) + initialJointDensity;
+
+            std::unique_ptr<Eigen::VectorXd> gPtr = zzEngine.getLogdGradient(initialPosition);
+            DblSpan gradient(*gPtr);
 
             TreeState *newState = new TreeState(initialPosition, initialMomentum, gradient, 1, true,
                                                 0, 0, uniGenerator);

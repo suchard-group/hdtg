@@ -247,18 +247,12 @@ private:
 // [[Rcpp::export(.oneIteration)]]
 Rcpp::List oneIteration(SEXP sexp,
                         NumericVector &position,
-                        NumericVector &velocity,
-                        NumericVector &action,
-                        NumericVector &logdGradient,
                         NumericVector &momentum,
                         double time) {
     auto ptr = parsePtr(sexp);
     try {
         auto returnValue = ptr->operate(
                 zz::DblSpan(position.begin(), position.end()),
-                zz::DblSpan(velocity.begin(), velocity.end()),
-                zz::DblSpan(action.begin(), action.end()),
-                zz::DblSpan(logdGradient.begin(), logdGradient.end()),
                 zz::DblSpan(momentum.begin(), momentum.end()),
                 time
         );
@@ -278,13 +272,11 @@ Rcpp::List oneIteration(SEXP sexp,
 Rcpp::List oneNutsIteration(SEXP sexp,
                             NumericVector &position,
                             NumericVector &momentum,
-                            NumericVector &logdGradient,
                             double stepsize) {
     auto ptrNuts = parsePtrNuts(sexp);
     try {
         auto returnValue = ptrNuts->takeOneStep(zz::DblSpan(position.begin(), position.end()),
-                                                zz::DblSpan(momentum.begin(), momentum.end()),
-                                                zz::DblSpan(logdGradient.begin(), logdGradient.end()));
+                                                zz::DblSpan(momentum.begin(), momentum.end()));
 
         Rcpp::List list = Rcpp::List::create(Rcpp::Named("position") = returnValue);
         return list;
