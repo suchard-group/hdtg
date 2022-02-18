@@ -134,15 +134,16 @@ print(t)
 ```{r to compare with ground truth}
 require(hzz)
 library(MASS)
-
-n_hzz = 100
-debugSource("~/zigzag/R/hzz.R", echo=TRUE)
+mu = seq(1,d,1)
+n_hzz = 10000
+#debugSource("~/zigzag/R/hzz.R", echo=TRUE)
 t0 = proc.time()
-samples = rcmg(n = n_hzz, mean = mu, prec, constraits = rep(1, d), t = 1, burnin = 0, p0 = rep(0.1, d))
+samples = rcmg(n = n_hzz, mean = mu, prec = prec, constraits = rep(1, d), t = 1, burnin = 0, p0 = p0, randomFlg = T, cppFlg = T, nutsFlg = F, debug_flg = F)
+
 t1 = proc.time()
 cat(n_hzz, "hzz samples with dimension", d, "takes", t1[3] - t0[3], 'secs')
 
-n_reject = 10^7
+n_reject = 10^5
 true_samples <- t(mvrnorm(n_reject, mu, cor_mat))
 true_samples <- true_samples[, colSums(true_samples < 0) == 0]
 print(dim(true_samples))
@@ -150,10 +151,46 @@ print(dim(true_samples))
 index <- sample(1:d, 1)
 
 breaks <- seq(0, max(samples, true_samples) + 0.1, length=21)
-hist(samples[index, ], breaks=breaks, probability=T, col=rgb(1, 0, 0, 1/4), xlim=c(0, 5))
-hist(true_samples[index, ], breaks=breaks, probability=T, col=rgb(0, 0, 1, 1/4), xlim=c(0, 5), add=T)
+breaks <- seq(min(samples, true_samples) - 0.1, 0, length=21)
+hist(samples[index, ], breaks=breaks, probability=T, col=rgb(1, 0, 0, 1/4), xlim=c(-5, 0))
+hist(true_samples[index, ], breaks=breaks, probability=T, col=rgb(0, 0, 1, 1/4), xlim=c(-5, 0), add=T)
 ```
 
+```{r tmp to fix non-zero mean}
+load_all(export_all=FALSE)
+
+d = 10
+mu = seq(1,d,1)
+
+prec = diag(d)
+cov = matrix(0.9, d, d)
+diag(cov) = rep(1, d)
+prec = solve(cov)
+p0 = rep(0.1, d)
+
+n_hzz = 100000
+n_reject = 10^5
+
+samples = rcmg(n = n_hzz, mean = mu, prec = prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = p0, randomFlg = T, cppFlg = T, nutsFlg = T, debug_flg = F)
+
+true_samples <- t(MASS::mvrnorm(n_reject, mu, cov))
+true_samples <- true_samples[, colSums(true_samples < 0) == 0]
+dim(true_samples)
+
+samples_tn <- TruncatedNormal::rtmvnorm(n = n_hzz, mu = mu, sigma = cov, lb = rep(0, d), ub = rep(Inf, d))
+
+plot(samples[1,], samples[2,])
+mean(samples[1,])
+mean(samples[2,])
+
+plot(true_samples[1,], true_samples[2,])
+mean(true_samples[1,])
+mean(true_samples[2,])
+
+plot(samples_tn[,1], samples_tn[,2])
+mean(samples_tn[,1])
+mean(samples_tn[,2])
+```
 
 ```{r for debug (not reliable results from old code)}
 source("~/truncated-normal-sampler-code/truncated-normal-sampler-code/truncated_normal_hmc.R", echo=TRUE)

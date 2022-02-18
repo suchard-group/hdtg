@@ -25,7 +25,7 @@ hzz <- function(energyGrad,
   position <- .get_initial_position(position, constraits)
   velocity <- sign(momentum)
   gradient <- energyGrad(position - mean)
-  action <- energyGrad(velocity + mean)
+  action <- energyGrad(velocity)
   
   # list to store useful info
   dynamics <-

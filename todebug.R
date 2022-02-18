@@ -1,14 +1,14 @@
 library(devtools)
 
-d = 20
-n_iter = 1
+d = 2
+n_iter = 1000
 burnin = 0.2
 mu = rep(0, d)
 set.seed(666)
 cov_mat = rWishart(1, 2 * d, diag(d))[ , , 1]
 cor_mat = cov2cor(cov_mat)
 
-cor_mat = matrix(data = 0.99, nrow = d, ncol = d)
+cor_mat = matrix(data = 0, nrow = d, ncol = d)
 diag(cor_mat) = rep(1, d)
 prec = solve(cor_mat)
 p0 <- runif(d, 0, 0.2)

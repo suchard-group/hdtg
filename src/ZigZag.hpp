@@ -190,7 +190,7 @@ namespace zz {
 
         std::unique_ptr<Eigen::VectorXd> getLogdGradient(const DblSpan position){
             Eigen::Map<Eigen::VectorXd> pVec(position.begin(), dimension);
-            Eigen::VectorXd gradientVec= - precisionMat * pVec;
+            Eigen::VectorXd gradientVec= - precisionMat * (pVec - meanV);
             return zz::make_unique<Eigen::VectorXd>(gradientVec);
         }
 
