@@ -16,8 +16,9 @@ compute_bounce_time = function(position,
     return(list("bounce_time" = NA, "constraint_idx" = NA))
   }
   times = -phi[reachable_idxs] + acos(-constraint_bound[reachable_idxs] / U[reachable_idxs])
-  constraint_idx = which.min(times)
-  bounce_time = times[constraint_idx]
+  min_time_idx = which.min(times)
+  constraint_idx = reachable_idxs[min_time_idx]
+  bounce_time = times[min_time_idx]
   return(list("bounce_time" = bounce_time, "constraint_idx" = constraint_idx))
 }
 
@@ -51,8 +52,11 @@ generate_sample = function(initial_position,
   momentum = rnorm(ncol(constraint_direc))
   travelled_time = 0
   repeat {
-    bounce = compute_bounce_time(position, momentum, constraint_direc, bounds)
-    if (!is.na(bounce$bounce_time) &
+    bounce = compute_bounce_time(position, 
+                                 momentum, 
+                                 constraint_direc, 
+                                 bounds)
+    if (!is.na(bounce$bounce_time) &&
         bounce$bounce_time < total_time - travelled_time) {
       bounce_time = bounce$bounce_time
       hamiltonian = simulate_hamiltonian(position, momentum, bounce_time)
@@ -96,16 +100,16 @@ run_sampler = function(n,
 
 d = 2 # dimension of independent multivariate normal
 # Example 1
-#constraint_direc = matrix(c(1,1,1,0,0,1), ncol=d, byrow=TRUE)  # doesnt work, gets 0 bounce times and gets stuck
-#constraint_bound = c(0, 0.5, -0.5)
+constraint_direc = matrix(c(1,1,1,0,0,1), ncol=d, byrow=TRUE)  # works
+constraint_bound = c(0, 0.5, -0.5)
 
 # Example 2
 #constraint_direc = matrix(c(1,1), ncol=d, byrow=TRUE)  # works
 #constraint_bound = c(0)
 
 # Example 3
-constraint_direc = matrix(c(1, 1, 1, 0), ncol = d, byrow = TRUE)  # works
-constraint_bound = c(0, 0.5)
+#constraint_direc = matrix(c(1, 1, 1, 0), ncol = d, byrow = TRUE)  # works
+#constraint_bound = c(0, 0.5)
 
 #Example 4
 # d = 1
@@ -114,6 +118,7 @@ constraint_bound = c(0, 0.5)
 
 # check I didn't mess up dimensions
 stopifnot(length(constraint_bound) == nrow(constraint_direc))
+
 
 
 # run sampler
@@ -130,8 +135,7 @@ n = 5000000
 ptm = proc.time()
 X = matrix(rnorm(n * d), nrow = d)
 # only keep samples which satisfy all constraints
-X = matrix(X[, which(colSums((constraint_direc %*% X) + constraint_bound >= 0) == nrow(constraint_direc))], nrow =
-             d)
+X = matrix(X[, which(colSums((constraint_direc %*% X) + constraint_bound >= 0) == nrow(constraint_direc))], nrow = d)
 proc.time() - ptm
 ncol(X)  # valid samples
 rowMeans(X)
