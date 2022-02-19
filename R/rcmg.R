@@ -29,7 +29,6 @@ rcmg = function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = NU
   } else {
     p0 = .getInitialValue(mean, constraits)
   }
-  print(mean)
   # TODO add other checks for arguments. all dimensions must match.
   
   ndim = length(mean)
@@ -61,7 +60,7 @@ rcmg = function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = NU
       momentum =
         (2 * (runif(ndim) > .5) - 1) * rexp(ndim, rate = 1)
     }
-    
+
     p0 = hzz(energyGrad = energyGrad, mean = mean, position = p0, constraits = constraits, momentum = momentum, t = t, cppFlg = cppFlg, nutsFlg = nutsFlg, engine = engine)
     
     samples[, i] = p0
@@ -74,7 +73,9 @@ rcmg = function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = NU
 
 
 .getInitialValue <- function(mean, constraits) {
-  mean[mean * constraits < 0] = constraits[mean * constraits < 0]
-  return(mean)
+  p0 = mean
+  p0[p0 == 0] = 0.1*constraits[p0 == 0]
+  p0[p0 * constraits < 0] = constraits[p0 * constraits < 0]
+  return(p0)
 }
 

@@ -62,7 +62,7 @@ namespace nuts {
         std::vector<double> takeOneStep(DblSpan initialPosition, DblSpan initialMomentum) {
 
             std::vector<double> endPosition(initialPosition.size(), 0);
-            const double initialJointDensity = zzEngine.getJointProbability(initialPosition,initialMomentum);
+            const double initialJointDensity = zzEngine.getLogPDFnoDet(initialPosition, initialMomentum);
             double logSliceU = log(uniGenerator.getUniform()) + initialJointDensity;
 
             std::unique_ptr<Eigen::VectorXd> gPtr = zzEngine.getLogdGradient(initialPosition);
@@ -157,7 +157,7 @@ namespace nuts {
 //            printDblSpan(momentum);
 //            std::cout << "\n";
 //            std::cout << "\n";
-            double logJointProbAfter = zzEngine.getJointProbability(position, momentum);
+            double logJointProbAfter = zzEngine.getLogPDFnoDet(position, momentum);
 
             const int numNodes = (logSliceU <= logJointProbAfter ? 1 : 0);
 

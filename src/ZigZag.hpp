@@ -430,53 +430,23 @@ namespace zz {
             if (direction == -1){
                 std::transform(momentum.begin(), momentum.end(), momentum.begin(), std::negate<double>());
             }
-//            std::cout << "position:" << std::endl;
-//            for (int i = 0; i < position.size(); ++i) {
-//                std::cout << position[i] << std::endl;
-//            }
-//            std::cout << "gradient:" << std::endl;
-//            for (int i = 0; i < position.size(); ++i) {
-//                std::cout << gradient[i] << std::endl;
-//            }
-//            std::cout << "momentum:" << std::endl;
-//            for (int i = 0; i < position.size(); ++i) {
-//                std::cout << momentum[i] << std::endl;
-//            }
             operate(position, momentum, time);
             if (direction == -1){
                 std::transform(momentum.begin(), momentum.end(), momentum.begin(), std::negate<double>());
             }
         }
 
-        void print(DblSpan position, DblSpan momentum){
-            std::cerr << "just to show a message" << std::endl;
-            Eigen::Map<Eigen::VectorXd> positionV(position.data(), dimension);
 
-            Eigen::VectorXd delta = positionV - meanV;
-            Eigen::VectorXd tmp = precisionMat * delta;
-
-            double SSE = delta.dot(tmp);
-
-            //double logPrecisionDet = precision.determinant();//todo: make sure to avoid unnecessary det calculation
-            std::cerr << "log precision Det" << logPrecDet << std::endl;
-
-//            // 1. logpdf of MVN
-            double likelihood = dimension * logNormalize + 0.5 * (logPrecDet - SSE);
-//            // 2. add kinetic energy
-            double res = likelihood - getKineticEnergy(momentum);
-
-            std::cerr << "res is" << res << std::endl;
-
-        }
-
-        double getJointProbability(DblSpan position, DblSpan momentum){
+        double getLogPDFnoDet(DblSpan position, DblSpan momentum){
 
             Eigen::Map<Eigen::VectorXd> positionV(position.data(), dimension);
             Eigen::VectorXd delta = positionV - meanV;
             Eigen::VectorXd tmp = precisionMat * delta;
             double SSE = delta.dot(tmp);
             // 1. logpdf of MVN
-            double likelihood = dimension * logNormalize + 0.5 * (logPrecDet - SSE);
+            //double likelihood = dimension * logNormalize + 0.5 * (logPrecDet - SSE);
+            double likelihood = dimension * logNormalize - 0.5 * SSE;
+
             // 2. add kinetic energy
             return likelihood - getKineticEnergy(momentum);
         }
@@ -630,12 +600,10 @@ namespace zz {
                 const int eventIndex = firstBounce.index;
 
                 DblSpan precisionColumn = DblSpan(&precisionMat(0, eventIndex), dimension);
-                        //fixedPrecision.subspan(eventIndex * dimension, dimension);
                 if (eventType == BounceType::BOUNDARY) {
 
                     reflectMomentum(dynamics, eventIndex);
                     setZeroPosition(dynamics, eventIndex);
-                    //std::cerr << "set zero position at index " << eventIndex << std::endl;
                 } else {
                     setZeroMomentum(dynamics, eventIndex);
                 }
@@ -939,8 +907,6 @@ namespace zz {
         mm::MemoryManager<double> mmGradient;
         mm::MemoryManager<double> mmMomentum;
 
-        //DblSpan fixedMean;
-        //DblSpan fixedPrecision;
         Eigen::Map<Eigen::VectorXd> meanV;
         Eigen::Map<Eigen::MatrixXd> precisionMat;
 
@@ -961,30 +927,6 @@ namespace zz {
 #endif
     };
 
-//    template <typename Integer, typename Transform, typename Reduce, typename Output>
-//    inline Output transform_reduce(Integer begin, Integer end,
-//                                   Output result, Transform transform, Reduce reduce) {
-//        for (; begin != end; ++begin) {
-//            result = reduce(result, transform(begin));
-//        }
-//        return result;
-//    }
-
-//    template <typename Integer, typename Function>
-//    inline void for_each(Integer begin, const Integer end, Function function, TbbAccumulate) {
-//
-//        tbb::parallel_for(
-//                tbb::blocked_range<size_t>(begin, end
-//                        //, 200
-//                ),
-//                [function](const tbb::blocked_range<size_t>& r) -> void {
-//                    const auto end = r.end();
-//                    for (auto i = r.begin(); i != end; ++i) {
-//                        function(i);
-//                    }
-//                }
-//        );
-//    };
 
     std::unique_ptr<zz::AbstractZigZag> dispatch(
             int dimension,

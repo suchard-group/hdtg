@@ -53,14 +53,16 @@ cor_mat = matrix(data = 0.9, nrow = d, ncol = d)
 diag(cor_mat) = rep(1, d)
 prec = solve(cor_mat)
 p0 = rep(0.1, d)
-#momentum = c(-0.3980153048394741, 2.2483327571774736)
+
 momentum = c(-0.3980153048394741, 2.2483327571774736, -0.2952917086118517, -1.1674703682967922, -0.697182539428704, 1.0133676503829188, -0.21863001118140146, -0.050991178623900166, -0.2829875366316006, 0.6144802843145316, -0.31526635761418426, 2.031161980012812, -0.13072155521386566, 2.306679535948357, -0.5229072378720602, 0.9599761774417773, 0.633641977259469, 2.8769158533009525, -1.755761831952427, -0.600991531699922)
+
+resBeast = c(2.559161,2.644123,2.618147,2.900000,2.787300,2.755389,2.667188,2.715712, 2.627473,2.829323,2.603972,2.696163,2.695163,2.629874,2.595481,2.769309, 2.822751,2.558309,2.900000,2.684678)
 
 res = rcmg(n = n_iter, mean = mu, prec = prec, constraits = rep(1, d), t = 0.1, burnin = 0, p0 = p0, fixedMomentum = momentum, randomFlg = F, cppFlg = T, nutsFlg = T, debug_flg = F)
 
-df = as.data.frame(fread(file="/Users/zhenyuzhang/beasttest/tempLogfiles/ZNUTS_20d.log", header = TRUE, quote ="")) 
-
-assertthat::assert_that(max(df[2, 3:22] - res) < 1e-10)
+# df = as.data.frame(fread(file="/Users/zhenyu/tmp_beast/ZNUTS_20d.log", header = TRUE, quote ="")) 
+# df[2, 3:22]
+assertthat::assert_that(max(resBeast - res) < 1e-5)
 ```
 
 
@@ -237,33 +239,79 @@ Note: another pacakge "truncnorm" only works on MVN with independent dimensions.
 
 ```{r compare with package truncnorm}
 require(hzz)
-require(tmvtnorm)
+#require(tmvtnorm)
 require(TruncatedNormal)
 
 require(coda)
 require(magrittr)
 
-# n_tn = 100
-# 
-# t0 = proc.time()
-# samples_tn <- TruncatedNormal::rtmvnorm(n = n_tn, mu = mu, sigma = cor_mat, lb = rep(0, d), ub = rep(Inf, d))
-# t1 = proc.time()
-# 
-# cat(n_tn, "tn samples with dimension", d, "takes", t1[3] - t0[3], 'secs', '\n')
-# 
-# mcmc(samples_tn, thin = 1) %>% effectiveSize() %>% summary()
-# 
-# plot(samples_tn[,1], samples_tn[,2])
+d = 325
+mu = seq(1, d, 1)
+mu = rep(0, d)
 
-n_hzz = 1000
+prec = diag(d)
+cov = matrix(0.9, d, d)
+diag(cov) = rep(1, d)
+prec = solve(cov)
+
+n_tn = 1000
+n_hzz = 10000
+
 t0 = proc.time()
-samples = rcmg(n = n_hzz, mean = mu, prec, constraits = rep(1, d), t = 10, burnin = 0, p0 = rep(0.1, d), cpp_flg = T)
+samples_tn <-
+  TruncatedNormal::rtmvnorm(
+    n = n_tn,
+    mu = mu,
+    sigma = cov,
+    lb = rep(0, d),
+    ub = rep(Inf, d)
+  )
 t1 = proc.time()
-cat(n_hzz, "hzz samples with dimension", d, "takes", t1[3] - t0[3], 'secs', '\n')
 
-mcmc(samples, thin = 1) %>% effectiveSize() %>% summary()
-plot(ts(samples[1, ]))
+cat(n_tn,
+    "tn samples with dimension",
+    d,
+    "takes",
+    t1[3] - t0[3],
+    'secs',
+    '\n')
+
+mcmc(samples_tn, thin = 1) %>% effectiveSize() %>% summary()
+
+plot(samples_tn[, 1], samples_tn[, 2])
+
+
+t0 = proc.time()
+samples = rcmg(
+  n = n_hzz,
+  mean = mu,
+  prec = prec,
+  constraits = rep(1, d),
+  t = 1.4,
+  burnin = 0,
+  p0 = NULL,
+  randomFlg = T,
+  cppFlg = T,
+  nutsFlg = F,
+  debug_flg = F
+)
+t1 = proc.time()
+cat(n_hzz,
+    "hzz samples with dimension",
+    d,
+    "takes",
+    t1[3] - t0[3],
+    'secs',
+    '\n')
+
+mcmc(t(samples), thin = 1) %>% effectiveSize() %>% summary()
+plot(samples[1,], samples[2,])
 ```
+
+```{r}
+
+```
+
 
 ```{r continued}
 n_tmv = 200000
