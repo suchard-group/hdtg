@@ -103,8 +103,7 @@ unwhiten_position = function(position, cholesky, mean, paramet = "prec") {
 }
 
 
-whiten_constraints = function(initial_position,
-                              constraint_direc,
+whiten_constraints = function(constraint_direc,
                               constraint_bound,
                               cholesky,
                               mean,
@@ -120,7 +119,7 @@ whiten_constraints = function(initial_position,
     return(
       list(
         "direc" = constraint_direc %*% t(cholesky),
-        "bound" = constraint_bound + constraint_direct %*% mean
+        "bound" = constraint_bound + constraint_direc %*% mean
       )
     )
   }
@@ -133,15 +132,16 @@ run_sampler_example = function(n,
                                constraint_bound,
                                cholesky,
                                mean,
-                               paramet = "prec",
+                               paramet = c("prec", "cov"),
                                total_time = pi / 2,
                                seed = 1) {
   set.seed(seed)
-  whitened_constraints = whiten_constraints(initial_position,
-                                            constraint_direc,
+  paramet = match.arg(paramet)
+  whitened_constraints = whiten_constraints(constraint_direc,
                                             constraint_bound,
                                             cholesky,
-                                            mean)
+                                            mean,
+                                            paramet)
   whitened_constraint_row_normsq = wordspace::rowNorms(whitened_constraints$direc) ** 2
   sample = initial_position
   results = matrix(nrow = ncol(constraint_direc), ncol = n)
@@ -209,7 +209,6 @@ d = 2
 Sigma = matrix(c(10, 3, 3, 2), 2, 2)
 mu = c(0.5, 1)
 M = solve(Sigma)
-R = chol(M)
 
 
 
@@ -224,8 +223,24 @@ results = run_sampler_example(
   rep(1, d),
   constraint_direc,
   constraint_bound,
-  cholesky = R,
-  mean = mu
+  cholesky = chol(Sigma),
+  mean = mu,
+  paramet = "cov"
+)
+proc.time() - ptm
+rowMeans(results)
+var(t(results))
+
+# run sampler
+ptm = proc.time()
+results = run_sampler_example(
+  100000,
+  rep(1, d),
+  constraint_direc,
+  constraint_bound,
+  cholesky = chol(solve(Sigma)),
+  mean = mu,
+  paramet = "prec"
 )
 proc.time() - ptm
 rowMeans(results)
