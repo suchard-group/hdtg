@@ -43,18 +43,18 @@ compute_bounce_momentum = function(position,
 }
 
 
-generate_sample = function(initial_position,
-                           constraint_direc,
-                           constraint_row_normsq,
-                           bounds,
-                           total_time = pi / 2) {
+generate_whitened_sample = function(initial_position,
+                                    constraint_direc,
+                                    constraint_row_normsq,
+                                    bounds,
+                                    total_time) {
   position = initial_position
   momentum = rnorm(ncol(constraint_direc))
   travelled_time = 0
   repeat {
-    bounce = compute_bounce_time(position, 
-                                 momentum, 
-                                 constraint_direc, 
+    bounce = compute_bounce_time(position,
+                                 momentum,
+                                 constraint_direc,
                                  bounds)
     if (!is.na(bounce$bounce_time) &&
         bounce$bounce_time < total_time - travelled_time) {
@@ -79,28 +79,97 @@ generate_sample = function(initial_position,
 
 
 
-run_sampler = function(n,
-                       constraint_direc,
-                       constraint_bound,
-                       seed = 1) {
+
+whiten_position = function(position,
+                           constraint_direc,
+                           constraint_bound,
+                           cholesky,
+                           mean,
+                           paramet = "prec") {
+  if (paramet == "prec") {
+    return(cholesky %*% (position - mean))
+  } else {
+    return(solve(t(cholesky)) %*% (position - mean))
+  }
+}
+
+
+unwhiten_position = function(position, cholesky, mean, paramet = "prec") {
+  if (paramet == "prec") {
+    return(solve(cholesky) %*% position + mean)
+  } else {
+    return(t(cholesky) %*% position + mean)
+  }
+}
+
+
+whiten_constraints = function(initial_position,
+                              constraint_direc,
+                              constraint_bound,
+                              cholesky,
+                              mean,
+                              paramet = "prec") {
+  if (paramet == "prec") {
+    return(
+      list(
+        "direc" = constraint_direc %*% solve(cholesky),
+        "bound" = constraint_bound + constraint_direc %*% mean
+      )
+    )
+  } else {
+    return(
+      list(
+        "direc" = constraint_direc %*% t(cholesky),
+        "bound" = constraint_bound + constraint_direct %*% mean
+      )
+    )
+  }
+}
+
+
+run_sampler_example = function(n,
+                               initial_position,
+                               constraint_direc,
+                               constraint_bound,
+                               cholesky,
+                               mean,
+                               paramet = "prec",
+                               total_time = pi / 2,
+                               seed = 1) {
   set.seed(seed)
-  constraint_row_normsq = wordspace::rowNorms(constraint_direc) ** 2
-  sample = rep(1, ncol(constraint_direc))  # hardcoded initial position for testing
+  whitened_constraints = whiten_constraints(initial_position,
+                                            constraint_direc,
+                                            constraint_bound,
+                                            cholesky,
+                                            mean)
+  whitened_constraint_row_normsq = wordspace::rowNorms(whitened_constraints$direc) ** 2
+  sample = initial_position
   results = matrix(nrow = ncol(constraint_direc), ncol = n)
   for (i in 1:n) {
-    sample = generate_sample(sample,
+    sample = whiten_position(sample,
                              constraint_direc,
-                             constraint_row_normsq,
-                             constraint_bound)
+                             constraint_bound,
+                             cholesky,
+                             mean,
+                             paramet)
+    sample = generate_whitened_sample(
+      sample,
+      whitened_constraints$direc,
+      whitened_constraint_row_normsq,
+      whitened_constraints$bound,
+      total_time
+    )
+    sample = unwhiten_position(sample, cholesky, mean, paramet)
     results[, i] = sample
   }
   return(results)
 }
 
 
-d = 2 # dimension of independent multivariate normal
 # Example 1
-constraint_direc = matrix(c(1,1,1,0,0,1), ncol=d, byrow=TRUE)  # works
+d = 2 # dimension of independent multivariate normal
+
+constraint_direc = matrix(c(1, 1, 1, 0, 0, 1), ncol = d, byrow = TRUE)  # works
 constraint_bound = c(0, 0.5, -0.5)
 
 # Example 2
@@ -116,27 +185,60 @@ constraint_bound = c(0, 0.5, -0.5)
 # constraint_direc = matrix(c(1, 1), ncol = d, byrow = TRUE)  # works
 # constraint_bound = c(0.1)
 
+
+# # Example 5
+# d = 4
+# constraint_direc = matrix(c(1, 1, 1, 1,
+#                             0, 1, 0, 0,
+#                             0, 0, 1, 0,
+#                             0, 0, 1, 1),
+#                           ncol = d,
+#                           byrow = TRUE)  # works
+# constraint_bound = c(-1,-1,-0.5, 0)
+
+# # Standard normal examples
+# Sigma = diag(d)
+# mu = rep(0,d)
+# M = solve(Sigma)
+# R = chol(M)
+
+
+
+# Example 6
+d = 2
+Sigma = matrix(c(10, 3, 3, 2), 2, 2)
+mu = c(0.5, 1)
+M = solve(Sigma)
+R = chol(M)
+
+
+
 # check I didn't mess up dimensions
 stopifnot(length(constraint_bound) == nrow(constraint_direc))
 
 
-
 # run sampler
 ptm = proc.time()
-results = run_sampler(100000, constraint_direc, constraint_bound)
+results = run_sampler_example(
+  100000,
+  rep(1, d),
+  constraint_direc,
+  constraint_bound,
+  cholesky = R,
+  mean = mu
+)
 proc.time() - ptm
 rowMeans(results)
-apply(results, 1, var)
+var(t(results))
 
 
+library(MASS)
 # simulate naive way for verification
-set.seed(1)
-n = 5000000
 ptm = proc.time()
-X = matrix(rnorm(n * d), nrow = d)
+X = t(mvrnorm(n = 1000000, mu, Sigma))
 # only keep samples which satisfy all constraints
 X = matrix(X[, which(colSums((constraint_direc %*% X) + constraint_bound >= 0) == nrow(constraint_direc))], nrow = d)
 proc.time() - ptm
 ncol(X)  # valid samples
 rowMeans(X)
-apply(X, 1, var)
+var(t(X))
