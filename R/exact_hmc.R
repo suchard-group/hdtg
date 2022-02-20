@@ -1,6 +1,3 @@
-library(wordspace)
-
-
 compute_bounce_time = function(position,
                                momentum,
                                constraint_direc,
@@ -11,8 +8,7 @@ compute_bounce_time = function(position,
   U = sqrt(fa ^ 2 + fb ^ 2)
   phi = atan2(-fa, fb)
   reachable_idxs = which(U > abs(constraint_bound))
-  if (length(reachable_idxs) == 0) {
-    # no bounces will occur
+  if (length(reachable_idxs) == 0) {  # no bounces will occur
     return(list("bounce_time" = NA, "constraint_idx" = NA))
   }
   times = -phi[reachable_idxs] + acos(-constraint_bound[reachable_idxs] / U[reachable_idxs])
@@ -111,7 +107,7 @@ whiten_constraints = function(constraint_direc,
     return(
       list(
         "direc" = direc,
-        "direc_rownorm_sq" = wordspace::rowNorms(direc) ** 2,
+        "direc_rownorm_sq" = rowSums(direc**2),
         "bound" = constraint_bound + constraint_direc %*% mean
       )
     )
@@ -120,7 +116,7 @@ whiten_constraints = function(constraint_direc,
     return(
       list(
         "direc" = direc,
-        "direc_rownorm_sq" = wordspace::rowNorms(direc) ** 2,
+        "direc_rownorm_sq" = rowSums(direc**2),
         "bound" = constraint_bound + constraint_direc %*% mean
       )
     )
@@ -208,9 +204,7 @@ constraint_bound = c(0, 0.5,-0.5)
 # Example 6: use non identity covariance and nonzero mean
 d = 2
 Sigma = matrix(c(10, 3, 3, 2), 2, 2)
-mu = c(0.5, 1)
-M = solve(Sigma)
-
+mu = matrix(c(0.5, 1), ncol=1)
 
 
 # check I didn't mess up dimensions
@@ -220,7 +214,7 @@ stopifnot(length(constraint_bound) == nrow(constraint_direc))
 # run sampler in covariance mode
 ptm = proc.time()
 results = run_sampler_example(
-  100000,
+  200000,
   rep(1, d),
   constraint_direc,
   constraint_bound,
@@ -235,7 +229,7 @@ var(t(results))
 # run sampler in precision mode
 ptm = proc.time()
 results = run_sampler_example(
-  100000,
+  200000,
   rep(1, d),
   constraint_direc,
   constraint_bound,
