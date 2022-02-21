@@ -82,14 +82,14 @@ whiten_position = function(position,
   if (paramet == "prec") {
     return(cholesky %*% (position - mean))
   } else {
-    return(solve(t(cholesky)) %*% (position - mean))
+    return(backsolve(cholesky, position - mean, transpose=TRUE))
   }
 }
 
 
 unwhiten_position = function(position, cholesky, mean, paramet) {
   if (paramet == "prec") {
-    return(solve(cholesky) %*% position + mean)
+    return(backsolve(cholesky, position) + mean)
   } else {
     return(t(cholesky) %*% position + mean)
   }
@@ -102,7 +102,7 @@ whiten_constraints = function(constraint_direc,
                               mean,
                               paramet) {
   if (paramet == "prec") {
-    direc = constraint_direc %*% solve(cholesky)
+    direc = t(backsolve(cholesky, t(constraint_direc), transpose=TRUE))
     return(
       list(
         "direc" = direc,
@@ -213,7 +213,7 @@ stopifnot(length(constraint_bound) == nrow(constraint_direc))
 # run sampler in covariance mode
 ptm = proc.time()
 results = run_sampler_example(
-  200000,
+  100000,
   rep(1, d),
   constraint_direc,
   constraint_bound,
@@ -228,7 +228,7 @@ var(t(results))
 # run sampler in precision mode
 ptm = proc.time()
 results = run_sampler_example(
-  200000,
+  100000,
   rep(1, d),
   constraint_direc,
   constraint_bound,
@@ -244,7 +244,7 @@ var(t(results))
 # simulate naive way for verification
 library(MASS)
 ptm = proc.time()
-X = t(mvrnorm(n = 1000000, mu, Sigma))
+X = t(mvrnorm(n = 5000000, mu, Sigma))
 # only keep samples which satisfy all constraints
 X = matrix(X[, which(colSums((constraint_direc %*% X) + constraint_bound >= 0) == nrow(constraint_direc))], nrow = d)
 proc.time() - ptm
