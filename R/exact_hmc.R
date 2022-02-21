@@ -9,7 +9,7 @@ compute_bounce_time = function(position,
   phi = atan2(-fa, fb)
   reachable_idxs = which(U > abs(constraint_bound))
   if (length(reachable_idxs) == 0) {  # no bounces will occur
-    return(list("bounce_time" = NA, "constraint_idx" = NA))
+    return(list("bounce_time" = Inf, "constraint_idx" = NA))
   }
   times = -phi[reachable_idxs] + acos(-constraint_bound[reachable_idxs] / U[reachable_idxs])
   min_time_idx = which.min(times)
@@ -52,8 +52,7 @@ generate_whitened_sample = function(initial_position,
                                  momentum,
                                  constraint_direc,
                                  bounds)
-    if (!is.na(bounce$bounce_time) &&
-        bounce$bounce_time < total_time - travelled_time) {
+    if (bounce$bounce_time < total_time - travelled_time) {
       bounce_time = bounce$bounce_time
       hamiltonian = simulate_hamiltonian(position, momentum, bounce_time)
       position = hamiltonian$position
