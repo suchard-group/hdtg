@@ -211,7 +211,7 @@ M = solve(Sigma)
 
 # Example 7:
 set.seed(1)
-d = 1000
+d = 100  # tested up to 1000, which generates 20 samples in 70s
 A = matrix(runif(d^2)*2-1, ncol=d)
 Sigma = t(A) %*% A
 #Sigma = diag(d)
