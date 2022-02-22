@@ -1,3 +1,4 @@
+# moved to RcppBounceTime
 compute_bounce_time = function(position,
                                momentum,
                                constraint_direc,
@@ -18,7 +19,7 @@ compute_bounce_time = function(position,
   return(list("bounce_time" = bounce_time, "constraint_idx" = constraint_idx))
 }
 
-
+# Moved to RcppHamiltonian()
 simulate_hamiltonian = function(position, momentum, time) {
   # formula 2.10
   new_position = momentum * sin(time) + position * cos(time)
@@ -26,15 +27,16 @@ simulate_hamiltonian = function(position, momentum, time) {
   return(list("position" = new_position, "momentum" = new_momentum))
 }
 
-
+# Moved to RcppBounceMomentum
 compute_bounce_momentum = function(position,
                                    momentum,
                                    constraint_direc,
                                    constraint_row_normsq,
                                    bounce_idx) {
   # formula 2.30
-  alpha = as.numeric(  # need scalar instead of 1x1 matrix
-    constraint_direc[bounce_idx, ] %*% momentum / constraint_row_normsq[bounce_idx])
+
+  alpha = (constraint_direc[bounce_idx, ] %*% momentum)[1,1] / # need scalar instead of 1x1 matrix
+    constraint_row_normsq[bounce_idx]
   return(momentum - 2 * alpha * constraint_direc[bounce_idx, ])
 }
 
@@ -48,15 +50,15 @@ generate_whitened_sample = function(initial_position,
   momentum = rnorm(ncol(constraint_direc))
   travelled_time = 0
   repeat {
-    bounce = compute_bounce_time(position,
-                                 momentum,
-                                 constraint_direc,
-                                 bounds)
+    bounce = RcppBounceTime(position,
+                            momentum,
+                            constraint_direc,
+                            bounds)
     if (bounce$bounce_time < total_time - travelled_time) {
       bounce_time = bounce$bounce_time
-      hamiltonian = simulate_hamiltonian(position, momentum, bounce_time)
+      hamiltonian = RcppHamiltonian(position, momentum, bounce_time)
       position = hamiltonian$position
-      momentum = compute_bounce_momentum(
+      momentum = RcppBounceMomentum(
         position,
         hamiltonian$momentum,
         constraint_direc,
@@ -66,7 +68,7 @@ generate_whitened_sample = function(initial_position,
       travelled_time = travelled_time + bounce_time
     } else {
       bounce_time = total_time - travelled_time
-      hamiltonian = simulate_hamiltonian(position, momentum, bounce_time)
+      hamiltonian = RcppHamiltonian(position, momentum, bounce_time)
       return(hamiltonian$position)
     }
   }
@@ -204,16 +206,29 @@ constraint_bound = c(0, 0.5,-0.5)
 d = 2
 Sigma = matrix(c(10, 3, 3, 2), 2, 2)
 mu = matrix(c(0.5, 1), ncol=1)
+M = solve(Sigma)
 
+
+# Example 7:
+set.seed(1)
+d = 1000
+A = matrix(runif(d^2)*2-1, ncol=d)
+Sigma = t(A) %*% A
+#Sigma = diag(d)
+M = solve(Sigma)
+mu = rep(0,d)
+constraint_direc = diag(d)
+constraint_bound = rep(0,d)
 
 # check I didn't mess up dimensions
 stopifnot(length(constraint_bound) == nrow(constraint_direc))
 
-
+library(profvis)
 # run sampler in covariance mode
+#profvis({
 ptm = proc.time()
 results = run_sampler_example(
-  100000,
+  10000,
   rep(1, d),
   constraint_direc,
   constraint_bound,
@@ -222,23 +237,24 @@ results = run_sampler_example(
   paramet = "cov"
 )
 proc.time() - ptm
+#})
 rowMeans(results)
-var(t(results))
+#var(t(results))
 
 # run sampler in precision mode
 ptm = proc.time()
 results = run_sampler_example(
-  100000,
+  10000,
   rep(1, d),
   constraint_direc,
   constraint_bound,
-  cholesky = chol(solve(Sigma)),
+  cholesky = chol(M),
   mean = mu,
   paramet = "prec"
 )
 proc.time() - ptm
 rowMeans(results)
-var(t(results))
+#var(t(results))
 
 
 # simulate naive way for verification
