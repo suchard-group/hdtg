@@ -2,6 +2,8 @@ library(Rcpp)
 library(profvis)
 
 sourceCpp(here("src", "EigenMatVec.cpp"))
+
+
 # moved to RcppBounceTime
 compute_bounce_time = function(position,
                                momentum,
