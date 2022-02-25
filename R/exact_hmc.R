@@ -4,83 +4,6 @@ library(profvis)
 sourceCpp(here("src", "EigenMatVec.cpp"))
 
 
-# moved to RcppBounceTime
-compute_bounce_time = function(position,
-                               momentum,
-                               constraint_direc,
-                               constraint_bound) {
-  # formula 2.23
-  fa = constraint_direc %*% momentum
-  fb = constraint_direc %*% position
-  U = sqrt(fa ^ 2 + fb ^ 2)
-  phi = atan2(-fa, fb)
-  reachable_idxs = which(U > abs(constraint_bound))
-  if (length(reachable_idxs) == 0) {  # no bounces will occur
-    return(list("bounce_time" = Inf, "constraint_idx" = NA))
-  }
-  times = -phi[reachable_idxs] + acos(-constraint_bound[reachable_idxs] / U[reachable_idxs])
-  min_time_idx = which.min(times)
-  constraint_idx = reachable_idxs[min_time_idx]
-  bounce_time = times[min_time_idx]
-  return(list("bounce_time" = bounce_time, "constraint_idx" = constraint_idx))
-}
-
-# Moved to RcppHamiltonian()
-simulate_hamiltonian = function(position, momentum, time) {
-  # formula 2.10
-  new_position = momentum * sin(time) + position * cos(time)
-  new_momentum = momentum * cos(time) - position * sin(time)
-  return(list("position" = new_position, "momentum" = new_momentum))
-}
-
-# Moved to RcppBounceMomentum
-compute_bounce_momentum = function(position,
-                                   momentum,
-                                   constraint_direc,
-                                   constraint_row_normsq,
-                                   bounce_idx) {
-  # formula 2.30
-
-  alpha = (constraint_direc[bounce_idx, ] %*% momentum)[1,1] / # need scalar instead of 1x1 matrix
-    constraint_row_normsq[bounce_idx]
-  return(momentum - 2 * alpha * constraint_direc[bounce_idx, ])
-}
-
-
-generate_whitened_sample = function(initial_position,
-                                    constraint_direc,
-                                    constraint_row_normsq,
-                                    bounds,
-                                    total_time) {
-  position = initial_position
-  momentum = rnorm(ncol(constraint_direc))
-  travelled_time = 0
-  repeat {
-    bounce = RcppBounceTime(position,
-                            momentum,
-                            constraint_direc,
-                            bounds)
-    if (bounce$bounce_time < total_time - travelled_time) {
-      bounce_time = bounce$bounce_time
-      hamiltonian = RcppHamiltonian(position, momentum, bounce_time)
-      position = hamiltonian$position
-      momentum = RcppBounceMomentum(
-        position,
-        hamiltonian$momentum,
-        constraint_direc,
-        constraint_row_normsq,
-        bounce$constraint_idx
-      )
-      travelled_time = travelled_time + bounce_time
-    } else {
-      bounce_time = total_time - travelled_time
-      hamiltonian = RcppHamiltonian(position, momentum, bounce_time)
-      return(hamiltonian$position)
-    }
-  }
-}
-
-
 whiten_position = function(position,
                            constraint_direc,
                            constraint_bound,
@@ -142,22 +65,24 @@ run_sampler_example = function(n,
                                seed = 1) {
   set.seed(seed)
   paramet = match.arg(paramet)
+  results = matrix(nrow = ncol(constraint_direc), ncol = n)
   whitened_constraints = whiten_constraints(constraint_direc,
                                             constraint_bound,
                                             cholesky,
                                             mean,
                                             paramet)
   sample = initial_position
-  results = matrix(nrow = ncol(constraint_direc), ncol = n)
   for (i in 1:n) {
+    initial_momentum = rnorm(ncol(constraint_direc))
     sample = whiten_position(sample,
                              constraint_direc,
                              constraint_bound,
                              cholesky,
                              mean,
                              paramet)
-    sample = generate_whitened_sample(
+    sample = GenerateWhitenedSample(
       sample,
+      initial_momentum,
       whitened_constraints$direc,
       whitened_constraints$direc_rownorm_sq,
       whitened_constraints$bound,
@@ -230,7 +155,7 @@ constraint_bound = rep(0,d)
 stopifnot(length(constraint_bound) == nrow(constraint_direc))
 
 # run sampler in covariance mode
-#profvis({
+profvis({
 ptm = proc.time()
 results = run_sampler_example(
   10000,
@@ -242,7 +167,7 @@ results = run_sampler_example(
   paramet = "cov"
 )
 proc.time() - ptm
-#})
+})
 rowMeans(results)
 #var(t(results))
 
