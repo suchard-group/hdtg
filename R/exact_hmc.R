@@ -1,38 +1,16 @@
-library(Rcpp)
+library(here)
 library(profvis)
+library(Rcpp)
 
 sourceCpp(here("src", "EigenMatVec.cpp"))
-
-
-whiten_position = function(position,
-                           constraint_direc,
-                           constraint_bound,
-                           cholesky,
-                           mean,
-                           paramet) {
-  if (paramet == "prec") {
-    return(cholesky %*% (position - mean))
-  } else {
-    return(backsolve(cholesky, position - mean, transpose=TRUE))
-  }
-}
-
-
-unwhiten_position = function(position, cholesky, mean, paramet) {
-  if (paramet == "prec") {
-    return(backsolve(cholesky, position) + mean)
-  } else {
-    return(t(cholesky) %*% position + mean)
-  }
-}
 
 
 whiten_constraints = function(constraint_direc,
                               constraint_bound,
                               cholesky,
                               mean,
-                              paramet) {
-  if (paramet == "prec") {
+                              precision) {
+  if (precision) {
     direc = t(backsolve(cholesky, t(constraint_direc), transpose=TRUE))
     return(
       list(
@@ -60,26 +38,25 @@ run_sampler_example = function(n,
                                constraint_bound,
                                cholesky,
                                mean,
-                               paramet = c("prec", "cov"),
+                               precision = TRUE,
                                total_time = pi / 2,
                                seed = 1) {
   set.seed(seed)
-  paramet = match.arg(paramet)
   results = matrix(nrow = ncol(constraint_direc), ncol = n)
   whitened_constraints = whiten_constraints(constraint_direc,
                                             constraint_bound,
                                             cholesky,
                                             mean,
-                                            paramet)
+                                            precision)
   sample = initial_position
   for (i in 1:n) {
     initial_momentum = rnorm(ncol(constraint_direc))
-    sample = whiten_position(sample,
+    sample = WhitenPosition(sample,
                              constraint_direc,
                              constraint_bound,
                              cholesky,
                              mean,
-                             paramet)
+                             precision)
     sample = GenerateWhitenedSample(
       sample,
       initial_momentum,
@@ -88,7 +65,7 @@ run_sampler_example = function(n,
       whitened_constraints$bound,
       total_time
     )
-    sample = unwhiten_position(sample, cholesky, mean, paramet)
+    sample = UnwhitenPosition(sample, cholesky, mean, precision)
     results[, i] = sample
   }
   return(results)
@@ -164,7 +141,7 @@ results = run_sampler_example(
   constraint_bound,
   cholesky = chol(Sigma),
   mean = mu,
-  paramet = "cov"
+  precision = FALSE
 )
 proc.time() - ptm
 })
@@ -180,7 +157,7 @@ results = run_sampler_example(
   constraint_bound,
   cholesky = chol(M),
   mean = mu,
-  paramet = "prec"
+  precision = TRUE
 )
 proc.time() - ptm
 rowMeans(results)
