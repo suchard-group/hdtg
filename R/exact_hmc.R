@@ -1,3 +1,7 @@
+library(Rcpp)
+library(profvis)
+
+sourceCpp(here("src", "EigenMatVec.cpp"))
 # moved to RcppBounceTime
 compute_bounce_time = function(position,
                                momentum,
@@ -223,7 +227,6 @@ constraint_bound = rep(0,d)
 # check I didn't mess up dimensions
 stopifnot(length(constraint_bound) == nrow(constraint_direc))
 
-library(profvis)
 # run sampler in covariance mode
 #profvis({
 ptm = proc.time()
@@ -257,13 +260,13 @@ rowMeans(results)
 #var(t(results))
 
 
-# simulate naive way for verification
-library(MASS)
-ptm = proc.time()
-X = t(mvrnorm(n = 5000000, mu, Sigma))
-# only keep samples which satisfy all constraints
-X = matrix(X[, which(colSums((constraint_direc %*% X) + constraint_bound >= 0) == nrow(constraint_direc))], nrow = d)
-proc.time() - ptm
-ncol(X)  # number of valid samples
-rowMeans(X)
-var(t(X))
+# # simulate naive way for verification
+# library(MASS)
+# ptm = proc.time()
+# X = t(mvrnorm(n = 5000000, mu, Sigma))
+# # only keep samples which satisfy all constraints
+# X = matrix(X[, which(colSums((constraint_direc %*% X) + constraint_bound >= 0) == nrow(constraint_direc))], nrow = d)
+# proc.time() - ptm
+# ncol(X)  # number of valid samples
+# rowMeans(X)
+# var(t(X))
