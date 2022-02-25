@@ -85,3 +85,34 @@ VectorXd GenerateWhitenedSample(const Map<VectorXd> initial_position,
   }
 }
 
+
+// [[Rcpp::export]]
+VectorXd WhitenPosition(const Map<VectorXd> position,
+                        const Map<MatrixXd> constraint_direc,
+                        const Map<VectorXd> constraint_bound,
+                        const Map<MatrixXd> cholesky,
+                        const Map<VectorXd> mean,
+                        bool precision) {
+  
+  if (precision) {
+    return cholesky * (position - mean);
+  } else {
+    return cholesky.transpose().triangularView<Eigen::Lower>().solve(position-mean);
+  }
+}
+
+
+// [[Rcpp::export]]
+VectorXd UnwhitenPosition(const Map<VectorXd> position,
+                        const Map<MatrixXd> cholesky,
+                        const Map<VectorXd> mean,
+                        bool precision) {
+  
+  if (precision) {
+    return cholesky.triangularView<Eigen::Upper>().solve(position) + mean;
+  } else {
+    return cholesky.transpose() * position + mean;
+  }
+}
+
+                        
