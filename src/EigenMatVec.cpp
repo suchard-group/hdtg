@@ -24,7 +24,7 @@ Rcpp::List RcppHamiltonian(const Map<VectorXd> position, const Map<VectorXd> mom
 VectorXd RcppBounceMomentum(const Map<VectorXd> position,
                             const Map<VectorXd> momentum,
                             const Map<MatrixXd> constraint_direc,
-                            const Map<MatrixXd> constraint_row_normsq,
+                            const Map<VectorXd> constraint_row_normsq,
                             const int bounce_idx) {
   return momentum - 2 * momentum.dot(constraint_direc.row(bounce_idx-1)) /  
     constraint_row_normsq(bounce_idx-1) * constraint_direc.row(bounce_idx-1).transpose();
