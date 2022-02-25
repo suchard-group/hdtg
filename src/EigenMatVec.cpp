@@ -8,7 +8,7 @@ using Eigen::ArrayXd;
 using std::atan2;
 
 
-std::pair<VectorXd, VectorXd> RcppHamiltonian(const VectorXd position, 
+std::pair<VectorXd, VectorXd> Hamiltonian(const VectorXd position, 
                                               const VectorXd momentum, 
                                               const double time) {
   return std::make_pair(momentum * sin(time) + position * cos(time), 
@@ -16,7 +16,7 @@ std::pair<VectorXd, VectorXd> RcppHamiltonian(const VectorXd position,
 }
 
 
-VectorXd RcppReflectMomentum(const VectorXd position,
+VectorXd ReflectMomentum(const VectorXd position,
                              const VectorXd momentum,
                              const Map<MatrixXd> constraint_direc,
                              const Map<VectorXd> constraint_row_normsq,
@@ -26,7 +26,7 @@ VectorXd RcppReflectMomentum(const VectorXd position,
 }
 
 
-std::pair<double, int> RcppBounceTime(const VectorXd position,
+std::pair<double, int> BounceTime(const VectorXd position,
                                       const VectorXd momentum,
                                       const Map<MatrixXd> constraint_direc,
                                       const Map<VectorXd> constraint_bound) {
@@ -61,15 +61,15 @@ VectorXd GenerateWhitenedSample(const Map<VectorXd> initial_position,
   VectorXd momentum = initial_momentum;
   double travelled_time = 0;
   while (true) {
-    std::pair<double, int> bounce = RcppBounceTime(position,
+    std::pair<double, int> bounce = BounceTime(position,
                                                    momentum,
                                                    constraint_direc,
                                                    constraint_bound);
     if (bounce.first < total_time - travelled_time) {
       double bounce_time = bounce.first;
-      std::pair<VectorXd, VectorXd> hamiltonian = RcppHamiltonian(position, momentum, bounce_time);
+      std::pair<VectorXd, VectorXd> hamiltonian = Hamiltonian(position, momentum, bounce_time);
       position = hamiltonian.first;
-      momentum = RcppReflectMomentum(
+      momentum = ReflectMomentum(
         position,
         hamiltonian.second,
         constraint_direc,
@@ -79,7 +79,7 @@ VectorXd GenerateWhitenedSample(const Map<VectorXd> initial_position,
       travelled_time += bounce_time;
     } else {
       double bounce_time = total_time - travelled_time;
-      std::pair<VectorXd, VectorXd> hamiltonian = RcppHamiltonian(position, momentum, bounce_time);
+      std::pair<VectorXd, VectorXd> hamiltonian = Hamiltonian(position, momentum, bounce_time);
       return hamiltonian.first;
     }
   }
