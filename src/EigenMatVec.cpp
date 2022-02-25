@@ -40,17 +40,17 @@ Rcpp::List RcppBounceTime(const Map<VectorXd> position,
   ArrayXd fb = (constraint_direc * position).array();
   ArrayXd U = (fa.square() + fb.square()).sqrt();
   ArrayXd phi = -fa.binaryExpr(fb, [] (double a, double b) { return std::atan2(a,b);} );
-  double bounce_time = std::numeric_limits<double>::infinity();
+  double min_time = std::numeric_limits<double>::infinity();
   int constraint_idx = -1;
   for (int i=0; i<constraint_bound.size(); ++i){
     if (U[i]>abs(constraint_bound[i])) {
-      double time = -phi[i] + std::acos(-constraint_bound[i]/ U[i]);
-      if (time < bounce_time) {
-        bounce_time = time;
+      double bounce_time = -phi[i] + std::acos(-constraint_bound[i]/ U[i]);
+      if (bounce_time < min_time) {
+        min_time = bounce_time;
         constraint_idx = i+1;
       }
     }
   }
-  return Rcpp::List::create(Rcpp::_["bounce_time"]=bounce_time, 
+  return Rcpp::List::create(Rcpp::_["bounce_time"]=min_time, 
                             Rcpp::_["constraint_idx"]=constraint_idx);
 }
