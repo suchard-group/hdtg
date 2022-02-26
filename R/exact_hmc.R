@@ -119,43 +119,45 @@ M = solve(Sigma)
 
 # Example 7:
 set.seed(1)
-d = 100  # tested up to 1000, which generates 20 samples in 70s
+d = 100 
 A = matrix(runif(d^2)*2-1, ncol=d)
 Sigma = t(A) %*% A
 #Sigma = diag(d)
 M = solve(Sigma)
 mu = rep(0,d)
 constraint_direc = diag(d)
-constraint_bound = rep(0,d)
+constraint_bound = rep(0.5,d)
 
 # check I didn't mess up dimensions
 stopifnot(length(constraint_bound) == nrow(constraint_direc))
 
 # run sampler in covariance mode
-profvis({
+#profvis({
 ptm = proc.time()
+R = chol(Sigma)
 results = run_sampler_example(
   10000,
   rep(1, d),
   constraint_direc,
   constraint_bound,
-  cholesky = chol(Sigma),
+  cholesky = R,
   mean = mu,
   precision = FALSE
 )
 proc.time() - ptm
-})
+#})
 rowMeans(results)
 #var(t(results))
 
 # run sampler in precision mode
 ptm = proc.time()
+R = chol(M)
 results = run_sampler_example(
   10000,
   rep(1, d),
   constraint_direc,
   constraint_bound,
-  cholesky = chol(M),
+  cholesky = R,
   mean = mu,
   precision = TRUE
 )
