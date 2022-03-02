@@ -890,7 +890,7 @@ namespace zz {
                                if (zeroOneFlg) {
                                    return (x == 1.0) ? MaskType(1.0) : MaskType(0.0);
                                } else {
-                                   return (x == 1.0) ? MaskType(1.0) : MaskType(-1.0);
+                                   return MaskType(x);
                                }
                            });
             return mask;

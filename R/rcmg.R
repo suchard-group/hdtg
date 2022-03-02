@@ -40,7 +40,7 @@ rcmg = function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = NU
     }
   }
   
-  samples = array(0, c(ndim, n))
+  samples = array(0, c(n, ndim))
   set.seed(random_seed)
 
   if (cppFlg) {
@@ -63,7 +63,7 @@ rcmg = function(n, mean, cov = NULL, prec = NULL, constraits, t, burnin, p0 = NU
 
     p0 = hzz(energyGrad = energyGrad, mean = mean, position = p0, constraits = constraits, momentum = momentum, t = t, cppFlg = cppFlg, nutsFlg = nutsFlg, engine = engine)
     
-    samples[, i] = p0
+    samples[i, ] = p0
     if (debug_flg) {
       cat('iteration', i, 'done \n')
     }
