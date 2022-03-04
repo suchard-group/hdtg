@@ -8,6 +8,21 @@ using Eigen::ArrayXd;
 using Eigen::ArrayXXd;
 
 
+//' Whiten constraints for use in GenerateUnwhitenedSample
+//'
+//' Transforms constraints of the form Fx+g >= 0 for a target normal distribution
+//' into the corresponding constraints for a standard normal.
+//'
+//' @param constraint_direc F matrix (k-by-d matrix where k is the number of 
+//' linear constraints)
+//' @param constraint_bound g vector (k dimensional)
+//' @param cholesky upper triangular matrix R from cholesky decomposition of 
+//' precision or covariance matrix into R^TR
+//' @param mean mean of target distribution
+//' @param precision boolean for whether parametrization is by precision (true) 
+//' or covariance matrix (false)
+//' @return List of new constraint directions, the squared row norms of those 
+//' constraints (for computational efficiency later), and new bounds
 // [[Rcpp::export]]
 Rcpp::List WhitenConstraints(const Map<MatrixXd> constraint_direc,
                              const Map<VectorXd> constraint_bound,
@@ -31,7 +46,7 @@ Rcpp::List WhitenConstraints(const Map<MatrixXd> constraint_direc,
 }
 
 
-//' Compute hamiltonian after specified time.
+//' Compute Hamiltonian after specified time.
 //'
 //' @param position starting position
 //' @param momentum starting momentum
@@ -45,8 +60,20 @@ std::pair<VectorXd, VectorXd> Hamiltonian(const VectorXd position,
 }
 
 
-VectorXd ReflectMomentum(const VectorXd position,
-                         const VectorXd momentum,
+//' Reflect momentum off of a constraint boundary.
+//' 
+//' Given a constraint boundary, calculate the momentum as if that boundary 
+//' was a wall and there is an elastic collision, and the angle of incidence 
+//' equals the angle of reflection.
+//'
+//' @param momentum starting momentum
+//' @param constraint_direc F matrix (k-by-d matrix where k is the number of 
+//' linear constraints)
+//' @param constraint_row_normsq vector of squared row norms ofr constraint_direc
+//' @param bounce_idx integer index of which constraint is being bounced off of
+//' @param time amount of time the system is run for
+//' @return momentum after bouncing
+VectorXd ReflectMomentum(const VectorXd momentum,
                          const Map<MatrixXd> constraint_direc,
                          const Map<VectorXd> constraint_row_normsq,
                          const int bounce_idx) {
@@ -55,6 +82,14 @@ VectorXd ReflectMomentum(const VectorXd position,
 }
 
 
+//' Compute when the next bounce occurs and which constraint it occurs on.
+//'
+//' @param position starting position
+//' @param momentum starting momentum
+//' @param constraint_direc F matrix (k-by-d matrix where k is the number of 
+//' linear constraints)
+//' @param constraint_bound g vector (k dimensional)
+//' @return pair of new (time until bounce, constraint index corresponding to bounce)
 std::pair<double, int> BounceTime(const VectorXd position,
                                   const VectorXd momentum,
                                   const Map<MatrixXd> constraint_direc,
@@ -80,6 +115,19 @@ std::pair<double, int> BounceTime(const VectorXd position,
 }
 
 
+//' Whiten a given position into the standard normal frame.
+//'
+//' @param position starting position
+//' @param momentum starting momentum
+//' @param constraint_direc F matrix (k-by-d matrix where k is the number of 
+//' linear constraints)
+//' @param constraint_bound g vector (k dimensional)
+//' @param cholesky upper triangular matrix R from cholesky decomposition of 
+//' precision or covariance matrix into R^TR
+//' @param mean mean of target distribution
+//' @param precision boolean for whether parametrization is by precision (true) 
+//' or covariance matrix (false)
+//' @return vector of position in standard normal frame
 VectorXd WhitenPosition(const Map<VectorXd> position,
                         const Map<MatrixXd> constraint_direc,
                         const Map<VectorXd> constraint_bound,
@@ -94,7 +142,15 @@ VectorXd WhitenPosition(const Map<VectorXd> position,
   }
 }
 
-
+//' Convert a position from standard normal frame back to original frame.
+//'
+//' @param position starting position
+//' @param cholesky upper triangular matrix R from cholesky decomposition of 
+//' precision or covariance matrix into R^TR
+//' @param mean mean of target distribution
+//' @param precision boolean for whether parametrization is by precision (true) 
+//' or covariance matrix (false)
+//' @return vector of position in original frame
 VectorXd UnwhitenPosition(const VectorXd position,
                           const Map<MatrixXd> cholesky,
                           const Map<VectorXd> mean,
@@ -107,13 +163,22 @@ VectorXd UnwhitenPosition(const VectorXd position,
   }
 }
 
-
+//' Generate a sample from a truncated standard normal distribution
+//'
+//' @param initial_position starting position
+//' @param initial_momentum starting momentum
+//' @param constraint_direc F matrix (k-by-d matrix where k is the number of 
+//' linear constraints)
+//' @param constraint_row_normsq vector of squared row norms ofr constraint_direc
+//' @param constraint_bound g vector (k dimensional)
+//' @param total_time total time the particle will bounce for
+//' @return vector of position in standard normal frame
 VectorXd GenerateWhitenedSample(const VectorXd initial_position,
                                 const Map<VectorXd> initial_momentum,
                                 const Map<MatrixXd> constraint_direc,
                                 const Map<VectorXd> constraint_row_normsq,
                                 const Map<VectorXd> constraint_bound,
-                                float total_time){
+                                double total_time){
   double bounce_time;
   double travelled_time = 0;
   VectorXd position = initial_position;
@@ -127,8 +192,7 @@ VectorXd GenerateWhitenedSample(const VectorXd initial_position,
       bounce_time = bounce.first;
       std::pair<VectorXd, VectorXd> hamiltonian = Hamiltonian(position, momentum, bounce_time);
       position = hamiltonian.first;
-      momentum = ReflectMomentum(position, 
-                                 hamiltonian.second, 
+      momentum = ReflectMomentum(hamiltonian.second, 
                                  constraint_direc, 
                                  constraint_row_normsq, 
                                  bounce.second);
@@ -141,7 +205,25 @@ VectorXd GenerateWhitenedSample(const VectorXd initial_position,
   }
 }
 
-
+//' Generate a sample from a truncated normal distribution.
+//' 
+//' First "whiten" the constraints and starting position into the standard normal
+//' frame, then generate a sample in that frame, and the convert back to the original
+//' frame.
+//'
+//' @param initial_position starting position
+//' @param initial_momentum starting momentum
+//' @param constraint_direc F matrix (k-by-d matrix where k is the number of 
+//' linear constraints)
+//' @param constraint_row_normsq vector of squared row norms ofr constraint_direc
+//' @param constraint_bound g vector (k dimensional)
+//' @param cholesky upper triangular matrix R from cholesky decomposition of 
+//' precision or covariance matrix into R^TR
+//' @param mean mean of target distribution
+//' @param total_time total time the particle will bounce for
+//' @param precision boolean for whether parametrization is by precision (true) 
+//' or covariance matrix (false)
+//' @return vector of position in standard normal frame
 // [[Rcpp::export]]
 VectorXd GenerateSample(const Map<VectorXd> initial_position,
                         const Map<VectorXd> initial_momentum,
@@ -150,7 +232,7 @@ VectorXd GenerateSample(const Map<VectorXd> initial_position,
                         const Map<VectorXd> constraint_bound,
                         const Map<MatrixXd> cholesky,
                         const Map<VectorXd> mean,
-                        float total_time,
+                        double total_time,
                         bool precision){
   VectorXd sample = WhitenPosition(initial_position,
                                    constraint_direc,
