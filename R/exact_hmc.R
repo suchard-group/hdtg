@@ -5,33 +5,6 @@ library(Rcpp)
 sourceCpp(here("src", "ExactHMC.cpp"))
 
 
-whiten_constraints = function(constraint_direc,
-                              constraint_bound,
-                              cholesky,
-                              mean,
-                              precision) {
-  if (precision) {
-    direc = t(backsolve(cholesky, t(constraint_direc), transpose=TRUE))
-    return(
-      list(
-        "direc" = direc,
-        "direc_rownorm_sq" = rowSums(direc**2),
-        "bound" = constraint_bound + constraint_direc %*% mean
-      )
-    )
-  } else {
-    direc = constraint_direc %*% t(cholesky)
-    return(
-      list(
-        "direc" = direc,
-        "direc_rownorm_sq" = rowSums(direc**2),
-        "bound" = constraint_bound + constraint_direc %*% mean
-      )
-    )
-  }
-}
-
-
 run_sampler_example = function(n,
                                initial_position,
                                constraint_direc,
@@ -43,11 +16,11 @@ run_sampler_example = function(n,
                                seed = 1) {
   set.seed(seed)
   results = matrix(nrow = ncol(constraint_direc), ncol = n)
-  whitened_constraints = whiten_constraints(constraint_direc,
-                                            constraint_bound,
-                                            cholesky,
-                                            mu,
-                                            precision)
+  whitened_constraints = WhitenConstraints(constraint_direc,
+                                           constraint_bound,
+                                           cholesky,
+                                           mu,
+                                           precision)
   sample = initial_position
   for (i in 1:n) {
     initial_momentum = rnorm(ncol(constraint_direc))
@@ -66,7 +39,6 @@ run_sampler_example = function(n,
   }
   return(results)
 }
-
 
 # Example 1
 d = 2 # dimension of independent multivariate normal
@@ -115,7 +87,7 @@ M = solve(Sigma)
 
 # Example 7:
 set.seed(1)
-d = 100 
+d = 100
 A = matrix(runif(d^2)*2-1, ncol=d)
 Sigma = t(A) %*% A
 #Sigma = diag(d)
@@ -143,7 +115,7 @@ results = run_sampler_example(
 )
 proc.time() - ptm
 #})
-#rowMeans(results)
+rowMeans(results)
 
 # verify constraints
 dim(matrix(results[, which(colSums((constraint_direc %*% results) + constraint_bound < 0) == nrow(constraint_direc))], nrow = d))

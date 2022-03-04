@@ -1,7 +1,3 @@
-//[[Rcpp::depends(RcppClock)]]
-#include <RcppClock.h>
-#include <thread>
-
 #include <RcppEigen.h>
 // [[Rcpp::depends(RcppEigen)]]
 
@@ -9,8 +5,38 @@ using Eigen::Map;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using Eigen::ArrayXd;
+using Eigen::ArrayXXd;
 
 
+// [[Rcpp::export]]
+Rcpp::List WhitenConstraints(const Map<MatrixXd> constraint_direc,
+                             const Map<VectorXd> constraint_bound,
+                             const Map<MatrixXd> cholesky,
+                             const Map<VectorXd> mean,
+                             bool precision) {
+  if (precision) {
+    ArrayXXd direc =  cholesky.transpose().triangularView<Eigen::Lower>().solve(
+      constraint_direc.transpose()).transpose().array();
+    return Rcpp::List::create(
+      Rcpp::_["direc"] = direc, 
+      Rcpp::_["direc_rownorm_sq"]= direc.square().rowwise().sum(),
+      Rcpp::_["bound"] = constraint_bound + constraint_direc * mean);
+  } else {
+    ArrayXXd direc =  constraint_direc * cholesky.transpose();
+    return Rcpp::List::create(
+      Rcpp::_["direc"] = direc, 
+      Rcpp::_["direc_rownorm_sq"]=direc.square().rowwise().sum(),
+      Rcpp::_["bound"] = constraint_bound + constraint_direc * mean);
+  }
+}
+
+
+//' Compute hamiltonian after specified time.
+//'
+//' @param position starting position
+//' @param momentum starting momentum
+//' @param time amount of time the system is run for
+//' @return pair of new (position, momentum)
 std::pair<VectorXd, VectorXd> Hamiltonian(const VectorXd position, 
                                           const VectorXd momentum, 
                                           const double time) {
@@ -88,28 +114,27 @@ VectorXd GenerateWhitenedSample(const VectorXd initial_position,
                                 const Map<VectorXd> constraint_row_normsq,
                                 const Map<VectorXd> constraint_bound,
                                 float total_time){
+  double bounce_time;
+  double travelled_time = 0;
   VectorXd position = initial_position;
   VectorXd momentum = initial_momentum;
-  double travelled_time = 0;
   while (true) {
     std::pair<double, int> bounce = BounceTime(position,
                                                momentum,
                                                constraint_direc,
                                                constraint_bound);
     if (bounce.first < total_time - travelled_time) {
-      double bounce_time = bounce.first;
+      bounce_time = bounce.first;
       std::pair<VectorXd, VectorXd> hamiltonian = Hamiltonian(position, momentum, bounce_time);
       position = hamiltonian.first;
-      momentum = ReflectMomentum(
-        position,
-        hamiltonian.second,
-        constraint_direc,
-        constraint_row_normsq,
-        bounce.second
-      );
+      momentum = ReflectMomentum(position, 
+                                 hamiltonian.second, 
+                                 constraint_direc, 
+                                 constraint_row_normsq, 
+                                 bounce.second);
       travelled_time += bounce_time;
     } else {
-      double bounce_time = total_time - travelled_time;
+      bounce_time = total_time - travelled_time;
       std::pair<VectorXd, VectorXd> hamiltonian = Hamiltonian(position, momentum, bounce_time);
       return hamiltonian.first;
     }
