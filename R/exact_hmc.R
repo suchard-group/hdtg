@@ -37,7 +37,7 @@ run_sampler_example = function(n,
                                constraint_direc,
                                constraint_bound,
                                cholesky,
-                               mean,
+                               mu,
                                precision = TRUE,
                                total_time = pi / 2,
                                seed = 1) {
@@ -46,26 +46,22 @@ run_sampler_example = function(n,
   whitened_constraints = whiten_constraints(constraint_direc,
                                             constraint_bound,
                                             cholesky,
-                                            mean,
+                                            mu,
                                             precision)
   sample = initial_position
   for (i in 1:n) {
     initial_momentum = rnorm(ncol(constraint_direc))
-    sample = WhitenPosition(sample,
-                            constraint_direc,
-                            constraint_bound,
-                            cholesky,
-                            mean,
-                            precision)
-    sample = GenerateWhitenedSample(
+    sample = GenerateSample(
       sample,
       initial_momentum,
       whitened_constraints$direc,
       whitened_constraints$direc_rownorm_sq,
       whitened_constraints$bound,
-      total_time
+      cholesky,
+      mu,
+      total_time,
+      precision
     )
-    sample = UnwhitenPosition(sample, cholesky, mean, precision)
     results[, i] = sample
   }
   return(results)
@@ -142,12 +138,12 @@ results = run_sampler_example(
   constraint_direc,
   constraint_bound,
   cholesky = R,
-  mean = mu,
+  mu = mu,
   precision = FALSE
 )
 proc.time() - ptm
 #})
-rowMeans(results)
+#rowMeans(results)
 
 # verify constraints
 dim(matrix(results[, which(colSums((constraint_direc %*% results) + constraint_bound < 0) == nrow(constraint_direc))], nrow = d))
@@ -164,7 +160,7 @@ results = run_sampler_example(
   constraint_direc,
   constraint_bound,
   cholesky = R,
-  mean = mu,
+  mu = mu,
   precision = TRUE
 )
 proc.time() - ptm
