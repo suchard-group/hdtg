@@ -1,8 +1,9 @@
 library(here)
 library(profvis)
 library(Rcpp)
-
-sourceCpp(here("src", "EigenMatVec.cpp"))
+Sys.setenv("PKG_LIBS"="-lprofiler")
+sourceCpp(here("src", "ExactHMC.cpp"))
+sourceCpp(here("src", "profile.cpp"))
 
 
 whiten_constraints = function(constraint_direc,
@@ -52,11 +53,11 @@ run_sampler_example = function(n,
   for (i in 1:n) {
     initial_momentum = rnorm(ncol(constraint_direc))
     sample = WhitenPosition(sample,
-                             constraint_direc,
-                             constraint_bound,
-                             cholesky,
-                             mean,
-                             precision)
+                            constraint_direc,
+                            constraint_bound,
+                            cholesky,
+                            mean,
+                            precision)
     sample = GenerateWhitenedSample(
       sample,
       initial_momentum,
@@ -119,14 +120,15 @@ M = solve(Sigma)
 
 # Example 7:
 set.seed(1)
-d = 100 
+d = 500 
 A = matrix(runif(d^2)*2-1, ncol=d)
 Sigma = t(A) %*% A
 #Sigma = diag(d)
 M = solve(Sigma)
 mu = rep(0,d)
 constraint_direc = diag(d)
-constraint_bound = rep(0.5,d)
+constraint_direc = rbind(constraint_direc, c(1,1, rep(0,d-2)))
+constraint_bound = runif(d+1, -0.2,0.2)
 
 # check I didn't mess up dimensions
 stopifnot(length(constraint_bound) == nrow(constraint_direc))
@@ -136,7 +138,7 @@ stopifnot(length(constraint_bound) == nrow(constraint_direc))
 ptm = proc.time()
 R = chol(Sigma)
 results = run_sampler_example(
-  10000,
+  100,
   rep(1, d),
   constraint_direc,
   constraint_bound,
@@ -147,6 +149,11 @@ results = run_sampler_example(
 proc.time() - ptm
 #})
 rowMeans(results)
+
+# verify constraints
+dim(matrix(results[, which(colSums((constraint_direc %*% results) + constraint_bound < 0) == nrow(constraint_direc))], nrow = d))
+
+
 #var(t(results))
 
 # run sampler in precision mode
