@@ -16,7 +16,6 @@
 #include "tbb/parallel_reduce.h"
 #include "tbb/blocked_range.h"
 #include "tbb/parallel_for.h"
-#include "tbb/task_scheduler_init.h"
 #include "tbb/global_control.h"
 
 #define TIMING
@@ -76,7 +75,7 @@ namespace zz {
             std::cout << '\n';
             if (flags & zz::Flags::TBB) {
                 if (nThreads <= 0) {
-                    nThreads = tbb::task_scheduler_init::default_num_threads();
+                    nThreads = tbb::this_task_arena::max_concurrency();
                 }
 
                 std::cout << "Using " << nThreads << " threads" << std::endl;
