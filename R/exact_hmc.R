@@ -1,9 +1,8 @@
 library(here)
 library(profvis)
 library(Rcpp)
-Sys.setenv("PKG_LIBS"="-lprofiler")
+
 sourceCpp(here("src", "ExactHMC.cpp"))
-sourceCpp(here("src", "profile.cpp"))
 
 
 whiten_constraints = function(constraint_direc,
@@ -120,7 +119,7 @@ M = solve(Sigma)
 
 # Example 7:
 set.seed(1)
-d = 500 
+d = 100 
 A = matrix(runif(d^2)*2-1, ncol=d)
 Sigma = t(A) %*% A
 #Sigma = diag(d)
@@ -138,7 +137,7 @@ stopifnot(length(constraint_bound) == nrow(constraint_direc))
 ptm = proc.time()
 R = chol(Sigma)
 results = run_sampler_example(
-  100,
+  10000,
   rep(1, d),
   constraint_direc,
   constraint_bound,
