@@ -1,3 +1,7 @@
+//[[Rcpp::depends(RcppClock)]]
+#include <RcppClock.h>
+#include <thread>
+
 #include <RcppEigen.h>
 // [[Rcpp::depends(RcppEigen)]]
 
@@ -33,6 +37,7 @@ std::pair<double, int> BounceTime(const VectorXd position,
   ArrayXd fa = (constraint_direc * momentum).array();
   ArrayXd fb = (constraint_direc * position).array();
   ArrayXd U = (fa.square() + fb.square()).sqrt();
+  // Eigen doesn't have an atan2 function
   ArrayXd phi = -fa.binaryExpr(fb, [] (double a, double b) { return std::atan2(a,b);} );
   double min_time = std::numeric_limits<double>::infinity();
   int constraint_idx = -1;
@@ -49,8 +54,35 @@ std::pair<double, int> BounceTime(const VectorXd position,
 }
 
 
-// [[Rcpp::export]]
-VectorXd GenerateWhitenedSample(const Map<VectorXd> initial_position,
+VectorXd WhitenPosition(const Map<VectorXd> position,
+                        const Map<MatrixXd> constraint_direc,
+                        const Map<VectorXd> constraint_bound,
+                        const Map<MatrixXd> cholesky,
+                        const Map<VectorXd> mean,
+                        bool precision) {
+  
+  if (precision) {
+    return cholesky * (position - mean);
+  } else {
+    return cholesky.transpose().triangularView<Eigen::Lower>().solve(position-mean);
+  }
+}
+
+
+VectorXd UnwhitenPosition(const VectorXd position,
+                          const Map<MatrixXd> cholesky,
+                          const Map<VectorXd> mean,
+                          bool precision) {
+  
+  if (precision) {
+    return cholesky.triangularView<Eigen::Upper>().solve(position) + mean;
+  } else {
+    return cholesky.transpose() * position + mean;
+  }
+}
+
+
+VectorXd GenerateWhitenedSample(const VectorXd initial_position,
                                 const Map<VectorXd> initial_momentum,
                                 const Map<MatrixXd> constraint_direc,
                                 const Map<VectorXd> constraint_row_normsq,
@@ -86,32 +118,27 @@ VectorXd GenerateWhitenedSample(const Map<VectorXd> initial_position,
 
 
 // [[Rcpp::export]]
-VectorXd WhitenPosition(const Map<VectorXd> position,
+VectorXd GenerateSample(const Map<VectorXd> initial_position,
+                        const Map<VectorXd> initial_momentum,
                         const Map<MatrixXd> constraint_direc,
+                        const Map<VectorXd> constraint_row_normsq,
                         const Map<VectorXd> constraint_bound,
                         const Map<MatrixXd> cholesky,
                         const Map<VectorXd> mean,
-                        bool precision) {
-  
-  if (precision) {
-    return cholesky * (position - mean);
-  } else {
-    return cholesky.transpose().triangularView<Eigen::Lower>().solve(position-mean);
-  }
+                        float total_time,
+                        bool precision){
+  VectorXd sample = WhitenPosition(initial_position,
+                                   constraint_direc,
+                                   constraint_bound,
+                                   cholesky,
+                                   mean,
+                                   precision);
+  sample = GenerateWhitenedSample(sample,
+                                  initial_momentum,
+                                  constraint_direc,
+                                  constraint_row_normsq,
+                                  constraint_bound,
+                                  total_time);
+  return UnwhitenPosition(sample, cholesky, mean, precision);
 }
 
-
-// [[Rcpp::export]]
-VectorXd UnwhitenPosition(const Map<VectorXd> position,
-                          const Map<MatrixXd> cholesky,
-                          const Map<VectorXd> mean,
-                          bool precision) {
-  
-  if (precision) {
-    return cholesky.triangularView<Eigen::Upper>().solve(position) + mean;
-  } else {
-    return cholesky.transpose() * position + mean;
-  }
-}
-
-                        
