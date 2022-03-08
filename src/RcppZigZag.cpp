@@ -115,13 +115,10 @@ Rcpp::List createEngine(int dimension,
                         std::vector<double> &mask,
                         std::vector<double> &observed,
                         std::vector<double> &parameterSign,
-                        long flags, long info, long seed,
-                        NumericVector &mean,
-                        NumericMatrix &precision) {
+                        long flags, long info, long seed) {
 
     auto zigZag = new ZigZagWrapper(
-            zz::dispatch(dimension, mask.data(), observed.data(), parameterSign.data(), flags, info, seed,
-                         zz::DblSpan(mean.begin(), mean.end()), zz::DblSpan(precision.begin(), precision.end())));
+            zz::dispatch(dimension, mask.data(), observed.data(), parameterSign.data(), flags, info, seed));
 
     XPtrZigZagWrapper engine(zigZag);
 
@@ -153,8 +150,7 @@ Rcpp::List createNutsEngine(int dimension,
                             NumericMatrix &precision) {
 
     auto zigZag = new ZigZagWrapper(
-            zz::dispatch(dimension, mask.data(), observed.data(), parameterSign.data(), flags, info, seed,
-                         zz::DblSpan(mean.begin(), mean.end()), zz::DblSpan(precision.begin(), precision.end())));
+            zz::dispatch(dimension, mask.data(), observed.data(), parameterSign.data(), flags, info, seed));
     XPtrZigZagWrapper engineZZ(zigZag);
 
     // ptr to a zigzag obj
@@ -168,8 +164,28 @@ Rcpp::List createNutsEngine(int dimension,
     return list;
 }
 
-void setprecision() {
-    //todo:fill
+// [[Rcpp::export(setMean)]]
+void setMean(SEXP sexp, NumericVector &mean) {
+    auto ptr = parsePtr(sexp);
+    try {
+        ptr->setMean(zz::DblSpan(mean.begin(), mean.end()));
+    }
+
+    catch (Rcpp::internal::InterruptedException &e) {
+        Rcout << "Caught an interrupt!" << std::endl;
+    }
+}
+
+// [[Rcpp::export(setPrecision)]]
+void setPrecision(SEXP sexp, NumericVector &precision) {
+    auto ptr = parsePtr(sexp);
+    try {
+        ptr->setPrecision(zz::DblSpan(precision.begin(), precision.end()));
+    }
+
+    catch (Rcpp::internal::InterruptedException &e) {
+        Rcout << "Caught an interrupt!" << std::endl;
+    }
 }
 
 // [[Rcpp::export(.doSomething)]]

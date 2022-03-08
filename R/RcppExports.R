@@ -20,12 +20,20 @@ rcpp_hello_world <- function() {
 #' @return zigZag engine object.
 #'
 #' @export
-createEngine <- function(dimension, mask, observed, parameterSign, flags, info, seed, mean, precision) {
-    .Call(`_hzz_createEngine`, dimension, mask, observed, parameterSign, flags, info, seed, mean, precision)
+createEngine <- function(dimension, mask, observed, parameterSign, flags, info, seed) {
+    .Call(`_hzz_createEngine`, dimension, mask, observed, parameterSign, flags, info, seed)
 }
 
 createNutsEngine <- function(dimension, mask, observed, parameterSign, flags, info, seed, randomFlg, stepSize, mean, precision) {
     .Call(`_hzz_createNutsEngine`, dimension, mask, observed, parameterSign, flags, info, seed, randomFlg, stepSize, mean, precision)
+}
+
+setMean <- function(sexp, mean) {
+    invisible(.Call(`_hzz_setMean`, sexp, mean))
+}
+
+setPrecision <- function(sexp, precision) {
+    invisible(.Call(`_hzz_setPrecision`, sexp, precision))
 }
 
 .doSomething <- function(sexp, data) {

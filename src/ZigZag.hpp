@@ -53,9 +53,7 @@ namespace zz {
                double *rawParameterSign,
                long flags,
                int nThreads,
-               long seed,
-               DblSpan mean = DblSpan(),
-               DblSpan precision = DblSpan()) : AbstractZigZag(),
+               long seed) : AbstractZigZag(),
                                                 dimension(dimension),
                                                 mask(constructMask(rawMask, dimension, true)),
                                                 observed(constructMask(rawObserved, dimension, true)),
@@ -68,9 +66,11 @@ namespace zz {
                                                 flags(flags),
                                                 nThreads(nThreads),
                                                 seed(seed),
-                                                meanV(mean.data(), dimension),
-                                                precisionMat(precision.data(), dimension, dimension),
-                                                logPrecDet(log(precisionMat.determinant())){
+                                                //logPrecDet(log(precisionMat.determinant())
+                                                meanV(dimension),
+                                                precisionMat(dimension, dimension),
+                                                meanSetFlg(false),
+                                                precisionSetFlg(false){
             std::cerr << "ZigZag constructed" << std::endl;
             std::cout << '\n';
             if (flags & zz::Flags::TBB) {
@@ -169,6 +169,7 @@ namespace zz {
                        DblSpan gradient,
                        DblSpan momentum,
                        double time) {
+            if (!meanSetFlg || !precisionSetFlg) std::cerr << "mean or precision is not set!" << std::endl;
             Dynamics<double> dynamics(position, velocity, action, gradient, momentum, observed, parameterSign);
             return operateImpl(dynamics, time);
         }
@@ -196,6 +197,9 @@ namespace zz {
         double operate(DblSpan position,
                        DblSpan momentum,
                        double time) {
+
+            if (!meanSetFlg || !precisionSetFlg) std::cerr << "mean or precision is not set!" << std::endl;
+
             std::vector<double> v = getVelocity(momentum);
             DblSpan velocity = zz::DblSpan(v);
             std::unique_ptr<Eigen::VectorXd> aPtr = getAction(velocity);
@@ -204,6 +208,16 @@ namespace zz {
             DblSpan gradient(*gPtr);
             Dynamics<double> dynamics(position, velocity, action, gradient, momentum, observed, parameterSign);
             return operateImpl(dynamics, time);
+        }
+
+        void setMean(DblSpan mean) {
+            meanV = Eigen::Map<Eigen::VectorXd>(mean.data(), dimension);
+            meanSetFlg = true;
+        }
+
+        void setPrecision(DblSpan precision) {
+            precisionMat = Eigen::Map<Eigen::MatrixXd>(precision.data(), dimension, dimension);
+            precisionSetFlg = true;
         }
 
         void innerBounce(DblSpan position,
@@ -906,15 +920,19 @@ namespace zz {
         mm::MemoryManager<double> mmGradient;
         mm::MemoryManager<double> mmMomentum;
 
-        Eigen::Map<Eigen::VectorXd> meanV;
-        Eigen::Map<Eigen::MatrixXd> precisionMat;
+        Eigen::VectorXd meanV;
+        Eigen::MatrixXd precisionMat;
+        bool meanSetFlg;
+        bool precisionSetFlg;
 
         double pi = 3.14159265358979323846;
-        const double logPrecDet;
+        //const double logPrecDet;
         const double logNormalize = -0.5 * log(2.0 * pi);
 
         long flags;
         int nThreads;
+        
+        
         long seed;
 
         std::shared_ptr<tbb::global_control> control;
@@ -934,22 +952,20 @@ namespace zz {
             double *rawParameterSign,
             long flags,
             int info,
-            long seed,
-            DblSpan mean=DblSpan(),
-            DblSpan precision=DblSpan()) {
+            long seed) {
 
         if (static_cast<unsigned long>(flags) & zz::Flags::AVX) {
             std::cerr << "Factory: AVX" << std::endl;
             return zz::make_unique<zz::ZigZag<zz::DoubleAvxTypeInfo>>(
-                    dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed, mean, precision);
+                    dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed);
         } else if (static_cast<unsigned long>(flags) & zz::Flags::SSE) {
             std::cerr << "Factory: SSE" << std::endl;
             return zz::make_unique<zz::ZigZag<zz::DoubleSseTypeInfo>>(
-                    dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed, mean, precision);
+                    dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed);
         } else {
             std::cerr << "Factory: No SIMD" << std::endl;
             return zz::make_unique<zz::ZigZag<zz::DoubleNoSimdTypeInfo>>(
-                    dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed, mean, precision);
+                    dimension, rawMask, rawObserved, rawParameterSign, flags, info, seed);
         }
     }
 }

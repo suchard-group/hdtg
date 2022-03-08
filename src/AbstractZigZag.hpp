@@ -55,6 +55,10 @@ namespace zz {
                                DblSpan initialMomentum,
                                double time) = 0;
 
+        virtual void setMean(DblSpan meanVec) = 0;
+
+        virtual void setPrecision(DblSpan precisionMat) = 0;
+
         virtual MinTravelInfo getNextBounce(DblSpan position,
                                             DblSpan velocity,
                                             DblSpan action,
