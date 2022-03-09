@@ -17,17 +17,14 @@ Rcpp::List WhitenConstraints(const Map<MatrixXd> constraint_direc,
   if (precision) {
     ArrayXXd direc =  cholesky.transpose().triangularView<Eigen::Lower>().solve(
       constraint_direc.transpose()).transpose().array();
-    return Rcpp::List::create(
-      Rcpp::_["direc"] = direc, 
-      Rcpp::_["direc_rownorm_sq"]= direc.square().rowwise().sum(),
-      Rcpp::_["bound"] = constraint_bound + constraint_direc * mean);
   } else {
     ArrayXXd direc =  constraint_direc * cholesky.transpose();
-    return Rcpp::List::create(
-      Rcpp::_["direc"] = direc, 
-      Rcpp::_["direc_rownorm_sq"]=direc.square().rowwise().sum(),
-      Rcpp::_["bound"] = constraint_bound + constraint_direc * mean);
   }
+  return Rcpp::List::create(
+    Rcpp::_["direc"] = direc, 
+    Rcpp::_["direc_rownorm_sq"]= direc.square().rowwise().sum(),
+    Rcpp::_["bound"] = constraint_bound + constraint_direc * mean
+  );
 }
 
 
