@@ -8,15 +8,28 @@ using Eigen::ArrayXd;
 using Eigen::ArrayXXd;
 
 
+// It is a bit strange to say "whiten constraints." The purpose of the transformation 
+// is to whiten (or decorrelate) parameters and the change in the constraints 
+// merely reflect this transformation. Incidentally, we might consider using 
+// the more mundane "decorrelate" elsewhere, though "whiten" is also fine.
+
 // [[Rcpp::export]]
 Rcpp::List WhitenConstraints(const Map<MatrixXd> constraint_direc,
                              const Map<VectorXd> constraint_bound,
                              const Map<MatrixXd> cholesky_factor,
-                             const Map<VectorXd> mean,
-                             bool precision) {
+                             const Map<VectorXd> mean, 
+                                // "mean" probably is clear enough to most but note the ambiguity; 
+                                // The mean of the truncated Gaussian isn't the same as that of the untrancated.
+                                // I've tried "mode" as (hopefully) less ambigous term, though it still
+                                // isn't quite accurate if the untruncated mode lies outside the constraint.
+                             bool precision
+                                // Somewhat confusing var name. Maybe "precisioned", "prec_parametrized", etc
+                                // as an alternative. This will also clarify what "cholesky_factor" is.
+                             ) {
   if (precision) {
     ArrayXXd direc =  cholesky_factor.transpose().triangularView<Eigen::Lower>().solve(
       constraint_direc.transpose()).transpose().array();
+    // Perhaps make a function called sth like "solveFromRight"?
   } else {
     ArrayXXd direc =  constraint_direc * cholesky_factor.transpose();
   }
@@ -27,6 +40,9 @@ Rcpp::List WhitenConstraints(const Map<MatrixXd> constraint_direc,
   );
 }
 
+// The term "Hamiltonian" typically refers to the total energy (the negative 
+// log-density of the position-momentum joint distribution). So perhaps the 
+// function instead should be called more like "simulateWhitenedDynamics" (or "advance..."?).
 
 //' Compute hamiltonian after specified time.
 //'
@@ -47,6 +63,9 @@ VectorXd ReflectMomentum(const VectorXd position,
                          const Map<MatrixXd> constraint_direc,
                          const Map<VectorXd> constraint_row_normsq,
                          const int bounce_idx) {
+  // We might normalize the constraint direction vectors once and for all.
+  // We can then simply reflect the momentum against 
+  // `orthonormal_vec = constraint_direc.row(bounce_idx - 1)`.
   return momentum - 2 * momentum.dot(constraint_direc.row(bounce_idx-1)) /  
     constraint_row_normsq(bounce_idx-1) * constraint_direc.row(bounce_idx-1).transpose();
 }
