@@ -43,8 +43,7 @@ prec = solve(cor_mat)
 # compared to the result from BEAST on the SAME target distribution and momentum. BEAST random seed = 666.
 # Remember to use the same 1. deterministic 0.1 - 0.9 sequence. 2. step size = 0.1
 require(data.table)
-load_all(export_all=FALSE)
-
+require(hzz)
 d = 20
 n_iter = 1
 mu = rep(0, d)
@@ -58,7 +57,20 @@ momentum = c(-0.3980153048394741, 2.2483327571774736, -0.2952917086118517, -1.16
 
 resBeast = c(2.559161,2.644123,2.618147,2.900000,2.787300,2.755389,2.667188,2.715712, 2.627473,2.829323,2.603972,2.696163,2.695163,2.629874,2.595481,2.769309, 2.822751,2.558309,2.900000,2.684678)
 
-res = rcmg(n = n_iter, mean = mu, prec = prec, constraits = rep(1, d), t = 0.1, burnin = 0, p0 = p0, fixedMomentum = momentum, randomFlg = F, cppFlg = T, nutsFlg = T, debug_flg = F)
+res = rcmg(
+  n = n_iter,
+  mean = mu,
+  prec = prec,
+  constraits = rep(1, d),
+  t = 0.1,
+  burnin = 0,
+  p0 = p0,
+  fixedMomentum = momentum,
+  randomFlg = F,
+  cppFlg = T,
+  nutsFlg = T,
+  debug_flg = F
+)
 
 # df = as.data.frame(fread(file="/Users/zhenyu/tmp_beast/ZNUTS_20d.log", header = TRUE, quote ="")) 
 # df[2, 3:22]

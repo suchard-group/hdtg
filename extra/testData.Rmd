@@ -10,195 +10,82 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-```{r probit regresison}
-df_water = read.csv(file = "../data/water_potability.csv", header = T)
-colnames(df_water)
-df_water = df_water[complete.cases(df_water), ]
-myprobit <- glm(Potability ~ Sulfate + Solids + Organic_carbon, family = binomial(link = "probit"), data = df_water)
-summary(myprobit)
-
-require(UPG)
-data("lfp", package = "UPG")
-head(lfp, 5)
-y <- c(rep(1, 100), rep(0, 1911))
-X <- matrix(rnorm(nrow(df_water) * 200, 0 ,1), nrow = nrow(df_water), ncol = 200)
-results.logit <- UPG(y = y, X = X, type = "probit", BOOST = F)
-UPG.Diag(results.logit)
-summary(results.logit)
-```
-
-```{r prepare input}
-require(hzz)
-require(coda)
-require(tmg)
-
-require(UPG)
-
-df_water = read.csv(file = "../data/water_processed.csv", header = T)
-colnames(df_water)
-
-n_samples = 10
-df_water = df_water[sample(1:nrow(df_water), n_samples), ]
-
-sigma2 = 1
-X = as.matrix(df_water[,-10])
-X = scale(X)
-y_raw = df_water$Potability
-y = y_raw
-y[y==0] = -1
-
-p = ncol(X)
-n = nrow(X)
-
-A = 1/sigma2 * diag(p) + t(X)%*%X
-B = -t(X)
-C = -X
-D = diag(n)
-prec = rbind(cbind(A, B), cbind(C, D))
-
-A1 = sigma2 * diag(p)
-B1 = sigma2 * t(X)
-C1 = sigma2 * X
-D1 = diag(n) + sigma2 * X %*% t(X)
-covMat = rbind(cbind(A1, B1), cbind(C1, D1))
-
-dim = n + p
-require(hzz)
-samples_hzz = rcmg(
-  n = 1000,
-  mean = rep(0, dim),
-  prec = prec,
-  constraits = c(rep(0, p), y),
-  t = 10,
-  burnin = 0,
-  p0 = NULL,
-  randomFlg = T,
-  cppFlg = T,
-  nutsFlg = F,
-  debug_flg = F
-)
-
-samples_hzz_r = rcmg(
-  n = 100,
-  mean = rep(0, dim),
-  prec = prec,
-  constraits = c(rep(0, p), y),
-  t = 10,
-  burnin = 0,
-  p0 = NULL,
-  randomFlg = T,
-  cppFlg = F,
-  nutsFlg = F,
-  debug_flg = F
-)
-mcmc(samples_hzz, thin = 1) %>% effectiveSize() %>% summary()
-
-colMeans(samples_hzz_r[,1:20])
-colMeans(samples_hzz[,1:20])
-
-
-dim(samples_hzz)
-colMeans(samples_hzz[,1:9])
-
-samples_UPG <- UPG(y = y_raw, X = X, type = "probit", BOOST = F, draws = 50000)
-summaryESS = UPG.Diag(samples_UPG)
-summaryESS$details$ess
-tmp = drop(samples_UPG$posterior$beta.post)
-colMeans(tmp)
-
-TN_lb = y
-TN_ub = y
-TN_lb[TN_lb == -1] = -Inf
-TN_lb[TN_lb == 1] = 0
-TN_ub[TN_ub == -1] = -0
-TN_ub[TN_ub == 1] = Inf
-samples_TN = TruncatedNormal::rtmvnorm(
-    n = 500,
-    mu = rep(0, dim),
-    sigma = covMat,
-    lb = c(rep(-Inf, p), TN_lb),
-    ub = c(rep(Inf, p), TN_ub)
-  )
-summary(colMeans(samples_hzz[,1:9]) - colMeans(samples_TN[,1:9]))
-
-# samples_tmg = rtmg(n = 1000, M = prec, r = rep(0, dim), initial = rep(0.1, dim), f = diag(dim), g = rep(0, dim), q = NULL, burn.in = 100)
-# 
-mcmc(samples_TN, thin = 1) %>% effectiveSize() %>% summary()
-
-# results.probit <- UPG(y = y, X = X, type = "probit", BOOST = F)
-# UPG.Diag(results.logit)
-```
-
-
 ```{r benchmarking}
+require(hzz)
+
+# require(pryr)
+# require(devtools)
+# load_all()
+
+n <-  10 # number of samples for the probit model
+num_samples_TN <-  300 # number of TN samples (independent)
+num_samples_hzz  <-  400 # number of hzz samples
+# read in data (2011 rows, 10 continuous covariates and 1 binary outcome)
+df_water <-
+  read.csv(file = "../data/water_processed.csv", header = T)
+
+set.seed(666)
+df_water  <-  df_water[sample(1:nrow(df_water), n), ]
+
+X  <-  as.matrix(df_water[,-ncol(df_water)])
+X  <-  scale(X)
+y_raw  <-  df_water$Potability
+y  <-  y_raw
+y[y == 0]  <-  -1
+
+p  <-  ncol(X)
+n  <-  nrow(X)
+dim  <-  p + n
+
+pc  <-  hzz::getPrecCov(X, n, p, sigma2 = 2)
+
+TN_lb  <-  y
+TN_ub  <-  y
+TN_lb[TN_lb == -1]  <-  -Inf
+TN_lb[TN_lb == 1]  <-  0
+TN_ub[TN_ub == -1]  <-  -0
+TN_ub[TN_ub == 1]  <-  Inf
+```
+
+```{r timing}
 require(hzz)
 require(TruncatedNormal)
 require(invgamma)
 require(rbenchmark)
-require(pryr)
-require(devtools)
-load_all()
 
-n = 20 # number of samples for the probit model
-num_samples_TN = 10000 # number of TN samples (independent)
-num_samples_hzz = 10000 # number of hzz samples
-# read in and subset data
-df_water = read.csv(file = "../data/water_processed.csv", header = T)
+samples_hzz  <-  array(0, c(num_samples_hzz, dim))
+samples_TN <- array(0, c(num_samples_TN, dim))
 
-set.seed(666)
-df_water = df_water[sample(1:nrow(df_water), n),]
+meanV <- rep(0, dim)
 
-X = as.matrix(df_water[, -ncol(df_water)])
-X = scale(X)
-y_raw = df_water$Potability
-y = y_raw
-y[y == 0] = -1
+mask <- rep(1, dim)
+observed <- rep(1, dim)
+parameterSign <- c(rep(0, p), y)
 
-p = ncol(X)
-n = nrow(X)
-dim = p + n
+sample_hzz <-
+  hzz::getInitialValue(mean = rep(0, dim), constraits = parameterSign)
+sample_TN <- sample_hzz
 
-pc = getPrecCov(X, n, p, sigma2 = 2)
-
-TN_lb = y
-TN_ub = y
-TN_lb[TN_lb == -1] = -Inf
-TN_lb[TN_lb == 1] = 0
-TN_ub[TN_ub == -1] = -0
-TN_ub[TN_ub == 1] = Inf
-```
-
-```{r timing}
-samples_hzz = array(0, c(num_samples_hzz, dim))
-samples_TN = array(0, c(num_samples_TN, dim))
-
-precision = pc$precMat
-covariance = pc$covMat
-meanV = rep(0, dim)
-
-mask = rep(1, dim)
-observed = rep(1, dim)
-parameterSign = c(rep(0, p), y)
-
-sample_hzz = hzz::getInitialValue(mean = rep(0, dim), constraits = c(rep(0, p), y))
-
-set.seed(666)
-sigma2s = rinvgamma(n = max(num_samples_hzz, num_samples_TN), shape = 2, rate = 2)
-
-timeRes = benchmark(
+timeRes <- benchmark(
   "TN" = {
-    
+    set.seed(666)
     for (i in 1:num_samples_TN) {
+      sigma2 <-
+        rinvgamma(
+          n = 1,
+          shape = 2 + dim / 2,
+          scale = 2 + sample_TN %*% sample_TN / 2
+        )
+      pc <- getPrecCov(X, n, p, sigma2 = sigma2)
       
-      pc = getPrecCov(X, n, p, sigma2 = sigma2s[i])
-
-      samples_TN[i, ] = TruncatedNormal::rtmvnorm(
+      sample_TN <- TruncatedNormal::rtmvnorm(
         n = 1,
         mu = meanV,
-        sigma = covariance,#pc$covMat,
+        sigma = pc$covMat,
         lb = c(rep(-Inf, p), TN_lb),
         ub = c(rep(Inf, p), TN_ub)
       )
+      samples_TN[i,] <- sample_TN
     }
   },
   "hzz" = {
@@ -212,23 +99,29 @@ timeRes = benchmark(
       seed = 666
     )
     
-    
     set.seed(666)
     for (i in 1:num_samples_hzz) {
-      
-      pc = getPrecCov(X, n, p, sigma2 = sigma2s[i])
+      sigma2 <-
+        rinvgamma(
+          n = 1,
+          shape = 2 + dim / 2,
+          scale = 2 + sample_hzz %*% sample_hzz / 2
+        )
+      pc <- getPrecCov(X, n, p, sigma2 = sigma2)
       
       setMean(sexp = engine$engine, mean = rep(0, dim))
       setPrecision(sexp = engine$engine, precision = pc$precMat)
       
-      momentum = drawMomentum(dim)
-      sample_hzz = getSample(position = sample_hzz,
-                momentum = momentum,
-                t = 10,
-                nutsFlg = F,
-                engine = engine)
-
-      samples_hzz[i,] = sample_hzz
+      momentum <- drawMomentum(dim)
+      sample_hzz <- getSample(
+        position = sample_hzz,
+        momentum = momentum,
+        t = 10,
+        nutsFlg = F,
+        engine = engine
+      )
+      
+      samples_hzz[i, ] <- sample_hzz
     }
   },
   replications = 1,
@@ -249,20 +142,112 @@ print(timeRes)
 ```{r check ESS}
 require(coda)
 require(magrittr)
-mcmc(samples_hzz[,1:9], thin = 1) %>% effectiveSize() %>% summary()
-mcmc(samples_TN[,1:9], thin = 1) %>% effectiveSize() %>% summary()
+mcmc(samples_hzz, thin = 1) %>% effectiveSize() %>% summary()
+mcmc(samples_TN, thin = 1) %>% effectiveSize() %>% summary()
 colMeans(samples_hzz[,1:9])
 colMeans(samples_TN[,1:9])
+
+summary(colMeans(samples_hzz[,1:9]))
+summary(colMeans(samples_hzz) - colMeans(samples_TN))
+```
+```{r}
+hist(samples_hzz[,29], breaks = 100)
+hist(samples_TN[,29], breaks = 100)
 ```
 
 
 
 ```{r from LKJ prior}
+rm(list = ls())
+require(trialr)
+require(rbenchmark)
+require(hzz)
+require(TruncatedNormal)
+require(coda)
+require(magrittr)
 
+dimension <- 50 # TN limit is about 300 (endless low acceptance rate)
+nTN <- 500
+nHZZ <- 1000
+
+set.seed(666)
+covMat <- rlkjcorr(n = 1, K = dimension, eta = 1)
+precMat <- solve(covMat)
+meanVec <- rep(0, dimension)
+
+positiveIndex <- seq(from = 1, to = dimension, by = 2)
+
+constraitsHZZ <- rep(-1, dimension)
+constraitsHZZ[positiveIndex] <- 1
+
+lbTN <- rep(-Inf, dimension)
+ubTN <- rep(0, dimension)
+lbTN[positiveIndex] <- 0
+ubTN[positiveIndex] <- Inf
+
+timeRes <- benchmark(
+  "lkjTN" = {
+    set.seed(666)
+    samplesTN <- TruncatedNormal::rtmvnorm(
+      n = nTN,
+      mu = meanVec,
+      sigma = covMat,
+      lb = lbTN,
+      ub = ubTN
+    )
+  },
+  "lkjHZZ" = {
+    samplesHZZ <- rcmg(
+      n = nHZZ,
+      mean = meanVec,
+      prec = precMat,
+      constraits = constraitsHZZ,
+      t = 10,
+      burnin = 0,
+      cppFlg = T
+    )
+  },
+  replications = 5,
+  columns = c(
+    "test",
+    "replications",
+    "elapsed",
+    "relative",
+    "user.self",
+    "sys.self"
+  )
+)
+
+minESSHZZ <- mcmc(samplesHZZ[,], thin = 1) %>% effectiveSize() %>% min()
+
+cat("HZZ min ESS is", minESSHZZ, "\n", "TN min ESS is", nTN)
+
+timeRes[timeRes$test == "lkjTN", "relative"] <- nTN / timeRes[timeRes$test == "lkjTN", "relative"]
+timeRes[timeRes$test == "lkjHZZ", "relative"] <- minESSHZZ / timeRes[timeRes$test == "lkjHZZ", "relative"]
+
+print(timeRes)
 ```
 
 
 ```{r tmp check invgamma distribution}
 hist(rinvgamma(n = 1000, shape = 1, rate = 1), xlim = c(0,20), breaks=1000)
 #use https://www.r-bloggers.com/2017/05/5-ways-to-measure-running-time-of-r-code/
+```
+
+
+```{r UPG}
+df_water = read.csv(file = "../data/water_potability.csv", header = T)
+colnames(df_water)
+df_water = df_water[complete.cases(df_water), ]
+myprobit <- glm(Potability ~ Sulfate + Solids + Organic_carbon, family = binomial(link = "probit"), data = df_water)
+summary(myprobit)
+
+require(UPG)
+data("lfp", package = "UPG")
+head(lfp, 5)
+y <- c(rep(1, 100), rep(0, 1911))
+X <- matrix(rnorm(nrow(df_water) * 200, 0 ,1), nrow = nrow(df_water), ncol = 200)
+results.logit <- UPG(y = y, X = X, type = "probit", BOOST = F)
+UPG.Diag(results.logit)
+summary(results.logit)
 ```

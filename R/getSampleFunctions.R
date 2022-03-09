@@ -16,7 +16,7 @@ getSample <- function(position,
                        engine) {
   
   if (nutsFlg) {
-    res = .oneNutsIteration(
+    res <- .oneNutsIteration(
       sexp = engine$engine,
       position = position,
       momentum = momentum,
@@ -24,7 +24,7 @@ getSample <- function(position,
     )
     
   } else {
-    res = .oneIteration(
+    res <- .oneIteration(
       sexp = engine$engine,
       position = position,
       momentum = momentum,
@@ -53,7 +53,7 @@ getSampleR <- function(position,
                          energyGrad,
                          mean,
                          constraits) {
-  debug_flg = F
+  debug_flg <- F
   
   velocity <- sign(momentum)
   gradient <- energyGrad(position - mean)
@@ -106,7 +106,7 @@ getSampleR <- function(position,
         dynamics$position + time_remaining * dynamics$velocity
       # update momentum
       # TODO: this update of momentum is only necessary when using NUTS
-      half_time_squared = time_remaining * time_remaining / 2
+      half_time_squared <- time_remaining * time_remaining / 2
       dynamics$momentum <-
         dynamics$momentum - time_remaining * dynamics$gradient - half_time_squared * dynamics$action
       
@@ -114,8 +114,8 @@ getSampleR <- function(position,
     } else {
       dynamics$column <- energyGrad(event_idx)
       dynamics$event_time <- event_time
-      dynamics$event_idx = event_idx
-      dynamics$event_type = event_type
+      dynamics$event_idx <- event_idx
+      dynamics$event_type <- event_type
       # update dynamics
       dynamics <- .update_dynamics(dynamics)
       # reflect velocity element
@@ -165,7 +165,7 @@ getSampleR <- function(position,
 
 
 .update_dynamics <- function(dy) {
-  half_time_squared = dy$event_time ^ 2 / 2
+  half_time_squared <- dy$event_time ^ 2 / 2
   two_v1 = 2 * dy$velocity[dy$event_idx]
   
   dy$position <- dy$position + dy$event_time * dy$velocity

@@ -147,7 +147,7 @@ Rcpp::List createNutsEngine(int dimension,
                             bool randomFlg,
                             double stepSize,
                             NumericVector &mean,
-                            NumericMatrix &precision) {
+                            NumericVector &precision) {
 
     auto zigZag = new ZigZagWrapper(
             zz::dispatch(dimension, mask.data(), observed.data(), parameterSign.data(), flags, info, seed));
@@ -155,6 +155,9 @@ Rcpp::List createNutsEngine(int dimension,
 
     // ptr to a zigzag obj
     auto ptr = parsePtrSse(engineZZ);
+    ptr->setMean(zz::DblSpan(mean.begin(), mean.end()));
+    ptr->setPrecision(zz::DblSpan(precision.begin(), precision.end()));
+    
     // create a NUTS obj:
     auto nuts = new NutsWrapper(nuts::dispatchNuts(100, 10, seed, randomFlg, stepSize, ptr));
     XPtrNutsWrapper engineNuts(nuts);

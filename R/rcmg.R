@@ -28,19 +28,18 @@ rcmg <- function(n,
                  random_seed = 666,
                  randomFlg = TRUE,
                  debug_flg = F) {
-  require(matrixcalc)
+
   stopifnot("n > burnin must be integers!" = (n %% 1 == 0 &&
                                                 burnin %% 1 == 0 &&
                                                 n > burnin))
   
   stopifnot("must provide mean" = !is.null(mean))
   
-  
   if(!is.null(prec)){
-    stopifnot("precision matrix contains NaN or is not positive definite " = (!any(is.na(prec)) && is.positive.definite(prec)))
+    stopifnot("precision matrix contains NaN" = !any(is.na(prec)))
   } else if (!is.null(prec)){
-    stopifnot("covariance matrix contains NaN or is not positive definite " = (!any(is.na(cov)) && is.positive.definite(cov)))
-    prec = solve(cov)
+    stopifnot("covariance matrix contains NaN" = !any(is.na(cov)))
+    prec <- solve(cov)
   } else {
     stop("must provide precision or covariance matrix")
   }
@@ -48,12 +47,12 @@ rcmg <- function(n,
   if (!is.null(p0)) {
     stopifnot("initial value p0 does not comply with constraits" = all(p0 * constraits >= 0))
   } else {
-    p0 = getInitialValue(mean, constraits)
+    p0 <- getInitialValue(mean, constraits)
   }
   # TODO add other checks for arguments. all dimensions must match.
   
-  ndim = length(mean)
-  energyGrad = function (x) {
+  ndim <- length(mean)
+  energyGrad <- function (x) {
     if (length(x) == 1) {
       return(prec[, x])
     } else {
@@ -61,12 +60,12 @@ rcmg <- function(n,
     }
   }
   
-  samples = array(0, c(n, ndim))
+  samples <- array(0, c(n, ndim))
   set.seed(random_seed)
   
   if (cppFlg) {
     if (nutsFlg) {
-      engine = createNutsEngine(
+      engine <- createNutsEngine(
         dimension = ndim,
         mask = rep(1, ndim),
         observed = rep(1, ndim),
@@ -80,7 +79,7 @@ rcmg <- function(n,
         precision = prec
       )
     } else {
-      engine = createEngine(
+      engine <- createEngine(
         dimension = ndim,
         mask = rep(1, ndim),
         observed = rep(1, ndim),
@@ -88,25 +87,27 @@ rcmg <- function(n,
         flags = 128,
         info = 1,
         seed = random_seed)
+      setMean(sexp = engine$engine, mean = mean)
+      setPrecision(sexp = engine$engine, precision = prec)
     }
   }
   
   if (cppFlg) {
     for (i in 1:n) {
       if (!is.null(fixedMomentum)) {
-        momentum = fixedMomentum
+        momentum <- fixedMomentum
       } else {
-        momentum = drawMomentum(ndim)
+        momentum <- drawMomentum(ndim)
       }
       
-      p0 = getSample(
+      p0 <- getSample(
         position = p0,
         momentum = momentum,
         t = t,
         nutsFlg = nutsFlg,
         engine = engine
       )
-      samples[i, ] = p0
+      samples[i, ] <- p0
       
       if (debug_flg) {
         cat('iteration', i, 'done \n')
@@ -115,12 +116,12 @@ rcmg <- function(n,
   } else {
     for (i in 1:n) {
       if (!is.null(fixedMomentum)) {
-        momentum = fixedMomentum
+        momentum <- fixedMomentum
       } else {
-        momentum = drawMomentum(ndim)
+        momentum <- drawMomentum(ndim)
       }
       
-      p0 = getSampleR(
+      p0 <- getSampleR(
         position = p0,
         momentum = momentum,
         t = t,
@@ -129,7 +130,7 @@ rcmg <- function(n,
         constraits = constraits
       )
       
-      samples[i, ] = p0
+      samples[i, ] <- p0
       
       if (debug_flg) {
         cat('iteration', i, 'done \n')
@@ -145,9 +146,9 @@ rcmg <- function(n,
 #'
 #' @export
 getInitialValue <- function(mean, constraits) {
-  p0 = mean
-  p0[p0 == 0] = 0.1 * constraits[p0 == 0]
-  p0[p0 * constraits < 0] = constraits[p0 * constraits < 0]
+  p0 <- mean
+  p0[p0 == 0] <- 0.1 * constraits[p0 == 0]
+  p0[p0 * constraits < 0] <- constraits[p0 * constraits < 0]
   return(p0)
 }
 

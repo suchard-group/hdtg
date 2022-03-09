@@ -38,7 +38,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // createNutsEngine
-Rcpp::List createNutsEngine(int dimension, std::vector<double>& mask, std::vector<double>& observed, std::vector<double>& parameterSign, long flags, long info, long seed, bool randomFlg, double stepSize, NumericVector& mean, NumericMatrix& precision);
+Rcpp::List createNutsEngine(int dimension, std::vector<double>& mask, std::vector<double>& observed, std::vector<double>& parameterSign, long flags, long info, long seed, bool randomFlg, double stepSize, NumericVector& mean, NumericVector& precision);
 RcppExport SEXP _hzz_createNutsEngine(SEXP dimensionSEXP, SEXP maskSEXP, SEXP observedSEXP, SEXP parameterSignSEXP, SEXP flagsSEXP, SEXP infoSEXP, SEXP seedSEXP, SEXP randomFlgSEXP, SEXP stepSizeSEXP, SEXP meanSEXP, SEXP precisionSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -53,7 +53,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type randomFlg(randomFlgSEXP);
     Rcpp::traits::input_parameter< double >::type stepSize(stepSizeSEXP);
     Rcpp::traits::input_parameter< NumericVector& >::type mean(meanSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix& >::type precision(precisionSEXP);
+    Rcpp::traits::input_parameter< NumericVector& >::type precision(precisionSEXP);
     rcpp_result_gen = Rcpp::wrap(createNutsEngine(dimension, mask, observed, parameterSign, flags, info, seed, randomFlg, stepSize, mean, precision));
     return rcpp_result_gen;
 END_RCPP
