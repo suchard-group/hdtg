@@ -11,14 +11,14 @@ using Eigen::ArrayXXd;
 // [[Rcpp::export]]
 Rcpp::List WhitenConstraints(const Map<MatrixXd> constraint_direc,
                              const Map<VectorXd> constraint_bound,
-                             const Map<MatrixXd> cholesky,
+                             const Map<MatrixXd> cholesky_factor,
                              const Map<VectorXd> mean,
                              bool precision) {
   if (precision) {
-    ArrayXXd direc =  cholesky.transpose().triangularView<Eigen::Lower>().solve(
+    ArrayXXd direc =  cholesky_factor.transpose().triangularView<Eigen::Lower>().solve(
       constraint_direc.transpose()).transpose().array();
   } else {
-    ArrayXXd direc =  constraint_direc * cholesky.transpose();
+    ArrayXXd direc =  constraint_direc * cholesky_factor.transpose();
   }
   return Rcpp::List::create(
     Rcpp::_["direc"] = direc, 
@@ -80,27 +80,27 @@ std::pair<double, int> BounceTime(const VectorXd position,
 VectorXd WhitenPosition(const Map<VectorXd> position,
                         const Map<MatrixXd> constraint_direc,
                         const Map<VectorXd> constraint_bound,
-                        const Map<MatrixXd> cholesky,
+                        const Map<MatrixXd> cholesky_factor,
                         const Map<VectorXd> mean,
                         bool precision) {
   
   if (precision) {
-    return cholesky * (position - mean);
+    return cholesky_factor * (position - mean);
   } else {
-    return cholesky.transpose().triangularView<Eigen::Lower>().solve(position-mean);
+    return cholesky_factor.transpose().triangularView<Eigen::Lower>().solve(position-mean);
   }
 }
 
 
 VectorXd UnwhitenPosition(const VectorXd position,
-                          const Map<MatrixXd> cholesky,
+                          const Map<MatrixXd> cholesky_factor,
                           const Map<VectorXd> mean,
                           bool precision) {
   
   if (precision) {
-    return cholesky.triangularView<Eigen::Upper>().solve(position) + mean;
+    return cholesky_factor.triangularView<Eigen::Upper>().solve(position) + mean;
   } else {
-    return cholesky.transpose() * position + mean;
+    return cholesky_factor.transpose() * position + mean;
   }
 }
 
@@ -145,14 +145,14 @@ VectorXd GenerateSample(const Map<VectorXd> initial_position,
                         const Map<MatrixXd> constraint_direc,
                         const Map<VectorXd> constraint_row_normsq,
                         const Map<VectorXd> constraint_bound,
-                        const Map<MatrixXd> cholesky,
+                        const Map<MatrixXd> cholesky_factor,
                         const Map<VectorXd> mean,
                         float total_time,
                         bool precision){
   VectorXd sample = WhitenPosition(initial_position,
                                    constraint_direc,
                                    constraint_bound,
-                                   cholesky,
+                                   cholesky_factor,
                                    mean,
                                    precision);
   sample = GenerateWhitenedSample(sample,
@@ -161,6 +161,6 @@ VectorXd GenerateSample(const Map<VectorXd> initial_position,
                                   constraint_row_normsq,
                                   constraint_bound,
                                   total_time);
-  return UnwhitenPosition(sample, cholesky, mean, precision);
+  return UnwhitenPosition(sample, cholesky_factor, mean, precision);
 }
 
