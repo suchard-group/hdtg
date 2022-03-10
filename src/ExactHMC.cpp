@@ -95,7 +95,6 @@ std::pair<double, int> BounceTime(const VectorXd position,
   return std::make_pair(min_time, constraint_idx);
 }
 
-
 VectorXd WhitenPosition(const Map<VectorXd> position,
                         const Map<MatrixXd> constraint_direc,
                         const Map<VectorXd> constraint_bound,
@@ -123,6 +122,17 @@ VectorXd UnwhitenPosition(const VectorXd position,
   }
 }
 
+
+// After some deliberation, I am in favor of returning diagnostic info along 
+// with samples, especially within lower-level functions that might get called
+// by more computationally savvy users. In particular, a couple of useful 
+// quantities we can calculate without any additional computational costs are: 
+// the number of bounces and the distance of bounce locations relative to the 
+// initial location. The latter quantity requires a vector of not-completely-
+// negligible length, so we might provide an option to turn it off (though the 
+// additional memory use is likely minimal compared to, say, the covariance matrix).
+// The travelled distance serves as a diagnostic tool to see if we could use 
+// a smaller `total_time` without sacrificing mixing.
 
 VectorXd GenerateWhitenedSample(const VectorXd initial_position,
                                 const Map<VectorXd> initial_momentum,
