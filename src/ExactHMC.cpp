@@ -145,6 +145,8 @@ VectorXd GenerateWhitenedSample(const VectorXd initial_position,
   VectorXd position = initial_position;
   VectorXd momentum = initial_momentum;
   while (true) {
+    // Perhaps we can use std::tie instead? (https://stackoverflow.com/questions/32590764/can-i-use-stdpair-but-rename-first-and-second-member-names)
+    // C++17 apparently has an even better stuff, but R's C++ support tend to lag behind (https://gallery.rcpp.org/articles/rcpp-and-c++11-c++14-c++17/#:~:text=Rcpp%20supports%20any%20C%2B%2B%20language,this%20means%20g%2B%2B%2D4.9.)
     std::pair<double, int> bounce = BounceTime(position,
                                                momentum,
                                                constraint_direc,
