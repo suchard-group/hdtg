@@ -53,19 +53,19 @@ Rcpp::List WhitenConstraints(const Map<MatrixXd> constraint_direc,
                              const Map<MatrixXd> cholesky_factor,
                              const Map<VectorXd> mean,
                              bool prec_parametrized) {
+  ArrayXXd direc;
   if (prec_parametrized) {
-    ArrayXXd direc =  SolveFromRight(cholesky_factor, constraint_direc).array();
-    return Rcpp::List::create(
-      Rcpp::_["direc"] = direc, 
-      Rcpp::_["direc_rownorm_sq"]= direc.square().rowwise().sum(),
-      Rcpp::_["bound"] = constraint_bound + constraint_direc * mean);
+    direc =  cholesky_factor.transpose().triangularView<Eigen::Lower>().solve(
+      constraint_direc.transpose()).transpose().array();
+    // Perhaps make a function called sth like "solveFromRight"?
   } else {
-    ArrayXXd direc =  constraint_direc * cholesky_factor.transpose();
-    return Rcpp::List::create(
-      Rcpp::_["direc"] = direc, 
-      Rcpp::_["direc_rownorm_sq"]=direc.square().rowwise().sum(),
-      Rcpp::_["bound"] = constraint_bound + constraint_direc * mean);
+    direc =  constraint_direc * cholesky_factor.transpose();
   }
+  return Rcpp::List::create(
+    Rcpp::_["direc"] = direc, 
+    Rcpp::_["direc_rownorm_sq"]= direc.square().rowwise().sum(),
+    Rcpp::_["bound"] = constraint_bound + constraint_direc * mean
+  );
 }
 
 
