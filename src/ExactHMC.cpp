@@ -8,6 +8,30 @@ using Eigen::ArrayXd;
 using Eigen::ArrayXXd;
 
 
+//' Compute Cholesky decomposition of a matrix.
+//'
+//' @param A matrix to decompose
+//' @return upper triangular matrix R such that A = R'R.
+// [[Rcpp::export]]
+MatrixXd Cholesky(const Map<MatrixXd> A){
+  return  A.llt().matrixU();
+}
+
+
+//' Solve XA=B for two matrices A and B.
+//'
+//' Eigen does not have builtin methods to solve XA=B, only AX=B, so we 
+//' solve A'X'= B'
+//'
+//' @param A
+//' @param B
+//' @return X matrix
+MatrixXd SolveFromRight(const Map<MatrixXd> A,
+                        const Map<MatrixXd> B){
+  return A.transpose().triangularView<Eigen::Lower>().solve(B.transpose()).transpose();
+}
+
+
 //' Whiten constraints for use in GenerateUnwhitenedSample
 //'
 //' Transforms constraints of the form Fx+g >= 0 for a target normal distribution
@@ -30,8 +54,7 @@ Rcpp::List WhitenConstraints(const Map<MatrixXd> constraint_direc,
                              const Map<VectorXd> mean,
                              bool prec_parametrized) {
   if (prec_parametrized) {
-    ArrayXXd direc =  cholesky_factor.transpose().triangularView<Eigen::Lower>().solve(
-      constraint_direc.transpose()).transpose().array();
+    ArrayXXd direc =  SolveFromRight(cholesky_factor, constraint_direc).array();
     return Rcpp::List::create(
       Rcpp::_["direc"] = direc, 
       Rcpp::_["direc_rownorm_sq"]= direc.square().rowwise().sum(),
@@ -251,4 +274,3 @@ VectorXd GenerateSample(const Map<VectorXd> initial_position,
                                   total_time);
   return UnwhitenPosition(sample, cholesky_factor, mean, prec_parametrized);
 }
-
