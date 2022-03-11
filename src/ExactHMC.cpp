@@ -180,27 +180,30 @@ VectorXd GenerateWhitenedSample(const VectorXd initial_position,
                                 const Map<VectorXd> constraint_bound,
                                 double total_time){
   double bounce_time;
+  int bounce_constraint;
   double travelled_time = 0;
   VectorXd position = initial_position;
   VectorXd momentum = initial_momentum;
   while (true) {
-    std::pair<double, int> bounce = BounceTime(position,
-                                               momentum,
-                                               constraint_direc,
-                                               constraint_bound);
-    if (bounce.first < total_time - travelled_time) {
-      bounce_time = bounce.first;
-      std::pair<VectorXd, VectorXd> hamiltonian = SimulateWhitenedDynamics(position, momentum, bounce_time);
-      position = hamiltonian.first;
-      momentum = ReflectMomentum(hamiltonian.second, 
+    std::tie(bounce_time, bounce_constraint) = BounceTime(position,
+             momentum,
+             constraint_direc,
+             constraint_bound);
+    if (bounce_time < total_time - travelled_time) {
+      std::tie(position, momentum)  = SimulateWhitenedDynamics(
+        position, momentum, bounce_time
+      );
+      momentum = ReflectMomentum(momentum, 
                                  constraint_direc, 
                                  constraint_row_normsq, 
-                                 bounce.second);
+                                 bounce_constraint);
       travelled_time += bounce_time;
     } else {
       bounce_time = total_time - travelled_time;
-      std::pair<VectorXd, VectorXd> hamiltonian = SimulateWhitenedDynamics(position, momentum, bounce_time);
-      return hamiltonian.first;
+      std::tie(position, momentum) = SimulateWhitenedDynamics(
+        position, momentum, bounce_time
+      );
+      return position;
     }
   }
 }
