@@ -14,6 +14,9 @@ getSample <- function(position,
                        t,
                        nutsFlg,
                        engine) {
+  if(is.null(momentum)){
+    momentum <- drawMomentum(length(position))
+  }
   
   if (nutsFlg) {
     res <- .oneNutsIteration(

@@ -7,7 +7,189 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+source("~/Dropbox/zigzag/extra/funcsForCompare.R")
+require(trialr)
+require(rbenchmark)
+require(hzz)
+require(TruncatedNormal)
+require(tmvtnorm)
+require(coda)
+require(magrittr)
 ```
+
+# MTN with LKJ-distributed correlations (dimension = 50, 100, 200, 500, )
+Use the following chain length to reach a minESS > 200:
+(d=50)nEXACT, nTN, nHZZ, nNUTS: 500, 500, 1000, 1000
+(d=100)nEXACT, nTN, nHZZ, nNUTS: 800, 500, 1000, 1000
+
+n1(d=50)nEXACT, nTN, nHZZ, nNUTS: 1, 1, 2, 3
+n100(d=50)nEXACT, nTN, nHZZ, nNUTS: 140, 100, 220, 270
+
+n1(d=100)nEXACT, nTN, nHZZ, nNUTS: 2, 1, 2, 3
+n100(d=100)nEXACT, nTN, nHZZ, nNUTS: 170, 100, 240, 250
+
+n1(d=200)nEXACT, nTN, nHZZ, nNUTS: 1, -, 3, 1
+n100(d=200)nEXACT, nTN, nHZZ, nNUTS: 140, -, 290, 220
+
+n1(d=400)nEXACT, nTN, nHZZ, nNUTS: 2, -, 4, 3
+n100(d=400)nEXACT, nTN, nHZZ, nNUTS: 200, -, 350, 250
+
+n1(d=800)nEXACT, nTN, nHZZ, nNUTS: 2, -, 4, 3
+n100(d=800)nEXACT, nTN, nHZZ, nNUTS: 190, -, 350, 300
+
+n1(d=1600)nEXACT, nTN, nHZZ, nNUTS: 
+n100(d=1600)nEXACT, nTN, nHZZ, nNUTS: 
+
+```{r from LKJ prior}
+dimension <- 1600 # TN limit is about 300 (endless low acceptance rate)
+set.seed(666)
+covM <- rlkjcorr(n = 1, K = dimension, eta = 1)
+precM <- solve(covM)
+
+meanV <- rep(0, dimension)
+constraintForHZZ <- rep(1, dimension)
+p0 <- hzz::getInitialValue(mean = meanV, constraits = constraintForHZZ)
+
+lb <- rep(0, dimension)
+ub <- rep(Inf, dimension)
+
+nEXACT <- 800
+nTN <- 0
+nHZZ <- 1000
+nNUTS <- 1000
+
+res <-  benchMarkTMVN(
+  nEXACT = nEXACT,
+  nTN = nTN,
+  nHZZ = nHZZ,
+  nNUTS = nNUTS,
+  repeatTimes = 1,
+  forOneSampleFlg = F,
+  returnSamplesFlg = T,
+  dimension = dimension,
+  meanVec = meanV,
+  precMat = precM,
+  covMat = covM,
+  pInitial = p0,
+  constraintDirec = diag(dimension),
+  constraintBdry = rep(0, dimension),
+  lbTN = lb,
+  ubTN = ub,
+  constraintHZZ = constraintForHZZ
+)
+
+samplesList <- res$samplesList
+cat("dimension is", dimension, "\n")
+for (i in 1:length(samplesList)) {
+  sampler <- sub(".*samples", "", names(samplesList)[i])
+  nName <- paste("n", sampler, sep = '')
+  nTotal <- get(nName)
+  minESS <- getMinESS(samplesList[[i]])
+  n1 <- round(nTotal / minESS, 1)
+  cat("minESS (", sampler, ") is", minESS, "n1 is", n1, "---", "n100 is", n1 * 100, "\n")
+}
+stopifnot("column mean is too different" = max(colMeans(samplesList[[1]]) - colMeans(samplesList[[3]])) < 0.1)
+```
+
+```{r time for 1}
+nEXACT <- 2
+nTN <- 2
+nHZZ <- 2
+
+res <- benchMarkTMVN(nEXACT = nEXACT, nHZZ = nHZZ, repeatTimes = 3)
+minESSEXACT <- getMinESS(res$samplesEXACT)
+minESSHZZ <- getMinESS(res$samplesHZZ)
+minESSNUTS <- getMinESS(res$samplesNUTS)
+
+# timeRes$nFor1Sample <- nTotal / minESS
+# timeRes$nFor100Samples <- timeRes$nFor1Sample * 100
+# 
+# 
+# timeRes[timeRes$test == "lkjEXACT", "relative"] <-
+#   minESSEXACT / timeRes[timeRes$test == "lkjEXACT", "relative"]
+# timeRes[timeRes$test == "lkjTN", "relative"] <-
+#   nTN / timeRes[timeRes$test == "lkjTN", "relative"]
+# timeRes[timeRes$test == "lkjHZZ", "relative"] <-
+#   minESSHZZ / timeRes[timeRes$test == "lkjHZZ", "relative"]
+# timeRes[timeRes$test == "lkjNUTS", "relative"] <-
+#   minESSNUTS / timeRes[timeRes$test == "lkjNUTS", "relative"]
+
+#print(timeRes$relative)
+cat("dimension is", dimension, "\n",
+  "min ESS EXACT, HZZ, NUTS:", c(minESSEXACT, minESSHZZ, minESSNUTS), "\n")
+print(res$timeRes)
+
+
+#stopifnot("column mean is too different" = max(colMeans(samplesEXACT) - colMeans(samplesHZZ)) < 0.2)
+```
+
+
+```{r tmp check invgamma distribution}
+hist(rinvgamma(n = 1000, shape = 1, rate = 1), xlim = c(0,20), breaks=1000)
+#use https://www.r-bloggers.com/2017/05/5-ways-to-measure-running-time-of-r-code/
+```
+
+```{r tmp lancoz}
+require(RSpectra)
+require(trialr)
+
+set.seed(666)
+covMat <- rlkjcorr(n = 1, K = 10, eta = 1)
+tmp = RSpectra::eigs(A = covMat, k = 1, which = "LM")[["values"]]
+tmp$values
+
+```
+
+```{r phylogenetics example}
+# read in data
+data_folder <- "/Users/zhenyuzhang/probitHIVdata/"
+orthant_ind <- scan(paste0(data_folder, "orthant_indicator.txt"))
+mean <- scan(paste0(data_folder, "mean.txt"))
+
+tic <- proc.time()
+
+# PrecTotal <- read.table(
+#   paste0(data_folder, "precision_matrix.csv"), 
+#   header = FALSE, sep = ",", colClasses = "numeric"
+# )
+toc <- proc.time()
+print(sprintf("Loading the prec matrix took %.3g sec.", toc['elapsed'] - tic['elapsed']))
+
+Prec <- as.matrix(PrecTotal)
+subsample_data <- TRUE
+set.seed(666)
+
+if (subsample_data) {
+  subset_ind <- sample.int(dim(Prec)[1], size = 5000)
+  orthant_ind <- orthant_ind[subset_ind]
+  mean <- mean[subset_ind]
+  Prec <- Prec[subset_ind, subset_ind]
+}
+
+constraint_directions <- diag(orthant_ind)
+constraint_directions <- constraint_directions[!is.na(orthant_ind), ]
+constraint_bdry <- rep(0, dim(constraint_directions)[1])
+
+x0 <- runif(length(orthant_ind))
+is_not_na <- !is.na(orthant_ind)
+x0[is_not_na] <- orthant_ind[is_not_na] * abs(x0[is_not_na])
+
+
+nEXACT = 50
+
+samplesEXACT <- exactHMC(
+          n = nEXACT,
+          initial_position = x0,
+          constraint_direc = constraint_directions,
+          constraint_bound = constraint_bdry,
+          precisionMat = Prec,
+          mu = mean,
+          precision = TRUE,
+          total_time = pi / 2,
+          seed = 666
+        )
+```
+
 
 
 ```{r benchmarking}
@@ -150,88 +332,11 @@ colMeans(samples_TN[,1:9])
 summary(colMeans(samples_hzz[,1:9]))
 summary(colMeans(samples_hzz) - colMeans(samples_TN))
 ```
+
+
 ```{r}
 hist(samples_hzz[,29], breaks = 100)
 hist(samples_TN[,29], breaks = 100)
-```
-
-
-
-```{r from LKJ prior}
-rm(list = ls())
-require(trialr)
-require(rbenchmark)
-require(hzz)
-require(TruncatedNormal)
-require(coda)
-require(magrittr)
-
-dimension <- 50 # TN limit is about 300 (endless low acceptance rate)
-nTN <- 500
-nHZZ <- 1000
-
-set.seed(666)
-covMat <- rlkjcorr(n = 1, K = dimension, eta = 1)
-precMat <- solve(covMat)
-meanVec <- rep(0, dimension)
-
-positiveIndex <- seq(from = 1, to = dimension, by = 2)
-
-constraitsHZZ <- rep(-1, dimension)
-constraitsHZZ[positiveIndex] <- 1
-
-lbTN <- rep(-Inf, dimension)
-ubTN <- rep(0, dimension)
-lbTN[positiveIndex] <- 0
-ubTN[positiveIndex] <- Inf
-
-timeRes <- benchmark(
-  "lkjTN" = {
-    set.seed(666)
-    samplesTN <- TruncatedNormal::rtmvnorm(
-      n = nTN,
-      mu = meanVec,
-      sigma = covMat,
-      lb = lbTN,
-      ub = ubTN
-    )
-  },
-  "lkjHZZ" = {
-    samplesHZZ <- rcmg(
-      n = nHZZ,
-      mean = meanVec,
-      prec = precMat,
-      constraits = constraitsHZZ,
-      t = 10,
-      burnin = 0,
-      cppFlg = T
-    )
-  },
-  replications = 5,
-  columns = c(
-    "test",
-    "replications",
-    "elapsed",
-    "relative",
-    "user.self",
-    "sys.self"
-  )
-)
-
-minESSHZZ <- mcmc(samplesHZZ[,], thin = 1) %>% effectiveSize() %>% min()
-
-cat("HZZ min ESS is", minESSHZZ, "\n", "TN min ESS is", nTN)
-
-timeRes[timeRes$test == "lkjTN", "relative"] <- nTN / timeRes[timeRes$test == "lkjTN", "relative"]
-timeRes[timeRes$test == "lkjHZZ", "relative"] <- minESSHZZ / timeRes[timeRes$test == "lkjHZZ", "relative"]
-
-print(timeRes)
-```
-
-
-```{r tmp check invgamma distribution}
-hist(rinvgamma(n = 1000, shape = 1, rate = 1), xlim = c(0,20), breaks=1000)
-#use https://www.r-bloggers.com/2017/05/5-ways-to-measure-running-time-of-r-code/
 ```
 
 

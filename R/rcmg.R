@@ -37,7 +37,7 @@ rcmg <- function(n,
   
   if(!is.null(prec)){
     stopifnot("precision matrix contains NaN" = !any(is.na(prec)))
-  } else if (!is.null(prec)){
+  } else if (!is.null(cov)){
     stopifnot("covariance matrix contains NaN" = !any(is.na(cov)))
     prec <- solve(cov)
   } else {
@@ -61,10 +61,11 @@ rcmg <- function(n,
   }
   
   samples <- array(0, c(n, ndim))
-  set.seed(random_seed)
   
   if (cppFlg) {
     if (nutsFlg) {
+      t <- 0.1 / sqrt(min(slanczos(A = prec,k=1,kl=1)[['values']]))
+      cat("NUTS base step size is", t)
       engine <- createNutsEngine(
         dimension = ndim,
         mask = rep(1, ndim),
@@ -78,7 +79,10 @@ rcmg <- function(n,
         mean = mean,
         precision = prec
       )
+      
     } else {
+      t <- sqrt(2) / sqrt(min(slanczos(A = prec,k=1,kl=1)[['values']]))
+      cat("HZZ step size is", t)
       engine <- createEngine(
         dimension = ndim,
         mask = rep(1, ndim),
@@ -92,12 +96,14 @@ rcmg <- function(n,
     }
   }
   
+  set.seed(random_seed)
+  
   if (cppFlg) {
     for (i in 1:n) {
       if (!is.null(fixedMomentum)) {
         momentum <- fixedMomentum
       } else {
-        momentum <- drawMomentum(ndim)
+        momentum <- NULL
       }
       
       p0 <- getSample(
