@@ -2,8 +2,9 @@ require(Rcpp)
 require(magrittr)
 require(coda)
 require(rbenchmark)
+library(here)
 
-sourceCpp("ExactHMC.cpp")
+sourceCpp(here("extra", "ExactHMC.cpp"))
 
 exactHMC <- function(n,
                      initial_position,
@@ -36,7 +37,7 @@ exactHMC <- function(n,
       total_time,
       precision
     )
-    results[i,] <- sample
+    results[i, ] <- sample
   }
   return(results)
 }
@@ -78,13 +79,13 @@ benchMarkTMVN <-
                    "relative",
                    "user.self",
                    "sys.self")
-
+    
     timeList <- list()
     samplesList <- list()
-    i <- 1
+    numTest <- 1
     ## ExactHMC ####
     if (nEXACT > 0) {
-      timeList[[i]] <- benchmark(
+      timeList[[numTest]] <- benchmark(
         "exactHMC" = {
           samplesEXACT <- exactHMC(
             n = nEXACT,
@@ -106,12 +107,12 @@ benchMarkTMVN <-
       )
       samplesList <-
         c(samplesList, samplesEXACT = list(samplesEXACT))
-      i <- i + 1
+      numTest <- numTest + 1
     }
     ## TN ####
     if (nTN > 0) {
       set.seed(666)
-      timeList[[i]] <- benchmark(
+      timeList[[numTest]] <- benchmark(
         "TN" = {
           samplesTN <- TruncatedNormal::rtmvnorm(
             n = nTN,
@@ -126,7 +127,7 @@ benchMarkTMVN <-
         order = NULL
       )
       samplesList <- c(samplesList, samplesTN = list(samplesTN))
-      i <- i + 1
+      numTest <- numTest + 1
     }
     ## HZZ and NUTS (one e-sample) ####
     if (forOneSampleFlg) {
@@ -141,22 +142,22 @@ benchMarkTMVN <-
           info = 1,
           seed = 666
         )
-
+        
         samplesHZZ  <-  array(0, c(nHZZ, dimension))
-
-        timeList[[i]] <- benchmark(
+        
+        timeList[[numTest]] <- benchmark(
           "HZZ" = {
             setMean(sexp = engine$engine, mean = meanVec)
             setPrecision(sexp = engine$engine, precision = precMat)
-
+            
             HZZtime <-
               sqrt(2) / sqrt(min(mgcv::slanczos(
                 A = precMat, k = 1, kl = 1
               )[['values']]))
-
+            
             for (i in 1:nHZZ) {
               momentum <- drawMomentum(dimension)
-              samplesHZZ[i, ] <- getSample(
+              samplesHZZ[i,] <- getSample(
                 position = pInitial,
                 momentum = momentum,
                 t = HZZtime,
@@ -170,14 +171,14 @@ benchMarkTMVN <-
           order = NULL
         )
         samplesList <- c(samplesList, samplesHZZ = list(samplesHZZ))
-        i <- i + 1
+        numTest <- numTest + 1
       }
-
+      
       if (nNUTS > 0) {
         set.seed(666)
         baseStep <-
-          0.1 / sqrt(min(slanczos(
-            A = prec, k = 1, kl = 1
+          0.1 / sqrt(min(mgcv::slanczos(
+            A = precMat, k = 1, kl = 1
           )[['values']]))
         engine <- createNutsEngine(
           dimension = dimension,
@@ -192,20 +193,21 @@ benchMarkTMVN <-
           mean = meanVec,
           precision = precMat
         )
-
+        
         samplesNUTS  <-  array(0, c(nNUTS, dimension))
-
-        timeList[[i]] <- benchmark(
+        
+        timeList[[numTest]] <- benchmark(
           "NUTS" = {
-            setMean(sexp = engine$engine, mean = meanVec)
-            setPrecision(sexp = engine$engine, precision = precMat)
-
+            baseStep <-
+              0.1 / sqrt(min(mgcv::slanczos(
+                A = precMat, k = 1, kl = 1
+              )[['values']]))
             for (i in 1:nNUTS) {
               momentum <- drawMomentum(dimension)
-              samplesNUTS[i, ] <- getSample(
+              samplesNUTS[i,] <- getSample(
                 position = pInitial,
                 momentum = momentum,
-                t = HZZtime,
+                t = baseStep,
                 nutsFlg = T,
                 engine = engine
               )
@@ -217,13 +219,13 @@ benchMarkTMVN <-
         )
         samplesList <-
           c(samplesList, samplesNUTS = list(samplesNUTS))
-        i <- i + 1
+        numTest <- numTest + 1
       }
     } else {
       ## HZZ and NUTS (multiple e-sample) ####
       if (nHZZ > 0) {
         set.seed(666)
-        timeList[[i]] <- benchmark(
+        timeList[[numTest]] <- benchmark(
           "HZZ" = {
             samplesHZZ <- rcmg(
               n = nHZZ,
@@ -241,13 +243,13 @@ benchMarkTMVN <-
           order = NULL
         )
         samplesList <- c(samplesList, samplesHZZ = list(samplesHZZ))
-        i <- i + 1
+        numTest <- numTest + 1
       }
-
+      
       if (nNUTS > 0) {
         set.seed(666)
-        timeList[[i]] <- benchmark(
-          "HZZ" = {
+        timeList[[numTest]] <- benchmark(
+          "NUTS" = {
             samplesNUTS <- rcmg(
               n = nNUTS,
               mean = meanVec,
@@ -265,15 +267,15 @@ benchMarkTMVN <-
         )
         samplesList <-
           c(samplesList, samplesNUTS = list(samplesNUTS))
-        i <- i + 1
+        numTest <- numTest + 1
       }
-      if (returnSamplesFlg) {
-        return(list(timeList = timeList,
-                    samplesList = samplesList))
-      } else{
-        return(list(timeList = timeList,
-                    samplesList = NA))
-      }
-
+    }
+    ## return list ####
+    if (returnSamplesFlg) {
+      return(list(timeList = timeList,
+                  samplesList = samplesList))
+    } else{
+      return(list(timeList = timeList,
+                  samplesList = NA))
     }
   }

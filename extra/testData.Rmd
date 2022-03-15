@@ -19,29 +19,11 @@ require(magrittr)
 
 # MTN with LKJ-distributed correlations (dimension = 50, 100, 200, 500, )
 Use the following chain length to reach a minESS > 200:
-(d=50)nEXACT, nTN, nHZZ, nNUTS: 500, 500, 1000, 1000
-(d=100)nEXACT, nTN, nHZZ, nNUTS: 800, 500, 1000, 1000
+(chain)nEXACT, nTN, nHZZ, nNUTS: 800, 200, 1000, 1000
 
-n1(d=50)nEXACT, nTN, nHZZ, nNUTS: 1, 1, 2, 3
-n100(d=50)nEXACT, nTN, nHZZ, nNUTS: 140, 100, 220, 270
 
-n1(d=100)nEXACT, nTN, nHZZ, nNUTS: 2, 1, 2, 3
-n100(d=100)nEXACT, nTN, nHZZ, nNUTS: 170, 100, 240, 250
-
-n1(d=200)nEXACT, nTN, nHZZ, nNUTS: 1, -, 3, 1
-n100(d=200)nEXACT, nTN, nHZZ, nNUTS: 140, -, 290, 220
-
-n1(d=400)nEXACT, nTN, nHZZ, nNUTS: 2, -, 4, 3
-n100(d=400)nEXACT, nTN, nHZZ, nNUTS: 200, -, 350, 250
-
-n1(d=800)nEXACT, nTN, nHZZ, nNUTS: 2, -, 4, 3
-n100(d=800)nEXACT, nTN, nHZZ, nNUTS: 190, -, 350, 300
-
-n1(d=1600)nEXACT, nTN, nHZZ, nNUTS: 
-n100(d=1600)nEXACT, nTN, nHZZ, nNUTS: 
-
-```{r from LKJ prior}
-dimension <- 1600 # TN limit is about 300 (endless low acceptance rate)
+```{r LKJ MTN - prepare inputs}
+dimension <- 800 # TN limit is about 300 (endless low acceptance rate)
 set.seed(666)
 covM <- rlkjcorr(n = 1, K = dimension, eta = 1)
 precM <- solve(covM)
@@ -52,11 +34,13 @@ p0 <- hzz::getInitialValue(mean = meanV, constraits = constraintForHZZ)
 
 lb <- rep(0, dimension)
 ub <- rep(Inf, dimension)
+```
 
-nEXACT <- 800
-nTN <- 0
-nHZZ <- 1000
-nNUTS <- 1000
+```{r LKJ MTN - long run to check ESS}
+nEXACT <- 10
+nTN <- 10
+nHZZ <- 10
+nNUTS <- 10
 
 res <-  benchMarkTMVN(
   nEXACT = nEXACT,
@@ -89,6 +73,55 @@ for (i in 1:length(samplesList)) {
   cat("minESS (", sampler, ") is", minESS, "n1 is", n1, "---", "n100 is", n1 * 100, "\n")
 }
 stopifnot("column mean is too different" = max(colMeans(samplesList[[1]]) - colMeans(samplesList[[3]])) < 0.1)
+```
+
+
+n1(d=50)nEXACT, nTN, nHZZ, nNUTS: 1, 1, 2, 3
+n100(d=50)nEXACT, nTN, nHZZ, nNUTS: 140, 100, 220, 270
+
+n1(d=100)nEXACT, nTN, nHZZ, nNUTS: 2, 1, 2, 3
+n100(d=100)nEXACT, nTN, nHZZ, nNUTS: 170, 100, 240, 250
+
+n1(d=200)nEXACT, nTN, nHZZ, nNUTS: 1, -, 3, 1
+n100(d=200)nEXACT, nTN, nHZZ, nNUTS: 140, -, 290, 220
+
+n1(d=400)nEXACT, nTN, nHZZ, nNUTS: 2, -, 4, 3
+n100(d=400)nEXACT, nTN, nHZZ, nNUTS: 200, -, 350, 250
+
+n1(d=800)nEXACT, nTN, nHZZ, nNUTS: 2, -, 4, 3
+n100(d=800)nEXACT, nTN, nHZZ, nNUTS: 190, -, 350, 300
+
+n1(d=1600)nEXACT, nTN, nHZZ, nNUTS: 2, -, 3, 2
+n100(d=1600)nEXACT, nTN, nHZZ, nNUTS: 200, -, 310, 220
+
+
+```{r LKJ MTN - timing run to get result}
+nEXACT <- 190
+nTN <- 0
+nHZZ <- 350
+nNUTS <- 300
+
+res <-  benchMarkTMVN(
+  nEXACT = nEXACT,
+  nTN = nTN,
+  nHZZ = nHZZ,
+  nNUTS = nNUTS,
+  repeatTimes = 2,
+  forOneSampleFlg = T,
+  returnSamplesFlg = F,
+  dimension = dimension,
+  meanVec = meanV,
+  precMat = precM,
+  covMat = covM,
+  pInitial = p0,
+  constraintDirec = diag(dimension),
+  constraintBdry = rep(0, dimension),
+  lbTN = lb,
+  ubTN = ub,
+  constraintHZZ = constraintForHZZ
+)
+
+dplyr::bind_rows(res$timeList)
 ```
 
 ```{r time for 1}
