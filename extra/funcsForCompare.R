@@ -3,7 +3,7 @@ require(magrittr)
 require(coda)
 require(rbenchmark)
 
-sourceCpp("../../bouncy_hmc/src/ExactHMC.cpp")
+sourceCpp("ExactHMC.cpp")
 
 exactHMC <- function(n,
                      initial_position,
@@ -78,7 +78,7 @@ benchMarkTMVN <-
                    "relative",
                    "user.self",
                    "sys.self")
-    
+
     timeList <- list()
     samplesList <- list()
     i <- 1
@@ -141,19 +141,19 @@ benchMarkTMVN <-
           info = 1,
           seed = 666
         )
-        
+
         samplesHZZ  <-  array(0, c(nHZZ, dimension))
-        
+
         timeList[[i]] <- benchmark(
           "HZZ" = {
             setMean(sexp = engine$engine, mean = meanVec)
             setPrecision(sexp = engine$engine, precision = precMat)
-            
+
             HZZtime <-
               sqrt(2) / sqrt(min(mgcv::slanczos(
                 A = precMat, k = 1, kl = 1
               )[['values']]))
-            
+
             for (i in 1:nHZZ) {
               momentum <- drawMomentum(dimension)
               samplesHZZ[i, ] <- getSample(
@@ -172,7 +172,7 @@ benchMarkTMVN <-
         samplesList <- c(samplesList, samplesHZZ = list(samplesHZZ))
         i <- i + 1
       }
-      
+
       if (nNUTS > 0) {
         set.seed(666)
         baseStep <-
@@ -192,14 +192,14 @@ benchMarkTMVN <-
           mean = meanVec,
           precision = precMat
         )
-        
+
         samplesNUTS  <-  array(0, c(nNUTS, dimension))
-        
+
         timeList[[i]] <- benchmark(
           "NUTS" = {
             setMean(sexp = engine$engine, mean = meanVec)
             setPrecision(sexp = engine$engine, precision = precMat)
-            
+
             for (i in 1:nNUTS) {
               momentum <- drawMomentum(dimension)
               samplesNUTS[i, ] <- getSample(
@@ -243,7 +243,7 @@ benchMarkTMVN <-
         samplesList <- c(samplesList, samplesHZZ = list(samplesHZZ))
         i <- i + 1
       }
-      
+
       if (nNUTS > 0) {
         set.seed(666)
         timeList[[i]] <- benchmark(
@@ -274,6 +274,6 @@ benchMarkTMVN <-
         return(list(timeList = timeList,
                     samplesList = NA))
       }
-      
+
     }
   }
