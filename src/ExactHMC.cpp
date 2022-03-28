@@ -55,11 +55,9 @@ Rcpp::List WhitenConstraints(const Map<MatrixXd> constraint_direc,
                              bool prec_parametrized) {
   ArrayXXd direc;
   if (prec_parametrized) {
-    direc =  cholesky_factor.transpose().triangularView<Eigen::Lower>().solve(
-      constraint_direc.transpose()).transpose().array();
-    // Perhaps make a function called sth like "solveFromRight"?
+    direc =  SolveFromRight(cholesky_factor, constraint_direc).array();
   } else {
-    direc =  constraint_direc * cholesky_factor.transpose();
+    direc =  (constraint_direc * cholesky_factor.transpose()).array();
   }
   return Rcpp::List::create(
     Rcpp::_["direc"] = direc, 
