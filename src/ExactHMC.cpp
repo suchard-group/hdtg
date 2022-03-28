@@ -1,19 +1,13 @@
 #include <RcppEigen.h>
 // [[Rcpp::depends(RcppEigen)]]
 
-using Eigen::Map;
-using Eigen::MatrixXd;
-using Eigen::VectorXd;
-using Eigen::ArrayXd;
-using Eigen::ArrayXXd;
-
 
 //' Compute Cholesky decomposition of a matrix.
 //'
 //' @param A matrix to decompose
 //' @return upper triangular matrix R such that A = R'R.
 // [[Rcpp::export]]
-MatrixXd Cholesky(const Map<MatrixXd> A){
+Eigen::MatrixXd Cholesky(const Eigen::Map<Eigen::MatrixXd> A){
   return  A.llt().matrixU();
 }
 
@@ -26,8 +20,8 @@ MatrixXd Cholesky(const Map<MatrixXd> A){
 //' @param A
 //' @param B
 //' @return X matrix
-MatrixXd SolveFromRight(const Map<MatrixXd> A,
-                        const Map<MatrixXd> B){
+Eigen::MatrixXd SolveFromRight(const Eigen::Map<Eigen::MatrixXd> A,
+                               const Eigen::Map<Eigen::MatrixXd> B){
   return A.transpose().triangularView<Eigen::Lower>().solve(B.transpose()).transpose();
 }
 
@@ -42,22 +36,22 @@ MatrixXd SolveFromRight(const Map<MatrixXd> A,
 //' @param constraint_bound g vector (k dimensional)
 //' @param cholesky_factor upper triangular matrix R from cholesky decomposition of 
 //' precision or covariance matrix into R^TR
-//' @param mean mean of target distribution
+//' @param mean mean of unconstrained Gaussian
 //' @param prec_parametrized boolean for whether parametrization is by precision (true) 
 //' or covariance matrix (false)
 //' @return List of new constraint directions, the squared row norms of those 
 //' constraints (for computational efficiency later), and new bounds
 // [[Rcpp::export]]
-Rcpp::List WhitenConstraints(const Map<MatrixXd> constraint_direc,
-                             const Map<VectorXd> constraint_bound,
-                             const Map<MatrixXd> cholesky_factor,
-                             const Map<VectorXd> mean,
+Rcpp::List WhitenConstraints(const Eigen::Map<Eigen::MatrixXd> constraint_direc,
+                             const Eigen::Map<Eigen::VectorXd> constraint_bound,
+                             const Eigen::Map<Eigen::MatrixXd> cholesky_factor,
+                             const Eigen::Map<Eigen::VectorXd> mean,
                              bool prec_parametrized) {
-  ArrayXXd direc;
+  Eigen::ArrayXXd direc;
   if (prec_parametrized) {
     direc =  SolveFromRight(cholesky_factor, constraint_direc).array();
   } else {
-    direc =  (constraint_direc * cholesky_factor.transpose()).array();
+    direc =  constraint_direc * cholesky_factor.transpose();
   }
   return Rcpp::List::create(
     Rcpp::_["direc"] = direc, 
@@ -73,9 +67,9 @@ Rcpp::List WhitenConstraints(const Map<MatrixXd> constraint_direc,
 //' @param momentum starting momentum
 //' @param time amount of time the system is run for
 //' @return pair of new (position, momentum)
-std::pair<VectorXd, VectorXd> SimulateWhitenedDynamics(const VectorXd position, 
-                                                       const VectorXd momentum, 
-                                                       const double time) {
+std::pair<Eigen::VectorXd, Eigen::VectorXd> SimulateWhitenedDynamics(const Eigen::VectorXd position, 
+                                                                     const Eigen::VectorXd momentum, 
+                                                                     const double time) {
   return std::make_pair(momentum * sin(time) + position * cos(time), 
                         momentum * cos(time) - position * sin(time));
 }
@@ -94,10 +88,10 @@ std::pair<VectorXd, VectorXd> SimulateWhitenedDynamics(const VectorXd position,
 //' @param bounce_idx integer index of which constraint is being bounced off of
 //' @param time amount of time the system is run for
 //' @return momentum after bouncing
-VectorXd ReflectMomentum(const VectorXd momentum,
-                         const Map<MatrixXd> constraint_direc,
-                         const Map<VectorXd> constraint_row_normsq,
-                         const int bounce_idx) {
+Eigen::VectorXd ReflectMomentum(const Eigen::VectorXd momentum,
+                                const Eigen::Map<Eigen::MatrixXd> constraint_direc,
+                                const Eigen::Map<Eigen::VectorXd> constraint_row_normsq,
+                                const int bounce_idx) {
   return momentum - 2 * momentum.dot(constraint_direc.row(bounce_idx-1)) /  
     constraint_row_normsq(bounce_idx-1) * constraint_direc.row(bounce_idx-1).transpose();
 }
@@ -111,16 +105,16 @@ VectorXd ReflectMomentum(const VectorXd momentum,
 //' linear constraints)
 //' @param constraint_bound g vector (k dimensional)
 //' @return pair of new (time until bounce, constraint index corresponding to bounce)
-std::pair<double, int> BounceTime(const VectorXd position,
-                                  const VectorXd momentum,
-                                  const Map<MatrixXd> constraint_direc,
-                                  const Map<VectorXd> constraint_bound) {
+std::pair<double, int> BounceTime(const Eigen::VectorXd position,
+                                  const Eigen::VectorXd momentum,
+                                  const Eigen::Map<Eigen::MatrixXd> constraint_direc,
+                                  const Eigen::Map<Eigen::VectorXd> constraint_bound) {
   
-  ArrayXd fa = (constraint_direc * momentum).array();
-  ArrayXd fb = (constraint_direc * position).array();
-  ArrayXd U = (fa.square() + fb.square()).sqrt();
+  Eigen::ArrayXd fa = (constraint_direc * momentum).array();
+  Eigen::ArrayXd fb = (constraint_direc * position).array();
+  Eigen::ArrayXd U = (fa.square() + fb.square()).sqrt();
   // Eigen doesn't have an atan2 function
-  ArrayXd phi = -fa.binaryExpr(fb, [] (double a, double b) { return std::atan2(a,b);} );
+  Eigen::ArrayXd phi = -fa.binaryExpr(fb, [] (double a, double b) { return std::atan2(a,b);} );
   double min_time = std::numeric_limits<double>::infinity();
   int constraint_idx = -1;
   for (int i=0; i<constraint_bound.size(); ++i){
@@ -145,16 +139,16 @@ std::pair<double, int> BounceTime(const VectorXd position,
 //' @param constraint_bound g vector (k dimensional)
 //' @param cholesky_factor upper triangular matrix R from cholesky decomposition of 
 //' precision or covariance matrix into R^TR
-//' @param mean mean of target distribution
+//' @param mean mean of unconstrained Gaussian
 //' @param prec_parametrized boolean for whether parametrization is by precision (true) 
 //' or covariance matrix (false)
 //' @return vector of position in standard normal frame
-VectorXd WhitenPosition(const Map<VectorXd> position,
-                        const Map<MatrixXd> constraint_direc,
-                        const Map<VectorXd> constraint_bound,
-                        const Map<MatrixXd> cholesky_factor,
-                        const Map<VectorXd> mean,
-                        bool prec_parametrized) {
+Eigen::VectorXd WhitenPosition(const Eigen::Map<Eigen::VectorXd> position,
+                               const Eigen::Map<Eigen::MatrixXd> constraint_direc,
+                               const Eigen::Map<Eigen::VectorXd> constraint_bound,
+                               const Eigen::Map<Eigen::MatrixXd> cholesky_factor,
+                               const Eigen::Map<Eigen::VectorXd> mean,
+                               bool prec_parametrized) {
   
   if (prec_parametrized) {
     return cholesky_factor * (position - mean);
@@ -168,14 +162,14 @@ VectorXd WhitenPosition(const Map<VectorXd> position,
 //' @param position starting position
 //' @param cholesky_factor upper triangular matrix R from cholesky decomposition of 
 //' precision or covariance matrix into R^TR
-//' @param mean mean of target distribution
+//' @param mean mean of unconstrained Gaussian 
 //' @param prec_parametrized boolean for whether parametrization is by precision (true) 
 //' or covariance matrix (false)
 //' @return vector of position in original frame
-VectorXd UnwhitenPosition(const VectorXd position,
-                          const Map<MatrixXd> cholesky_factor,
-                          const Map<VectorXd> mean,
-                          bool prec_parametrized) {
+Eigen::VectorXd UnwhitenPosition(const Eigen::VectorXd position,
+                                 const Eigen::Map<Eigen::MatrixXd> cholesky_factor,
+                                 const Eigen::Map<Eigen::VectorXd> mean,
+                                 bool prec_parametrized) {
   
   if (prec_parametrized) {
     return cholesky_factor.triangularView<Eigen::Upper>().solve(position) + mean;
@@ -194,17 +188,17 @@ VectorXd UnwhitenPosition(const VectorXd position,
 //' @param constraint_bound g vector (k dimensional)
 //' @param total_time total time the particle will bounce for
 //' @return vector of position in standard normal frame
-VectorXd GenerateWhitenedSample(const VectorXd initial_position,
-                                const Map<VectorXd> initial_momentum,
-                                const Map<MatrixXd> constraint_direc,
-                                const Map<VectorXd> constraint_row_normsq,
-                                const Map<VectorXd> constraint_bound,
-                                double total_time){
+Eigen::VectorXd GenerateWhitenedSample(const Eigen::VectorXd initial_position,
+                                       const Eigen::Map<Eigen::VectorXd> initial_momentum,
+                                       const Eigen::Map<Eigen::MatrixXd> constraint_direc,
+                                       const Eigen::Map<Eigen::VectorXd> constraint_row_normsq,
+                                       const Eigen::Map<Eigen::VectorXd> constraint_bound,
+                                       double total_time){
   double bounce_time;
   int bounce_constraint;
   double travelled_time = 0;
-  VectorXd position = initial_position;
-  VectorXd momentum = initial_momentum;
+  Eigen::VectorXd position = initial_position;
+  Eigen::VectorXd momentum = initial_momentum;
   while (true) {
     std::tie(bounce_time, bounce_constraint) = BounceTime(position,
              momentum,
@@ -243,27 +237,27 @@ VectorXd GenerateWhitenedSample(const VectorXd initial_position,
 //' @param constraint_bound g vector (k dimensional)
 //' @param cholesky_factor upper triangular matrix R from cholesky decomposition of 
 //' precision or covariance matrix into R^TR
-//' @param mean mean of target distribution
+//' @param mean mean of unconstrained Gaussian
 //' @param total_time total time the particle will bounce for
 //' @param prec_parametrized boolean for whether parametrization is by precision (true) 
 //' or covariance matrix (false)
 //' @return vector of position in standard normal frame
 // [[Rcpp::export]]
-VectorXd GenerateSample(const Map<VectorXd> initial_position,
-                        const Map<VectorXd> initial_momentum,
-                        const Map<MatrixXd> constraint_direc,
-                        const Map<VectorXd> constraint_row_normsq,
-                        const Map<VectorXd> constraint_bound,
-                        const Map<MatrixXd> cholesky_factor,
-                        const Map<VectorXd> mean,
-                        double total_time,
-                        bool prec_parametrized){
-  VectorXd sample = WhitenPosition(initial_position,
-                                   constraint_direc,
-                                   constraint_bound,
-                                   cholesky_factor,
-                                   mean,
-                                   prec_parametrized);
+Eigen::VectorXd GenerateSample(const Eigen::Map<Eigen::VectorXd> initial_position,
+                               const Eigen::Map<Eigen::VectorXd> initial_momentum,
+                               const Eigen::Map<Eigen::MatrixXd> constraint_direc,
+                               const Eigen::Map<Eigen::VectorXd> constraint_row_normsq,
+                               const Eigen::Map<Eigen::VectorXd> constraint_bound,
+                               const Eigen::Map<Eigen::MatrixXd> cholesky_factor,
+                               const Eigen::Map<Eigen::VectorXd> mean,
+                               double total_time,
+                               bool prec_parametrized){
+  Eigen::VectorXd sample = WhitenPosition(initial_position,
+                                          constraint_direc,
+                                          constraint_bound,
+                                          cholesky_factor,
+                                          mean,
+                                          prec_parametrized);
   sample = GenerateWhitenedSample(sample,
                                   initial_momentum,
                                   constraint_direc,
