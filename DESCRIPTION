@@ -12,10 +12,12 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 Imports: 
     Rcpp,
+    RcppEigen,
     RcppParallel,
     RcppXsimd,
     mgcv
 LinkingTo: 
     Rcpp,
+    RcppEigen,
     RcppParallel,
     RcppXsimd
