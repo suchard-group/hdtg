@@ -13,8 +13,10 @@ RoxygenNote: 7.1.2
 Imports: 
     Rcpp,
     RcppParallel,
-    RcppXsimd
+    RcppXsimd,
+    RcppEigen
 LinkingTo: 
     Rcpp,
     RcppParallel,
-    RcppXsimd
+    RcppXsimd,
+    RcppEigen

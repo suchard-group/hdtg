@@ -32,6 +32,7 @@ PKG_CPPFLAGS = -I.
 PKG_CXXFLAGS = -mavx -mavx2 -mfma
 
 OBJECTS.zigzag = \
+    ExactHMC.o \
     RcppZigZag.o \
     RcppExports.o
 
