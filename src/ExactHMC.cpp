@@ -6,6 +6,7 @@
 //'
 //' @param A matrix to decompose
 //' @return upper triangular matrix R such that A = R'R.
+//' @export
 // [[Rcpp::export]]
 Eigen::MatrixXd Cholesky(const Eigen::Map<Eigen::MatrixXd> A){
   return  A.llt().matrixU();
@@ -41,6 +42,7 @@ Eigen::MatrixXd SolveFromRight(const Eigen::Map<Eigen::MatrixXd> A,
 //' or covariance matrix (false)
 //' @return List of new constraint directions, the squared row norms of those 
 //' constraints (for computational efficiency later), and new bounds
+//' @export
 // [[Rcpp::export]]
 Rcpp::List WhitenConstraints(const Eigen::Map<Eigen::MatrixXd> constraint_direc,
                              const Eigen::Map<Eigen::VectorXd> constraint_bound,
@@ -242,6 +244,7 @@ Eigen::VectorXd GenerateWhitenedSample(const Eigen::VectorXd initial_position,
 //' @param prec_parametrized boolean for whether parametrization is by precision (true) 
 //' or covariance matrix (false)
 //' @return vector of position in standard normal frame
+//' @export
 // [[Rcpp::export]]
 Eigen::VectorXd GenerateSample(const Eigen::Map<Eigen::VectorXd> initial_position,
                                const Eigen::Map<Eigen::VectorXd> initial_momentum,
