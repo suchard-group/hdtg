@@ -4,7 +4,22 @@
 \alias{rcmg}
 \title{Sample from a constrained Gaussian distribution}
 \usage{
-rcmg(n, mean, prec, constraits, t, burnin, p0 = NULL)
+rcmg(
+  n,
+  mean,
+  cov = NULL,
+  prec = NULL,
+  constraits,
+  t,
+  burnin,
+  p0 = NULL,
+  fixedMomentum = NULL,
+  cppFlg = FALSE,
+  nutsFlg = FALSE,
+  random_seed = 666,
+  randomFlg = TRUE,
+  debug_flg = F
+)
 }
 \arguments{
 \item{n}{number of samples}
@@ -13,20 +28,19 @@ rcmg(n, mean, prec, constraits, t, burnin, p0 = NULL)
 
 \item{prec}{a d-by-d precision matrix of the Gaussian distribution}
 
-\item{constraits}{a (list?) of constraints}
+\item{constraits}{a d-dimensional vector where a positive (negative) number means >0 (<0) truncation.}
 
 \item{t}{time length to simulate the Markov process}
 
 \item{burnin}{the number of burn-in iterations}
 
 \item{p0}{a d-dimensional vector of the initial value. It must satisfy all constraints. If not specified a random initial value will be used}
+
+\item{cppFlg}{}
 }
 \value{
 An n-by-d matrix where each row is a multivariate sample
 }
 \description{
 Generate samples from a constrained Gaussian distribution with the Hamiltonian zigzag sampler.
-}
-\examples{
-rcmg(1,1,1,1,1)
 }

@@ -138,6 +138,20 @@ Rcpp::List createEngine(int dimension,
     return list;
 }
 
+//' Create ZigZag nuts engine object
+//'
+//' Helper function creates zigZag nuts engine object with given latent dimension, location count and various
+//' implementation details. 
+//'
+//' @param locationCount Number of locations and size of distance matrix.
+//' @param tbb Number of CPU cores to be used.
+//' @param simd For CPU implementation: no SIMD (\code{0}), SSE (\code{1}) or AVX (\code{2}).
+//' @param truncation Likelihood includes truncation term? Defaults to \code{TRUE}.
+//' @param gpu Which GPU to use? If only 1 available, use \code{gpu=1}. Defaults to \code{0}, no GPU.
+//' @param single Set \code{single=1} if your GPU does not accommodate doubles.
+//' @return zigZag nuts engine object.
+//'
+//' @export
 // [[Rcpp::export(createNutsEngine)]]
 Rcpp::List createNutsEngine(int dimension,
                             std::vector<double> &mask,
@@ -167,6 +181,11 @@ Rcpp::List createNutsEngine(int dimension,
     return list;
 }
 
+//' Set mean for MTN
+//'
+//' @param sexp pointer to zigzag object
+//' @param mean a numerica vector containing the MTN mean
+//' @export
 // [[Rcpp::export(setMean)]]
 void setMean(SEXP sexp, NumericVector &mean) {
     auto ptr = parsePtr(sexp);
@@ -179,6 +198,7 @@ void setMean(SEXP sexp, NumericVector &mean) {
     }
 }
 
+//' @export
 // [[Rcpp::export(setPrecision)]]
 void setPrecision(SEXP sexp, NumericVector &precision) {
     auto ptr = parsePtr(sexp);

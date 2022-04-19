@@ -64,7 +64,7 @@ rcmg <- function(n,
   
   if (cppFlg) {
     if (nutsFlg) {
-      t <- 0.1 / sqrt(min(slanczos(A = prec,k=1,kl=1)[['values']]))
+      t <- 0.1 / sqrt(min(mgcv::slanczos(A = prec,k=1,kl=1)[['values']]))
       cat("NUTS base step size is", t)
       engine <- createNutsEngine(
         dimension = ndim,
@@ -81,7 +81,7 @@ rcmg <- function(n,
       )
       
     } else {
-      t <- sqrt(2) / sqrt(min(slanczos(A = prec,k=1,kl=1)[['values']]))
+      t <- sqrt(2) / sqrt(min(mgcv::slanczos(A = prec,k=1,kl=1)[['values']]))
       cat("HZZ step size is", t)
       engine <- createEngine(
         dimension = ndim,

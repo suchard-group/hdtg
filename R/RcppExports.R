@@ -24,14 +24,34 @@ createEngine <- function(dimension, mask, observed, parameterSign, flags, info, 
     .Call(`_hzz_createEngine`, dimension, mask, observed, parameterSign, flags, info, seed)
 }
 
+#' Create ZigZag nuts engine object
+#'
+#' Helper function creates zigZag nuts engine object with given latent dimension, location count and various
+#' implementation details. 
+#'
+#' @param locationCount Number of locations and size of distance matrix.
+#' @param tbb Number of CPU cores to be used.
+#' @param simd For CPU implementation: no SIMD (\code{0}), SSE (\code{1}) or AVX (\code{2}).
+#' @param truncation Likelihood includes truncation term? Defaults to \code{TRUE}.
+#' @param gpu Which GPU to use? If only 1 available, use \code{gpu=1}. Defaults to \code{0}, no GPU.
+#' @param single Set \code{single=1} if your GPU does not accommodate doubles.
+#' @return zigZag nuts engine object.
+#'
+#' @export
 createNutsEngine <- function(dimension, mask, observed, parameterSign, flags, info, seed, randomFlg, stepSize, mean, precision) {
     .Call(`_hzz_createNutsEngine`, dimension, mask, observed, parameterSign, flags, info, seed, randomFlg, stepSize, mean, precision)
 }
 
+#' Set mean for MTN
+#'
+#' @param sexp pointer to zigzag object
+#' @param mean a numerica vector containing the MTN mean
+#' @export
 setMean <- function(sexp, mean) {
     invisible(.Call(`_hzz_setMean`, sexp, mean))
 }
 
+#' @export
 setPrecision <- function(sexp, precision) {
     invisible(.Call(`_hzz_setPrecision`, sexp, precision))
 }

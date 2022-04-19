@@ -14,6 +14,7 @@ exactHMC <- function(n,
                      mu,
                      precision = TRUE,
                      total_time = pi / 2,
+                     jittering = T,
                      seed = 666) {
   set.seed(seed)
   cholesky <- Cholesky(precisionMat)
@@ -25,6 +26,9 @@ exactHMC <- function(n,
                                             precision)
   sample <- initial_position
   for (i in 1:n) {
+    if (jittering) {
+      total_time <- runif(1, pi / 8, pi / 2)
+    }
     initial_momentum <- rnorm(ncol(constraint_direc))
     sample <- GenerateSample(
       sample,
@@ -56,10 +60,10 @@ getMinESS <- function(res) {
 
 
 benchMarkTMVN <-
-  function(nEXACT = 100,
-           nTN = 100,
-           nHZZ = 100,
-           nNUTS = 100,
+  function(nEHMC = 100,
+           nZHMC = 100,
+           nZNUTS = 100,
+           nMT = 100,
            repeatTimes = 1,
            forOneSampleFlg = T,
            returnSamplesFlg = F,
@@ -84,11 +88,11 @@ benchMarkTMVN <-
     samplesList <- list()
     numTest <- 1
     ## ExactHMC ####
-    if (nEXACT > 0) {
+    if (nEHMC > 0) {
       timeList[[numTest]] <- benchmark(
-        "exactHMC" = {
-          samplesEXACT <- exactHMC(
-            n = nEXACT,
+        "EHMC" = {
+          samplesEHMC <- exactHMC(
+            n = nEHMC,
             initial_position = pInitial,
             constraint_direc = constraintDirec,
             #diag(dimension),
@@ -106,32 +110,13 @@ benchMarkTMVN <-
         order = NULL
       )
       samplesList <-
-        c(samplesList, samplesEXACT = list(samplesEXACT))
+        c(samplesList, samplesEHMC = list(samplesEHMC))
       numTest <- numTest + 1
     }
-    ## TN ####
-    if (nTN > 0) {
-      set.seed(666)
-      timeList[[numTest]] <- benchmark(
-        "TN" = {
-          samplesTN <- TruncatedNormal::rtmvnorm(
-            n = nTN,
-            mu = meanVec,
-            sigma = covMat,
-            lb = lbTN,
-            ub = ubTN
-          )
-        },
-        replications = repeatTimes,
-        columns = timingCols,
-        order = NULL
-      )
-      samplesList <- c(samplesList, samplesTN = list(samplesTN))
-      numTest <- numTest + 1
-    }
+
     ## HZZ and NUTS (one e-sample) ####
     if (forOneSampleFlg) {
-      if (nHZZ > 0) {
+      if (nZHMC > 0) {
         set.seed(666)
         engine <- createEngine(
           dimension = dimension,
@@ -143,10 +128,10 @@ benchMarkTMVN <-
           seed = 666
         )
         
-        samplesHZZ  <-  array(0, c(nHZZ, dimension))
+        samplesZHMC  <-  array(0, c(nZHMC, dimension))
         
         timeList[[numTest]] <- benchmark(
-          "HZZ" = {
+          "ZHMC" = {
             setMean(sexp = engine$engine, mean = meanVec)
             setPrecision(sexp = engine$engine, precision = precMat)
             
@@ -155,9 +140,9 @@ benchMarkTMVN <-
                 A = precMat, k = 1, kl = 1
               )[['values']]))
             
-            for (i in 1:nHZZ) {
+            for (i in 1:nZHMC) {
               momentum <- drawMomentum(dimension)
-              samplesHZZ[i,] <- getSample(
+              samplesZHMC[i,] <- getSample(
                 position = pInitial,
                 momentum = momentum,
                 t = HZZtime,
@@ -170,11 +155,11 @@ benchMarkTMVN <-
           columns = timingCols,
           order = NULL
         )
-        samplesList <- c(samplesList, samplesHZZ = list(samplesHZZ))
+        samplesList <- c(samplesList, samplesZHMC = list(samplesZHMC))
         numTest <- numTest + 1
       }
       
-      if (nNUTS > 0) {
+      if (nZNUTS > 0) {
         set.seed(666)
         baseStep <-
           0.1 / sqrt(min(mgcv::slanczos(
@@ -194,17 +179,17 @@ benchMarkTMVN <-
           precision = precMat
         )
         
-        samplesNUTS  <-  array(0, c(nNUTS, dimension))
+        samplesZNUTS  <-  array(0, c(nZNUTS, dimension))
         
         timeList[[numTest]] <- benchmark(
-          "NUTS" = {
+          "ZNUTS" = {
             baseStep <-
               0.1 / sqrt(min(mgcv::slanczos(
                 A = precMat, k = 1, kl = 1
               )[['values']]))
-            for (i in 1:nNUTS) {
+            for (i in 1:nZNUTS) {
               momentum <- drawMomentum(dimension)
-              samplesNUTS[i,] <- getSample(
+              samplesZNUTS[i,] <- getSample(
                 position = pInitial,
                 momentum = momentum,
                 t = baseStep,
@@ -218,17 +203,17 @@ benchMarkTMVN <-
           order = NULL
         )
         samplesList <-
-          c(samplesList, samplesNUTS = list(samplesNUTS))
+          c(samplesList, samplesZNUTS = list(samplesZNUTS))
         numTest <- numTest + 1
       }
     } else {
       ## HZZ and NUTS (multiple e-sample) ####
-      if (nHZZ > 0) {
+      if (nZHMC > 0) {
         set.seed(666)
         timeList[[numTest]] <- benchmark(
-          "HZZ" = {
-            samplesHZZ <- rcmg(
-              n = nHZZ,
+          "ZHMC" = {
+            samplesZHMC <- rcmg(
+              n = nZHMC,
               mean = meanVec,
               prec = precMat,
               constraits = constraintHZZ,
@@ -242,16 +227,16 @@ benchMarkTMVN <-
           columns = timingCols,
           order = NULL
         )
-        samplesList <- c(samplesList, samplesHZZ = list(samplesHZZ))
+        samplesList <- c(samplesList, samplesZHMC = list(samplesZHMC))
         numTest <- numTest + 1
       }
       
-      if (nNUTS > 0) {
+      if (nZNUTS > 0) {
         set.seed(666)
         timeList[[numTest]] <- benchmark(
-          "NUTS" = {
-            samplesNUTS <- rcmg(
-              n = nNUTS,
+          "ZNUTS" = {
+            samplesZNUTS <- rcmg(
+              n = nZNUTS,
               mean = meanVec,
               prec = precMat,
               constraits = constraintHZZ,
@@ -266,9 +251,30 @@ benchMarkTMVN <-
           order = NULL
         )
         samplesList <-
-          c(samplesList, samplesNUTS = list(samplesNUTS))
+          c(samplesList, samplesZNUTS = list(samplesZNUTS))
         numTest <- numTest + 1
       }
+    }
+    
+    ## TN ####
+    if (nMT > 0) {
+      set.seed(666)
+      timeList[[numTest]] <- benchmark(
+        "MT" = {
+          samplesMT <- TruncatedNormal::rtmvnorm(
+            n = nMT,
+            mu = meanVec,
+            sigma = covMat,
+            lb = lbTN,
+            ub = ubTN
+          )
+        },
+        replications = repeatTimes,
+        columns = timingCols,
+        order = NULL
+      )
+      samplesList <- c(samplesList, samplesMT = list(samplesMT))
+      numTest <- numTest + 1
     }
     ## return list ####
     if (returnSamplesFlg) {

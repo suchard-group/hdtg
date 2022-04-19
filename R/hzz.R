@@ -1,8 +1,8 @@
-#' @useDynLib ZigZag, .registration = TRUE
+#' @useDynLib hzz, .registration = TRUE
 #' @importFrom Rcpp sourceCpp
 #' @importFrom RcppParallel RcppParallelLibs
 NULL
 
 .onUnload <- function (libpath) {
-  library.dynam.unload("ZigZag", libpath)
+  library.dynam.unload("hzz", libpath)
 }

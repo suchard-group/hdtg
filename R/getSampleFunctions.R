@@ -7,7 +7,7 @@
 #' @param t time length to simulate the Markov process
 #'
 #' @return
-#'
+#' @export
 #' @examples
 getSample <- function(position,
                        momentum,
