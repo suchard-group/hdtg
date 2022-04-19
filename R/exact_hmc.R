@@ -26,9 +26,10 @@
 #' mu = rep(0,d)
 #' constraint_direc = diag(d)
 #' constraint_bound = rep(0,d)
+#' initial = rep(1, d)
 #' results = run_bouncy_sampler(
 #' 10000,
-#' rep(1, d),
+#' initial,
 #' constraint_direc,
 #' constraint_bound,
 #' R,

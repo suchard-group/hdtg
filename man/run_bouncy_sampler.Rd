@@ -2,23 +2,63 @@
 % Please edit documentation in R/exact_hmc.R
 \name{run_bouncy_sampler}
 \alias{run_bouncy_sampler}
-\title{Title}
+\title{Run Bouncy HMC Sampler}
 \usage{
 run_bouncy_sampler(
   n,
   initial_position,
   constraint_direc,
   constraint_bound,
-  cholesky,
-  mu,
-  precision = TRUE,
+  cholesky_factor,
+  unconstrained_mean,
+  prec_parametrized = TRUE,
   total_time = pi/2,
   seed = 1
 )
 }
-\value{
+\arguments{
+\item{n}{number of samples}
 
+\item{initial_position}{starting value for parameters}
+
+\item{constraint_direc}{F matrix (k-by-d matrix where k is the number of
+linear constraints)}
+
+\item{constraint_bound}{g vector (k dimensional)#'}
+
+\item{cholesky_factor}{upper triangular matrix R from cholesky decomposition of
+precision or covariance matrix into R^TR}
+
+\item{unconstrained_mean}{mean of unconstrained Gaussian}
+
+\item{prec_parametrized}{boolean for whether parametrization is by precision (TRUE)
+or covariance matrix (FALSE)}
+
+\item{total_time}{amount of time the particl bounces for each sample}
+
+\item{seed}{random seed}
+}
+\value{
+d x n matrix of samples
 }
 \description{
-Title
+Sample from a truncated Gaussian distribution with constraints Fx+g >= 0.
+}
+\examples{
+set.seed(1)
+d = 100
+A = matrix(runif(d^2)*2-1, ncol=d)
+Sigma = t(A) \%*\% A
+R = Cholesky(solve(Sigma))
+mu = rep(0,d)
+constraint_direc = diag(d)
+constraint_bound = rep(0,d)
+results = run_bouncy_sampler(
+10000,
+rep(1, d),
+constraint_direc,
+constraint_bound,
+R,
+mu,
+)
 }

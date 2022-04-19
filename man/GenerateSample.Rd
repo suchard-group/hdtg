@@ -11,7 +11,7 @@ GenerateSample(
   constraint_row_normsq,
   constraint_bound,
   cholesky_factor,
-  mean,
+  unconstrained_mean,
   total_time,
   prec_parametrized
 )
@@ -31,7 +31,7 @@ linear constraints)}
 \item{cholesky_factor}{upper triangular matrix R from cholesky decomposition of
 precision or covariance matrix into R^TR}
 
-\item{mean}{mean of unconstrained Gaussian}
+\item{unconstrained_mean}{mean of unconstrained Gaussian}
 
 \item{total_time}{total time the particle will bounce for}
 

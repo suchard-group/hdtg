@@ -53,7 +53,7 @@ NULL
 #' @param constraint_bound g vector (k dimensional)
 #' @param cholesky_factor upper triangular matrix R from cholesky decomposition of 
 #' precision or covariance matrix into R^TR
-#' @param mean mean of unconstrained Gaussian
+#' @param unconstrained_mean mean of unconstrained Gaussian
 #' @param prec_parametrized boolean for whether parametrization is by precision (true) 
 #' or covariance matrix (false)
 #' @return vector of position in standard normal frame
@@ -64,7 +64,7 @@ NULL
 #' @param position starting position
 #' @param cholesky_factor upper triangular matrix R from cholesky decomposition of 
 #' precision or covariance matrix into R^TR
-#' @param mean mean of unconstrained Gaussian 
+#' @param unconstrained_mean mean of unconstrained Gaussian 
 #' @param prec_parametrized boolean for whether parametrization is by precision (true) 
 #' or covariance matrix (false)
 #' @return vector of position in original frame
@@ -101,14 +101,14 @@ Cholesky <- function(A) {
 #' @param constraint_bound g vector (k dimensional)
 #' @param cholesky_factor upper triangular matrix R from cholesky decomposition of 
 #' precision or covariance matrix into R^TR
-#' @param mean mean of unconstrained Gaussian
+#' @param unconstrained_mean mean of unconstrained Gaussian
 #' @param prec_parametrized boolean for whether parametrization is by precision (true) 
 #' or covariance matrix (false)
 #' @return List of new constraint directions, the squared row norms of those 
 #' constraints (for computational efficiency later), and new bounds
 #' @export
-WhitenConstraints <- function(constraint_direc, constraint_bound, cholesky_factor, mean, prec_parametrized) {
-    .Call(`_hzz_WhitenConstraints`, constraint_direc, constraint_bound, cholesky_factor, mean, prec_parametrized)
+ApplyWhitenTransform <- function(constraint_direc, constraint_bound, cholesky_factor, unconstrained_mean, prec_parametrized) {
+    .Call(`_hzz_ApplyWhitenTransform`, constraint_direc, constraint_bound, cholesky_factor, unconstrained_mean, prec_parametrized)
 }
 
 #' Generate a sample from a truncated normal distribution.
@@ -125,14 +125,14 @@ WhitenConstraints <- function(constraint_direc, constraint_bound, cholesky_facto
 #' @param constraint_bound g vector (k dimensional)
 #' @param cholesky_factor upper triangular matrix R from cholesky decomposition of 
 #' precision or covariance matrix into R^TR
-#' @param mean mean of unconstrained Gaussian
+#' @param unconstrained_mean mean of unconstrained Gaussian
 #' @param total_time total time the particle will bounce for
 #' @param prec_parametrized boolean for whether parametrization is by precision (true) 
 #' or covariance matrix (false)
 #' @return vector of position in standard normal frame
 #' @export
-GenerateSample <- function(initial_position, initial_momentum, constraint_direc, constraint_row_normsq, constraint_bound, cholesky_factor, mean, total_time, prec_parametrized) {
-    .Call(`_hzz_GenerateSample`, initial_position, initial_momentum, constraint_direc, constraint_row_normsq, constraint_bound, cholesky_factor, mean, total_time, prec_parametrized)
+GenerateSample <- function(initial_position, initial_momentum, constraint_direc, constraint_row_normsq, constraint_bound, cholesky_factor, unconstrained_mean, total_time, prec_parametrized) {
+    .Call(`_hzz_GenerateSample`, initial_position, initial_momentum, constraint_direc, constraint_row_normsq, constraint_bound, cholesky_factor, unconstrained_mean, total_time, prec_parametrized)
 }
 
 #' @export
