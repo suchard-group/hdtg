@@ -189,21 +189,26 @@ Eigen::VectorXd UnwhitenPosition(const Eigen::VectorXd position,
 //' @param constraint_row_normsq vector of squared row norms ofr constraint_direc
 //' @param constraint_bound g vector (k dimensional)
 //' @param total_time total time the particle will bounce for
+//' @param param diagnostic_mode boolean for whether to return the bounce distances for
+//' each sample
 //' @return vector of position in standard normal frame
 std::pair<Eigen::VectorXd, Eigen::VectorXd> GenerateWhitenedSample(const Eigen::VectorXd initial_position,
                                                                    const Eigen::Map<Eigen::VectorXd> initial_momentum,
                                                                    const Eigen::Map<Eigen::MatrixXd> constraint_direc,
                                                                    const Eigen::Map<Eigen::VectorXd> constraint_row_normsq,
                                                                    const Eigen::Map<Eigen::VectorXd> constraint_bound,
-                                                                   double total_time){
+                                                                   double total_time,
+                                                                   bool diagnostic_mode){
   double bounce_time;
   int num_bounces = 0;
   int bounce_constraint;
-  int d = constraint_direc.cols();
+  Eigen::VectorXd bounce_distances;
+  if (diagnostic_mode){
+    bounce_distances = Eigen::VectorXd(constraint_direc.cols());
+  }
   double travelled_time = 0;
   double bounced_distance;
   Eigen::VectorXd new_position;
-  Eigen::VectorXd bounce_distances(d);
   Eigen::VectorXd position = initial_position;
   Eigen::VectorXd momentum = initial_momentum;
   while (true) {
@@ -212,27 +217,37 @@ std::pair<Eigen::VectorXd, Eigen::VectorXd> GenerateWhitenedSample(const Eigen::
              constraint_direc,
              constraint_bound);
     if (bounce_time < total_time - travelled_time) {
-      std::tie(new_position, momentum)  = SimulateWhitenedDynamics(
-        position, momentum, bounce_time
-      );
-      bounced_distance = (new_position - position).norm();
-      position = new_position;
+      if (diagnostic_mode) {
+        std::tie(new_position, momentum) = SimulateWhitenedDynamics(
+          position, momentum, bounce_time
+        );
+        bounced_distance = (new_position - position).norm();
+        if (num_bounces > bounce_distances.size()){
+          bounce_distances.conservativeResize(2*num_bounces);
+        }
+        bounce_distances(num_bounces) = bounced_distance;
+        num_bounces++;
+        position = new_position;
+      } else {
+        std::tie(position, momentum) = SimulateWhitenedDynamics(
+          position, momentum, bounce_time
+        );
+      }
       momentum = ReflectMomentum(momentum, 
                                  constraint_direc, 
                                  constraint_row_normsq, 
                                  bounce_constraint);
       travelled_time += bounce_time;
-      if (num_bounces > bounce_distances.size()){
-        bounce_distances.conservativeResize(2*num_bounces);
-      }
-      bounce_distances(num_bounces) = bounced_distance;
-      num_bounces++;
     } else {
       bounce_time = total_time - travelled_time;
       std::tie(position, momentum) = SimulateWhitenedDynamics(
         position, momentum, bounce_time
       );
-      return std::make_pair(position, bounce_distances.head(num_bounces));
+      if (diagnostic_mode) {
+        return std::make_pair(position, bounce_distances.head(num_bounces));
+      } else {
+        return std::make_pair(position, bounce_distances);
+      }
     }
   }
 }
@@ -255,6 +270,8 @@ std::pair<Eigen::VectorXd, Eigen::VectorXd> GenerateWhitenedSample(const Eigen::
 //' @param total_time total time the particle will bounce for
 //' @param prec_parametrized boolean for whether parametrization is by precision (true) 
 //' or covariance matrix (false)
+//' @param param diagnostic_mode boolean for whether to return the bounce distances for
+//' each sample
 //' @return vector of position in standard normal frame
 //' @export
 // [[Rcpp::export]]
@@ -266,7 +283,8 @@ Rcpp::List GenerateSample(const Eigen::Map<Eigen::VectorXd> initial_position,
                                const Eigen::Map<Eigen::MatrixXd> cholesky_factor,
                                const Eigen::Map<Eigen::VectorXd> unconstrained_mean,
                                double total_time,
-                               bool prec_parametrized){
+                               bool prec_parametrized,
+                               bool diagnostic_mode){
   Eigen::VectorXd bounce_distances;
   Eigen::VectorXd sample = WhitenPosition(initial_position,
                                           constraint_direc,
@@ -279,7 +297,8 @@ Rcpp::List GenerateSample(const Eigen::Map<Eigen::VectorXd> initial_position,
                                                                constraint_direc,
                                                                constraint_row_normsq,
                                                                constraint_bound,
-                                                               total_time);
+                                                               total_time,
+                                                               diagnostic_mode);
   return Rcpp::List::create(Rcpp::Named("sample") = UnwhitenPosition(sample, cholesky_factor, unconstrained_mean, prec_parametrized),
                             Rcpp::Named("bounce_distances") = bounce_distances);
 }
