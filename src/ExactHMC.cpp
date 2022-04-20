@@ -190,37 +190,47 @@ Eigen::VectorXd UnwhitenPosition(const Eigen::VectorXd position,
 //' @param constraint_bound g vector (k dimensional)
 //' @param total_time total time the particle will bounce for
 //' @return vector of position in standard normal frame
-Eigen::VectorXd GenerateWhitenedSample(const Eigen::VectorXd initial_position,
-                                       const Eigen::Map<Eigen::VectorXd> initial_momentum,
-                                       const Eigen::Map<Eigen::MatrixXd> constraint_direc,
-                                       const Eigen::Map<Eigen::VectorXd> constraint_row_normsq,
-                                       const Eigen::Map<Eigen::VectorXd> constraint_bound,
-                                       double total_time){
+std::pair<Eigen::VectorXd, Eigen::VectorXd> GenerateWhitenedSample(const Eigen::VectorXd initial_position,
+                                                                   const Eigen::Map<Eigen::VectorXd> initial_momentum,
+                                                                   const Eigen::Map<Eigen::MatrixXd> constraint_direc,
+                                                                   const Eigen::Map<Eigen::VectorXd> constraint_row_normsq,
+                                                                   const Eigen::Map<Eigen::VectorXd> constraint_bound,
+                                                                   double total_time){
   double bounce_time;
   int bounce_constraint;
+  int d = constraint_direc.cols();
   double travelled_time = 0;
+  double bounced_distance;
+  Eigen::VectorXd new_position;
+  Eigen::VectorXd bounce_distances(d);
   Eigen::VectorXd position = initial_position;
   Eigen::VectorXd momentum = initial_momentum;
-  while (true) {
+  for (int i =0; i>=0; i++) {
     std::tie(bounce_time, bounce_constraint) = BounceTime(position,
              momentum,
              constraint_direc,
              constraint_bound);
     if (bounce_time < total_time - travelled_time) {
-      std::tie(position, momentum)  = SimulateWhitenedDynamics(
+      std::tie(new_position, momentum)  = SimulateWhitenedDynamics(
         position, momentum, bounce_time
       );
+      bounced_distance = (new_position - position).norm();
+      position = new_position;
       momentum = ReflectMomentum(momentum, 
                                  constraint_direc, 
                                  constraint_row_normsq, 
                                  bounce_constraint);
       travelled_time += bounce_time;
+      if (i > bounce_distances.size()){
+        bounce_distances.conservativeResize(2*i);
+      }
+      bounce_distances(i) = bounced_distance;
     } else {
       bounce_time = total_time - travelled_time;
       std::tie(position, momentum) = SimulateWhitenedDynamics(
         position, momentum, bounce_time
       );
-      return position;
+      return std::make_pair(position, bounce_distances.head(i));
     }
   }
 }
@@ -246,7 +256,7 @@ Eigen::VectorXd GenerateWhitenedSample(const Eigen::VectorXd initial_position,
 //' @return vector of position in standard normal frame
 //' @export
 // [[Rcpp::export]]
-Eigen::VectorXd GenerateSample(const Eigen::Map<Eigen::VectorXd> initial_position,
+Rcpp::List GenerateSample(const Eigen::Map<Eigen::VectorXd> initial_position,
                                const Eigen::Map<Eigen::VectorXd> initial_momentum,
                                const Eigen::Map<Eigen::MatrixXd> constraint_direc,
                                const Eigen::Map<Eigen::VectorXd> constraint_row_normsq,
@@ -255,17 +265,19 @@ Eigen::VectorXd GenerateSample(const Eigen::Map<Eigen::VectorXd> initial_positio
                                const Eigen::Map<Eigen::VectorXd> unconstrained_mean,
                                double total_time,
                                bool prec_parametrized){
+  Eigen::VectorXd bounce_distances;
   Eigen::VectorXd sample = WhitenPosition(initial_position,
                                           constraint_direc,
                                           constraint_bound,
                                           cholesky_factor,
                                           unconstrained_mean,
                                           prec_parametrized);
-  sample = GenerateWhitenedSample(sample,
-                                  initial_momentum,
-                                  constraint_direc,
-                                  constraint_row_normsq,
-                                  constraint_bound,
-                                  total_time);
-  return UnwhitenPosition(sample, cholesky_factor, unconstrained_mean, prec_parametrized);
+  std::tie(sample, bounce_distances) =  GenerateWhitenedSample(sample,
+                                                               initial_momentum,
+                                                               constraint_direc,
+                                                               constraint_row_normsq,
+                                                               constraint_bound,
+                                                               total_time);
+  return Rcpp::List::create(Rcpp::Named("sample") = UnwhitenPosition(sample, cholesky_factor, unconstrained_mean, prec_parametrized),
+                            Rcpp::Named("bounce_distances") = bounce_distances);
 }

@@ -12,9 +12,11 @@
 #' @param unconstrained_mean mean of unconstrained Gaussian
 #' @param prec_parametrized boolean for whether parametrization is by precision (TRUE) 
 #' or covariance matrix (FALSE)
-#' @param total_time amount of time the particl bounces for each sample
+#' @param total_time amount of time the particle bounces for each sample
 #' @param seed random seed
-#' @return d x n matrix of samples 
+#' @return List of 
+#' "samples": d x n matrix of samples
+#' "bounces_distances": list of bounces for each sample
 #' @export
 #'
 #' @examples
@@ -46,7 +48,8 @@ run_bouncy_sampler = function(n,
                               total_time = pi / 2,
                               seed = 1) {
   set.seed(seed)
-  results = matrix(nrow = ncol(constraint_direc), ncol = n)
+  samples = matrix(nrow = ncol(constraint_direc), ncol = n)
+  bounce_distances = vector(mode="list", length = n )
   whitened_constraints = ApplyWhitenTransform(constraint_direc,
                                               constraint_bound,
                                               cholesky_factor,
@@ -55,7 +58,7 @@ run_bouncy_sampler = function(n,
   sample = initial_position
   for (i in 1:n) {
     initial_momentum = rnorm(ncol(constraint_direc))
-    sample = GenerateSample(
+    results = GenerateSample(
       sample,
       initial_momentum,
       whitened_constraints$direc,
@@ -66,7 +69,9 @@ run_bouncy_sampler = function(n,
       total_time,
       prec_parametrized
     )
-    results[, i] = sample
+    sample = results$sample
+    samples[, i] = sample
+    bounce_distances[[i]] = results$bounce_distances
   }
-  return(results)
+  return(list("samples" = samples, "bounces_distances" = bounce_distances))
 }
