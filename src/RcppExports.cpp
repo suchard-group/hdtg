@@ -38,7 +38,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // GenerateSample
-Eigen::VectorXd GenerateSample(const Eigen::Map<Eigen::VectorXd> initial_position, const Eigen::Map<Eigen::VectorXd> initial_momentum, const Eigen::Map<Eigen::MatrixXd> constraint_direc, const Eigen::Map<Eigen::VectorXd> constraint_row_normsq, const Eigen::Map<Eigen::VectorXd> constraint_bound, const Eigen::Map<Eigen::MatrixXd> cholesky_factor, const Eigen::Map<Eigen::VectorXd> unconstrained_mean, double total_time, bool prec_parametrized);
+Rcpp::List GenerateSample(const Eigen::Map<Eigen::VectorXd> initial_position, const Eigen::Map<Eigen::VectorXd> initial_momentum, const Eigen::Map<Eigen::MatrixXd> constraint_direc, const Eigen::Map<Eigen::VectorXd> constraint_row_normsq, const Eigen::Map<Eigen::VectorXd> constraint_bound, const Eigen::Map<Eigen::MatrixXd> cholesky_factor, const Eigen::Map<Eigen::VectorXd> unconstrained_mean, double total_time, bool prec_parametrized);
 RcppExport SEXP _hzz_GenerateSample(SEXP initial_positionSEXP, SEXP initial_momentumSEXP, SEXP constraint_direcSEXP, SEXP constraint_row_normsqSEXP, SEXP constraint_boundSEXP, SEXP cholesky_factorSEXP, SEXP unconstrained_meanSEXP, SEXP total_timeSEXP, SEXP prec_parametrizedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;

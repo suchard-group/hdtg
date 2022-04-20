@@ -197,6 +197,7 @@ std::pair<Eigen::VectorXd, Eigen::VectorXd> GenerateWhitenedSample(const Eigen::
                                                                    const Eigen::Map<Eigen::VectorXd> constraint_bound,
                                                                    double total_time){
   double bounce_time;
+  int num_bounces = 0;
   int bounce_constraint;
   int d = constraint_direc.cols();
   double travelled_time = 0;
@@ -205,7 +206,7 @@ std::pair<Eigen::VectorXd, Eigen::VectorXd> GenerateWhitenedSample(const Eigen::
   Eigen::VectorXd bounce_distances(d);
   Eigen::VectorXd position = initial_position;
   Eigen::VectorXd momentum = initial_momentum;
-  for (int i =0; i>=0; i++) {
+  while (true) {
     std::tie(bounce_time, bounce_constraint) = BounceTime(position,
              momentum,
              constraint_direc,
@@ -221,16 +222,17 @@ std::pair<Eigen::VectorXd, Eigen::VectorXd> GenerateWhitenedSample(const Eigen::
                                  constraint_row_normsq, 
                                  bounce_constraint);
       travelled_time += bounce_time;
-      if (i > bounce_distances.size()){
-        bounce_distances.conservativeResize(2*i);
+      if (num_bounces > bounce_distances.size()){
+        bounce_distances.conservativeResize(2*num_bounces);
       }
-      bounce_distances(i) = bounced_distance;
+      bounce_distances(num_bounces) = bounced_distance;
+      num_bounces++;
     } else {
       bounce_time = total_time - travelled_time;
       std::tie(position, momentum) = SimulateWhitenedDynamics(
         position, momentum, bounce_time
       );
-      return std::make_pair(position, bounce_distances.head(i));
+      return std::make_pair(position, bounce_distances.head(num_bounces));
     }
   }
 }
