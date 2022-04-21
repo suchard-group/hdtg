@@ -13,7 +13,8 @@ run_bouncy_sampler(
   unconstrained_mean,
   prec_parametrized = TRUE,
   total_time = pi/2,
-  seed = 1
+  seed = 1,
+  diagnostic_mode = FALSE
 )
 }
 \arguments{
@@ -34,12 +35,17 @@ precision or covariance matrix into R^TR}
 \item{prec_parametrized}{boolean for whether parametrization is by precision (TRUE)
 or covariance matrix (FALSE)}
 
-\item{total_time}{amount of time the particl bounces for each sample}
+\item{total_time}{amount of time the particle bounces for each sample}
 
 \item{seed}{random seed}
+
+\item{diagnostic_mode}{boolean for whether to return the bounce distances for
+each sample}
 }
 \value{
-d x n matrix of samples
+List of
+"samples": d x n matrix of samples
+"bounces_distances": list of bounces for each sample
 }
 \description{
 Sample from a truncated Gaussian distribution with constraints Fx+g >= 0.
@@ -53,9 +59,10 @@ R = Cholesky(solve(Sigma))
 mu = rep(0,d)
 constraint_direc = diag(d)
 constraint_bound = rep(0,d)
+initial = rep(1, d)
 results = run_bouncy_sampler(
 10000,
-rep(1, d),
+initial,
 constraint_direc,
 constraint_bound,
 R,

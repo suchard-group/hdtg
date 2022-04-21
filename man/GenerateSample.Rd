@@ -13,7 +13,8 @@ GenerateSample(
   cholesky_factor,
   unconstrained_mean,
   total_time,
-  prec_parametrized
+  prec_parametrized,
+  diagnostic_mode
 )
 }
 \arguments{
@@ -37,6 +38,9 @@ precision or covariance matrix into R^TR}
 
 \item{prec_parametrized}{boolean for whether parametrization is by precision (true)
 or covariance matrix (false)}
+
+\item{param}{diagnostic_mode boolean for whether to return the bounce distances for
+each sample}
 }
 \value{
 vector of position in standard normal frame
