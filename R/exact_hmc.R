@@ -49,7 +49,7 @@ run_bouncy_sampler = function(n,
                               prec_parametrized = TRUE,
                               total_time = pi / 2,
                               seed = 1,
-                              diagnostic_mode) {
+                              diagnostic_mode = FALSE) {
   set.seed(seed)
   samples = matrix(nrow = ncol(constraint_direc), ncol = n)
   bounce_distances = vector(mode = "list",
