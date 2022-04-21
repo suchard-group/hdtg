@@ -26,12 +26,12 @@
 #' d = 100
 #' A = matrix(runif(d^2)*2-1, ncol=d)
 #' Sigma = t(A) %*% A
-#' R = Cholesky(solve(Sigma))
+#' R = cholesky(solve(Sigma))
 #' mu = rep(0,d)
 #' constraint_direc = diag(d)
 #' constraint_bound = rep(0,d)
 #' initial = rep(1, d)
-#' results = run_bouncy_sampler(
+#' results = runBouncySampler(
 #' 10000,
 #' initial,
 #' constraint_direc,
@@ -40,21 +40,21 @@
 #' mu,
 #' )
 
-run_bouncy_sampler = function(n,
-                              initial_position,
-                              constraint_direc,
-                              constraint_bound,
-                              cholesky_factor,
-                              unconstrained_mean,
-                              prec_parametrized = TRUE,
-                              total_time = pi / 2,
-                              seed = 1,
-                              diagnostic_mode = FALSE) {
+runBouncySampler = function(n,
+                            initial_position,
+                            constraint_direc,
+                            constraint_bound,
+                            cholesky_factor,
+                            unconstrained_mean,
+                            prec_parametrized = TRUE,
+                            total_time = pi / 2,
+                            seed = 1,
+                            diagnostic_mode = FALSE) {
   set.seed(seed)
   samples = matrix(nrow = ncol(constraint_direc), ncol = n)
   bounce_distances = vector(mode = "list",
                             length = ifelse(diagnostic_mode, n, 0))
-  whitened_constraints = ApplyWhitenTransform(
+  whitened_constraints = applyWhitenTransform(
     constraint_direc,
     constraint_bound,
     cholesky_factor,
@@ -64,7 +64,7 @@ run_bouncy_sampler = function(n,
   sample = initial_position
   for (i in 1:n) {
     initial_momentum = rnorm(ncol(constraint_direc))
-    results = GenerateSample(
+    results = generateSample(
       sample,
       initial_momentum,
       whitened_constraints$direc,
