@@ -38,8 +38,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // GenerateSample
-Rcpp::List GenerateSample(const Eigen::Map<Eigen::VectorXd> initial_position, const Eigen::Map<Eigen::VectorXd> initial_momentum, const Eigen::Map<Eigen::MatrixXd> constraint_direc, const Eigen::Map<Eigen::VectorXd> constraint_row_normsq, const Eigen::Map<Eigen::VectorXd> constraint_bound, const Eigen::Map<Eigen::MatrixXd> cholesky_factor, const Eigen::Map<Eigen::VectorXd> unconstrained_mean, double total_time, bool prec_parametrized);
-RcppExport SEXP _hzz_GenerateSample(SEXP initial_positionSEXP, SEXP initial_momentumSEXP, SEXP constraint_direcSEXP, SEXP constraint_row_normsqSEXP, SEXP constraint_boundSEXP, SEXP cholesky_factorSEXP, SEXP unconstrained_meanSEXP, SEXP total_timeSEXP, SEXP prec_parametrizedSEXP) {
+Rcpp::List GenerateSample(const Eigen::Map<Eigen::VectorXd> initial_position, const Eigen::Map<Eigen::VectorXd> initial_momentum, const Eigen::Map<Eigen::MatrixXd> constraint_direc, const Eigen::Map<Eigen::VectorXd> constraint_row_normsq, const Eigen::Map<Eigen::VectorXd> constraint_bound, const Eigen::Map<Eigen::MatrixXd> cholesky_factor, const Eigen::Map<Eigen::VectorXd> unconstrained_mean, double total_time, bool prec_parametrized, bool diagnostic_mode);
+RcppExport SEXP _hzz_GenerateSample(SEXP initial_positionSEXP, SEXP initial_momentumSEXP, SEXP constraint_direcSEXP, SEXP constraint_row_normsqSEXP, SEXP constraint_boundSEXP, SEXP cholesky_factorSEXP, SEXP unconstrained_meanSEXP, SEXP total_timeSEXP, SEXP prec_parametrizedSEXP, SEXP diagnostic_modeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -52,7 +52,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type unconstrained_mean(unconstrained_meanSEXP);
     Rcpp::traits::input_parameter< double >::type total_time(total_timeSEXP);
     Rcpp::traits::input_parameter< bool >::type prec_parametrized(prec_parametrizedSEXP);
-    rcpp_result_gen = Rcpp::wrap(GenerateSample(initial_position, initial_momentum, constraint_direc, constraint_row_normsq, constraint_bound, cholesky_factor, unconstrained_mean, total_time, prec_parametrized));
+    Rcpp::traits::input_parameter< bool >::type diagnostic_mode(diagnostic_modeSEXP);
+    rcpp_result_gen = Rcpp::wrap(GenerateSample(initial_position, initial_momentum, constraint_direc, constraint_row_normsq, constraint_bound, cholesky_factor, unconstrained_mean, total_time, prec_parametrized, diagnostic_mode));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -185,7 +186,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_hzz_Cholesky", (DL_FUNC) &_hzz_Cholesky, 1},
     {"_hzz_ApplyWhitenTransform", (DL_FUNC) &_hzz_ApplyWhitenTransform, 5},
-    {"_hzz_GenerateSample", (DL_FUNC) &_hzz_GenerateSample, 9},
+    {"_hzz_GenerateSample", (DL_FUNC) &_hzz_GenerateSample, 10},
     {"_hzz_rcpp_hello_world", (DL_FUNC) &_hzz_rcpp_hello_world, 0},
     {"_hzz_createEngine", (DL_FUNC) &_hzz_createEngine, 7},
     {"_hzz_createNutsEngine", (DL_FUNC) &_hzz_createNutsEngine, 11},

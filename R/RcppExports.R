@@ -79,6 +79,8 @@ NULL
 #' @param constraint_row_normsq vector of squared row norms ofr constraint_direc
 #' @param constraint_bound g vector (k dimensional)
 #' @param total_time total time the particle will bounce for
+#' @param param diagnostic_mode boolean for whether to return the bounce distances for
+#' each sample
 #' @return vector of position in standard normal frame
 NULL
 
@@ -129,10 +131,12 @@ ApplyWhitenTransform <- function(constraint_direc, constraint_bound, cholesky_fa
 #' @param total_time total time the particle will bounce for
 #' @param prec_parametrized boolean for whether parametrization is by precision (true) 
 #' or covariance matrix (false)
+#' @param param diagnostic_mode boolean for whether to return the bounce distances for
+#' each sample
 #' @return vector of position in standard normal frame
 #' @export
-GenerateSample <- function(initial_position, initial_momentum, constraint_direc, constraint_row_normsq, constraint_bound, cholesky_factor, unconstrained_mean, total_time, prec_parametrized) {
-    .Call(`_hzz_GenerateSample`, initial_position, initial_momentum, constraint_direc, constraint_row_normsq, constraint_bound, cholesky_factor, unconstrained_mean, total_time, prec_parametrized)
+GenerateSample <- function(initial_position, initial_momentum, constraint_direc, constraint_row_normsq, constraint_bound, cholesky_factor, unconstrained_mean, total_time, prec_parametrized, diagnostic_mode) {
+    .Call(`_hzz_GenerateSample`, initial_position, initial_momentum, constraint_direc, constraint_row_normsq, constraint_bound, cholesky_factor, unconstrained_mean, total_time, prec_parametrized, diagnostic_mode)
 }
 
 #' @export
