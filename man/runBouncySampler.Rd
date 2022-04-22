@@ -25,7 +25,7 @@ runBouncySampler(
 \item{constraint_direc}{F matrix (k-by-d matrix where k is the number of
 linear constraints)}
 
-\item{constraint_bound}{g vector (k dimensional)#'}
+\item{constraint_bound}{g vector (k dimensional)}
 
 \item{cholesky_factor}{upper triangular matrix R from cholesky decomposition of
 precision or covariance matrix into R^TR}

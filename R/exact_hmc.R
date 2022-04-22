@@ -6,7 +6,7 @@
 #' @param initial_position starting value for parameters
 #' @param constraint_direc F matrix (k-by-d matrix where k is the number of
 #' linear constraints)
-#' @param constraint_bound g vector (k dimensional)#'
+#' @param constraint_bound g vector (k dimensional)
 #' @param cholesky_factor upper triangular matrix R from cholesky decomposition of
 #' precision or covariance matrix into R^TR
 #' @param unconstrained_mean mean of unconstrained Gaussian

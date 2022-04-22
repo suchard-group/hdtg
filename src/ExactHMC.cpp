@@ -67,7 +67,7 @@ Rcpp::List applyWhitenTransform(
 //' @param momentum starting momentum
 //' @param time amount of time the system is run for
 //' @return pair of new (position, momentum)
-std::pair<Eigen::VectorXd, Eigen::VectorXd> simulateWhitenedDynamics(
+std::pair<Eigen::VectorXd, Eigen::VectorXd> advanceWhitenedDynamics(
     const Eigen::VectorXd position, const Eigen::VectorXd momentum,
     const double time) {
   return std::make_pair(momentum * sin(time) + position * cos(time),
@@ -189,7 +189,7 @@ Eigen::VectorXd unwhitenPosition(
 // total_time total time the particle will bounce for ' @param param
 // diagnostic_mode boolean for whether to return the bounce distances for ' each
 // sample ' @return vector of position in standard normal frame
-std::pair<Eigen::VectorXd, Eigen::VectorXd> generateWhitenedSample(
+std::pair<Eigen::VectorXd, Eigen::VectorXd> simulateWhitenedDynamics(
     const Eigen::VectorXd initial_position,
     const Eigen::Map<Eigen::VectorXd> initial_momentum,
     const Eigen::Map<Eigen::MatrixXd> constraint_direc,
@@ -214,7 +214,7 @@ std::pair<Eigen::VectorXd, Eigen::VectorXd> generateWhitenedSample(
     if (bounce_time < total_time - travelled_time) {
       if (diagnostic_mode) {
         std::tie(new_position, momentum) =
-            simulateWhitenedDynamics(position, momentum, bounce_time);
+            advanceWhitenedDynamics(position, momentum, bounce_time);
         bounced_distance = (new_position - position).norm();
         if (num_bounces > bounce_distances.size()) {
           bounce_distances.conservativeResize(2 * num_bounces);
@@ -224,7 +224,7 @@ std::pair<Eigen::VectorXd, Eigen::VectorXd> generateWhitenedSample(
         position = new_position;
       } else {
         std::tie(position, momentum) =
-            simulateWhitenedDynamics(position, momentum, bounce_time);
+            advanceWhitenedDynamics(position, momentum, bounce_time);
       }
       momentum = reflectMomentum(momentum, constraint_direc,
                                  constraint_row_normsq, bounce_constraint);
@@ -232,7 +232,7 @@ std::pair<Eigen::VectorXd, Eigen::VectorXd> generateWhitenedSample(
     } else {
       bounce_time = total_time - travelled_time;
       std::tie(position, momentum) =
-          simulateWhitenedDynamics(position, momentum, bounce_time);
+          advanceWhitenedDynamics(position, momentum, bounce_time);
       if (diagnostic_mode) {
         return std::make_pair(position, bounce_distances.head(num_bounces));
       } else {
@@ -276,7 +276,7 @@ Rcpp::List generateSample(
   Eigen::VectorXd whitened_initial_position =
       whitenPosition(initial_position, constraint_direc, constraint_bound,
                      cholesky_factor, unconstrained_mean, prec_parametrized);
-  std::tie(whitened_sample, bounce_distances) = generateWhitenedSample(
+  std::tie(whitened_sample, bounce_distances) = simulateWhitenedDynamics(
       whitened_initial_position, initial_momentum, constraint_direc, 
       constraint_row_normsq, constraint_bound, total_time, diagnostic_mode);
   return Rcpp::List::create(
