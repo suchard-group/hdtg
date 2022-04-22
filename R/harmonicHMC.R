@@ -52,7 +52,8 @@ runBouncySampler = function(n,
                             diagnostic_mode = FALSE) {
   set.seed(seed)
   samples = matrix(nrow = ncol(constraint_direc), ncol = n)
-  bounce_distances = vector(mode = "list", length = diagnostic_mode * n)
+  bounce_distances = vector(mode = "list", 
+                            length = ifelse(diagnostic_mode, n, 0))
   whitened_constraints = applyWhitenTransform(
     constraint_direc,
     constraint_bound,
