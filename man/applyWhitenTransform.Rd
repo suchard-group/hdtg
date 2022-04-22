@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{applyWhitenTransform}
 \alias{applyWhitenTransform}
-\title{Whiten constraints for use in GenerateUnwhitenedSample}
+\title{Whiten constraints for use in generateUnwhitenedSample}
 \usage{
 applyWhitenTransform(
   constraint_direc,
@@ -18,19 +18,19 @@ linear constraints)}
 
 \item{constraint_bound}{g vector (k dimensional)}
 
-\item{cholesky_factor}{upper triangular matrix R from cholesky decomposition of
-precision or covariance matrix into R^TR}
+\item{cholesky_factor}{upper triangular matrix R from cholesky decomposition
+of precision or covariance matrix into R^TR}
 
 \item{unconstrained_mean}{mean of unconstrained Gaussian}
 
-\item{prec_parametrized}{boolean for whether parametrization is by precision (true)
-or covariance matrix (false)}
+\item{prec_parametrized}{boolean for whether parametrization is by precision
+(true) or covariance matrix (false)}
 }
 \value{
 List of new constraint directions, the squared row norms of those
 constraints (for computational efficiency later), and new bounds
 }
 \description{
-Transforms constraints of the form Fx+g >= 0 for a target normal distribution
-into the corresponding constraints for a standard normal.
+Transforms constraints of the form Fx+g >= 0 for a target normal
+distribution into the corresponding constraints for a standard normal.
 }

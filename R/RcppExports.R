@@ -20,15 +20,15 @@ NULL
 NULL
 
 #' Reflect momentum off of a constraint boundary.
-#' 
-#' Given a constraint boundary, calculate the momentum as if that boundary 
-#' was a wall and there is an elastic collision, and the angle of incidence 
+#'
+#' Given a constraint boundary, calculate the momentum as if that boundary
+#' was a wall and there is an elastic collision, and the angle of incidence
 #' equals the angle of reflection.
 #'
 #' @param momentum starting momentum
-#' @param constraint_direc F matrix (k-by-d matrix where k is the number of 
+#' @param constraint_direc F matrix (k-by-d matrix where k is the number of
 #' linear constraints)
-#' @param constraint_row_normsq vector of squared row norms ofr constraint_direc
+#' @param constraint_row_normsq vector of squared row norms of constraint_direc
 #' @param bounce_idx integer index of which constraint is being bounced off of
 #' @param time amount of time the system is run for
 #' @return momentum after bouncing
@@ -54,19 +54,19 @@ cholesky <- function(A) {
     .Call(`_hzz_cholesky`, A)
 }
 
-#' Whiten constraints for use in GenerateUnwhitenedSample
+#' Whiten constraints for use in generateUnwhitenedSample
 #'
-#' Transforms constraints of the form Fx+g >= 0 for a target normal distribution
-#' into the corresponding constraints for a standard normal.
+#' Transforms constraints of the form Fx+g >= 0 for a target normal 
+#' distribution into the corresponding constraints for a standard normal.
 #'
 #' @param constraint_direc F matrix (k-by-d matrix where k is the number of 
 #' linear constraints)
 #' @param constraint_bound g vector (k dimensional)
-#' @param cholesky_factor upper triangular matrix R from cholesky decomposition of 
-#' precision or covariance matrix into R^TR
+#' @param cholesky_factor upper triangular matrix R from cholesky decomposition
+#'  of precision or covariance matrix into R^TR
 #' @param unconstrained_mean mean of unconstrained Gaussian
-#' @param prec_parametrized boolean for whether parametrization is by precision (true) 
-#' or covariance matrix (false)
+#' @param prec_parametrized boolean for whether parametrization is by precision
+#'  (true) or covariance matrix (false)
 #' @return List of new constraint directions, the squared row norms of those 
 #' constraints (for computational efficiency later), and new bounds
 #' @export
@@ -78,14 +78,14 @@ applyWhitenTransform <- function(constraint_direc, constraint_bound, cholesky_fa
 #'
 #' @param position starting position
 #' @param momentum starting momentum
-#' @param constraint_direc F matrix (k-by-d matrix where k is the number of 
+#' @param constraint_direc F matrix (k-by-d matrix where k is the number of
 #' linear constraints)
 #' @param constraint_bound g vector (k dimensional)
-#' @param cholesky_factor upper triangular matrix R from cholesky decomposition 
+#' @param cholesky_factor upper triangular matrix R from cholesky decomposition
 #' of precision or covariance matrix into R^TR
 #' @param unconstrained_mean mean of unconstrained Gaussian
-#' @param prec_parametrized boolean for whether parametrization is by 
-#' precision (true) 
+#' @param prec_parametrized boolean for whether parametrization is by
+#' precision (true)
 #' or covariance matrix (false)
 #' @return vector of position in standard normal frame
 whitenPosition <- function(position, constraint_direc, constraint_bound, cholesky_factor, unconstrained_mean, prec_parametrized) {
@@ -95,11 +95,11 @@ whitenPosition <- function(position, constraint_direc, constraint_bound, cholesk
 #' Convert a position from standard normal frame back to original frame.
 #'
 #' @param position starting position
-#' @param cholesky_factor upper triangular matrix R from cholesky decomposition 
+#' @param cholesky_factor upper triangular matrix R from cholesky decomposition
 #' of precision or covariance matrix into R^TR
-#' @param unconstrained_mean mean of unconstrained Gaussian 
-#' @param prec_parametrized boolean for whether parametrization is by 
-#' precision (true) 
+#' @param unconstrained_mean mean of unconstrained Gaussian
+#' @param prec_parametrized boolean for whether parametrization is by
+#' precision (true)
 #' or covariance matrix (false)
 #' @return vector of position in original frame
 unwhitenPosition <- function(position, cholesky_factor, unconstrained_mean, prec_parametrized) {
@@ -110,12 +110,12 @@ unwhitenPosition <- function(position, cholesky_factor, unconstrained_mean, prec
 #'
 #' @param initial_position starting position
 #' @param initial_momentum starting momentum
-#' @param constraint_direc F matrix (k-by-d matrix where k is the number of 
+#' @param constraint_direc F matrix (k-by-d matrix where k is the number of
 #' linear constraints)
 #' @param constraint_row_normsq vector of squared row norms of constraint_direc
 #' @param constraint_bound g vector (k dimensional)
 #' @param total_time total time the particle will bounce for
-#' @param param diagnostic_mode boolean for whether to return the bounce 
+#' @param param diagnostic_mode boolean for whether to return the bounce
 #' distances for each sample
 #' @return vector of position in standard normal frame
 simulateWhitenedDynamics <- function(initial_position, initial_momentum, constraint_direc, constraint_row_norm_sq, constraint_bound, total_time, diagnostic_mode) {

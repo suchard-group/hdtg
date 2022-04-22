@@ -27,20 +27,20 @@ Eigen::MatrixXd solveFromRight(const Eigen::Map<Eigen::MatrixXd> A,
       .transpose();
 }
 
-//' Whiten constraints for use in GenerateUnwhitenedSample
+//' Whiten constraints for use in generateUnwhitenedSample
 //'
-//' Transforms constraints of the form Fx+g >= 0 for a target normal
-//  distribution ' into the corresponding constraints for a standard normal.
+//' Transforms constraints of the form Fx+g >= 0 for a target normal 
+//' distribution into the corresponding constraints for a standard normal.
 //'
-//' @param constraint_direc F matrix (k-by-d matrix where k is the number of
+//' @param constraint_direc F matrix (k-by-d matrix where k is the number of 
 //' linear constraints)
 //' @param constraint_bound g vector (k dimensional)
 //' @param cholesky_factor upper triangular matrix R from cholesky decomposition
-//' of precision or covariance matrix into R^TR
+//'  of precision or covariance matrix into R^TR
 //' @param unconstrained_mean mean of unconstrained Gaussian
 //' @param prec_parametrized boolean for whether parametrization is by precision
 //'  (true) or covariance matrix (false)
-//' @return List of new constraint directions, the squared row norms of those
+//' @return List of new constraint directions, the squared row norms of those 
 //' constraints (for computational efficiency later), and new bounds
 //' @export
 // [[Rcpp::export]]
