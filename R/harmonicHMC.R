@@ -80,18 +80,16 @@ runHHMC = function(n,
       total_time,
       diagnostic_mode
     )
-    samples[, i] = position = results$position
+    position = results$position
+    samples[, i] = unwhitenPosition(position,
+                                    cholesky_factor,
+                                    unconstrained_mean,
+                                    prec_parametrized)
     if (diagnostic_mode) {
       bounce_distances[[i]] = results$bounce_distances
     }
   }
-  samples = apply(
-    samples,
-    2,
-    unwhitenPosition,
-    cholesky_factor,
-    unconstrained_mean,
-    prec_parametrized
-  )
+
+  
   return(list("samples" = samples, "bounce_distances" = bounce_distances))
 }
