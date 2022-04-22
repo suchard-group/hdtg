@@ -113,13 +113,12 @@ NutsSharedPtr &parsePtrNuts(SEXP sexp) {
 // [[Rcpp::export(createEngine)]]
 Rcpp::List createEngine(int dimension,
                         std::vector<double> &mask,
-                        std::vector<double> &parameterSign,
                         std::vector<double> &lowerBounds,
                         std::vector<double> &upperBounds,
                         long flags, long info, long seed) {
 
     auto zigZag = new ZigZagWrapper(
-            zz::dispatch(dimension, mask.data(), parameterSign.data(), lowerBounds.data(), upperBounds.data(),
+            zz::dispatch(dimension, mask.data(), lowerBounds.data(), upperBounds.data(),
                          flags, info, seed));
 
     XPtrZigZagWrapper engine(zigZag);
@@ -156,7 +155,6 @@ Rcpp::List createEngine(int dimension,
 // [[Rcpp::export(createNutsEngine)]]
 Rcpp::List createNutsEngine(int dimension,
                             std::vector<double> &mask,
-                            std::vector<double> &parameterSign,
                             std::vector<double> &lowerBounds,
                             std::vector<double> &upperBounds,
                             long flags, long info, long seed,
@@ -166,7 +164,7 @@ Rcpp::List createNutsEngine(int dimension,
                             NumericVector &precision) {
 
     auto zigZag = new ZigZagWrapper(
-            zz::dispatch(dimension, mask.data(), parameterSign.data(), lowerBounds.data(), upperBounds.data(), flags, info, seed));
+            zz::dispatch(dimension, mask.data(), lowerBounds.data(), upperBounds.data(), flags, info, seed));
     XPtrZigZagWrapper engineZZ(zigZag);
 
     // ptr to a zigzag obj

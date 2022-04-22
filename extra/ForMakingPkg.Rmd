@@ -61,16 +61,13 @@ res = rcmg(
   n = n_iter,
   mean = mu,
   prec = prec,
-  constraits = rep(1, d),
   lowerBounds = rep(0, d),
   upperBounds = rep(Inf, d),
-  t = 0.1,
+  forcedStep = 0.1,
   p0 = p0,
-  fixedMomentum = momentum,
+  momentum = momentum,
   randomFlg = F,
-  cppFlg = T,
-  nutsFlg = T,
-  debug_flg = F
+  nutsFlg = T
 )
 
 # df = as.data.frame(fread(file="/Users/zhenyu/tmp_beast/ZNUTS_20d.log", header = TRUE, quote ="")) 

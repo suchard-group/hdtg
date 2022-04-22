@@ -2,11 +2,10 @@
 
 export(createEngine)
 export(createNutsEngine)
-export(drawMomentum)
 export(getInitialValue)
+export(getInitialValueNew)
 export(getPrecCov)
 export(getSample)
-export(getSampleR)
 export(rcmg)
 export(rcpp_hello_world)
 export(setMean)

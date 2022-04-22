@@ -15,39 +15,43 @@
 
 rcmg <- function(n,
                  mean,
-                 cov = NULL,
+                 cov,
                  prec = NULL,
-                 constraits,
                  lowerBounds,
                  upperBounds,
-                 t,
                  #burnin,
                  p0 = NULL,
-                 fixedMomentum = NULL,
-                 cppFlg = FALSE,
+                 forcedStep = NULL,
+                 momentum = NULL,
                  nutsFlg = FALSE,
-                 random_seed = 666,
-                 randomFlg = TRUE,
-                 debug_flg = F) {
+                 rSeed = 666,
+                 randomFlg = TRUE) {
   
-  stopifnot("must provide mean" = !is.null(mean))
   ndim <- length(mean)
-  stopifnot("some lower bound is larger than the corresponding upper bound" = sum(lowerBounds < upperBounds) == ndim)
   
-  if(!is.null(prec)){
+  if (!is.null(prec)) {
     stopifnot("precision matrix contains NaN" = !any(is.na(prec)))
-  } else if (!is.null(cov)){
+  } else if (!is.null(cov)) {
     stopifnot("covariance matrix contains NaN" = !any(is.na(cov)))
     prec <- solve(cov)
   } else {
     stop("must provide precision or covariance matrix")
   }
   
-  if (!is.null(p0)) {
-    stopifnot("initial value p0 does not comply with constraits" = all(p0 * constraits >= 0))
-  } else {
-    p0 <- getInitialValueNew(mean, lowerBounds, upperBounds)
-  }
+  stopifnot(
+    "precision / covariance matrix has incompatible dimensions" = (nrow(prec) == ndim &&
+                                                                     ncol(prec) == ndim)
+  )
+  
+  stopifnot(
+    "some lower bound is larger than the corresponding upper bound" = sum(lowerBounds < upperBounds) == ndim
+  )
+  
+  # if (!is.null(p0)) {
+  #   stopifnot("initial value p0 does not comply with constraits" = all(p0 * constraits >= 0))
+  # } else {
+  #   p0 <- getInitialValueNew(mean, lowerBounds, upperBounds)
+  # }
   # TODO add other checks for arguments. all dimensions must match.
   
   energyGrad <- function (x) {
@@ -60,88 +64,58 @@ rcmg <- function(n,
   
   samples <- array(0, c(n, ndim))
   
-  if (cppFlg) {
-    if (nutsFlg) {
+  if (nutsFlg) {
+    if(!is.null(forcedStep)){
+      t <- forcedStep
+    }else{
       t <- 0.1 / sqrt(min(mgcv::slanczos(A = prec,k=1,kl=1)[['values']]))
-      cat("NUTS base step size is", t)
-      engine <- createNutsEngine(
-        dimension = ndim,
-        mask = rep(1, ndim),
-        parameterSign = constraits,
-        lowerBounds = lowerBounds,
-        upperBounds = upperBounds,
-        flags = 128,
-        info = 1,
-        seed = random_seed,
-        randomFlg = randomFlg,
-        stepSize = t,
-        mean = mean,
-        precision = prec
-      )
-      
-    } else {
-      t <- sqrt(2) / sqrt(min(mgcv::slanczos(A = prec,k=1,kl=1)[['values']], na.rm = T))
-      cat("HZZ step size is", t)
-      engine <- createEngine(
-        dimension = ndim,
-        mask = rep(1, ndim),
-        parameterSign = constraits,
-        lowerBounds = lowerBounds,
-        upperBounds = upperBounds,
-        flags = 128,
-        info = 1,
-        seed = random_seed)
-      setMean(sexp = engine$engine, mean = mean)
-      setPrecision(sexp = engine$engine, precision = prec)
     }
+    cat("NUTS base step size is", t)
+    engine <- createNutsEngine(
+      dimension = ndim,
+      mask = rep(1, ndim),
+      lowerBounds = lowerBounds,
+      upperBounds = upperBounds,
+      flags = 128,
+      info = 1,
+      seed = rSeed,
+      randomFlg = randomFlg,
+      stepSize = t,
+      mean = mean,
+      precision = prec
+    )
+    
+  } else {
+    if(!is.null(forcedStep)){
+      t <- forcedStep
+    }else{
+      t <- sqrt(2) / sqrt(min(mgcv::slanczos(A = prec,k=1,kl=1)[['values']], na.rm = T))
+    }
+    cat("HZZ step size is", t)
+    engine <- createEngine(
+      dimension = ndim,
+      mask = rep(1, ndim),
+      lowerBounds = lowerBounds,
+      upperBounds = upperBounds,
+      flags = 128,
+      info = 1,
+      seed = rSeed)
+    setMean(sexp = engine$engine, mean = mean)
+    setPrecision(sexp = engine$engine, precision = prec)
   }
   
-  set.seed(random_seed)
   
-  if (cppFlg) {
-    for (i in 1:n) {
-      if (!is.null(fixedMomentum)) {
-        momentum <- fixedMomentum
-      } else {
-        momentum <- NULL
-      }
-      
-      p0 <- getSample(
-        position = p0,
-        momentum = momentum,
-        t = t,
-        nutsFlg = nutsFlg,
-        engine = engine
-      )
-      samples[i, ] <- p0
-      
-      if (debug_flg) {
-        cat('iteration', i, 'done \n')
-      }
-    }
-  } else {
-    for (i in 1:n) {
-      if (!is.null(fixedMomentum)) {
-        momentum <- fixedMomentum
-      } else {
-        momentum <- drawMomentum(ndim)
-      }
-      
-      p0 <- getSampleR(
-        position = p0,
-        momentum = momentum,
-        t = t,
-        energyGrad = energyGrad,
-        mean = mean,
-        constraits = constraits
-      )
-      
-      samples[i, ] <- p0
-      
-      if (debug_flg) {
-        cat('iteration', i, 'done \n')
-      }
-    }
+  set.seed(rSeed)
+  
+  for (i in 1:n) {
+    p0 <- getSample(
+      position = p0,
+      momentum = momentum,
+      t = t,
+      nutsFlg = nutsFlg,
+      engine = engine
+    )
+    samples[i, ] <- p0
   }
   return(samples)
 }
@@ -171,14 +145,3 @@ getInitialValueNew <- function(mean, lowerBounds, upperBounds) {
   return(p0)
 }
 
-#' Title
-#'
-#' @param dim 
-#'
-#' @return
-#' @export
-#'
-#' @examples
-drawMomentum <- function(dim){
-  return((2 * (runif(dim) > .5) - 1) * rexp(dim, rate = 1))
-}

@@ -9,16 +9,16 @@ rcmg(
   mean,
   cov = NULL,
   prec = NULL,
-  constraits,
+  lowerBounds,
+  upperBounds,
   t,
-  burnin,
   p0 = NULL,
-  fixedMomentum = NULL,
+  momentum = NULL,
   cppFlg = FALSE,
   nutsFlg = FALSE,
-  random_seed = 666,
+  rSeed = 666,
   randomFlg = TRUE,
-  debug_flg = F
+  debugFlg = F
 )
 }
 \arguments{
@@ -28,15 +28,13 @@ rcmg(
 
 \item{prec}{a d-by-d precision matrix of the Gaussian distribution}
 
-\item{constraits}{a d-dimensional vector where a positive (negative) number means >0 (<0) truncation.}
-
 \item{t}{time length to simulate the Markov process}
-
-\item{burnin}{the number of burn-in iterations}
 
 \item{p0}{a d-dimensional vector of the initial value. It must satisfy all constraints. If not specified a random initial value will be used}
 
 \item{cppFlg}{}
+
+\item{constraits}{a d-dimensional vector where a positive (negative) number means >0 (<0) truncation.}
 }
 \value{
 An n-by-d matrix where each row is a multivariate sample

@@ -7,8 +7,8 @@
 createNutsEngine(
   dimension,
   mask,
-  observed,
-  parameterSign,
+  lowerBounds,
+  upperBounds,
   flags,
   info,
   seed,

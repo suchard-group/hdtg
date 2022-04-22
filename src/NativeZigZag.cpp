@@ -100,7 +100,7 @@ JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_create(
     int info = env->GetIntField(options, infoFid);
 
     int instanceNumber = static_cast<int>(implementation.size());
-    implementation.emplace_back(zz::dispatch(dimension, rawMask, rawParameterSign, rawLowerBounds, rawUpperBounds, flags, info, seed));
+    implementation.emplace_back(zz::dispatch(dimension, rawMask, rawLowerBounds, rawUpperBounds, flags, info, seed));
 
     env->ReleaseDoubleArrayElements(mask, rawMask, JNI_ABORT);
 //    env->ReleaseDoubleArrayElements(observed, rawObserved, JNI_ABORT);

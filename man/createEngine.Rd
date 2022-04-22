@@ -4,7 +4,7 @@
 \alias{createEngine}
 \title{Create ZigZag engine object}
 \usage{
-createEngine(dimension, mask, observed, parameterSign, flags, info, seed)
+createEngine(dimension, mask, lowerBounds, upperBounds, flags, info, seed)
 }
 \arguments{
 \item{locationCount}{Number of locations and size of distance matrix.}

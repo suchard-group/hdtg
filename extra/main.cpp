@@ -32,7 +32,7 @@ int main(int argCount, char** args) {
     std::vector<double> precision={1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
 
     auto zz = zz::make_unique<zz::ZigZag<zz::DoubleSseTypeInfo>>(
-            dimension, mask.data(), parameterSign.data(), lb.data(), ub.data(), flags, info, seed);
+            dimension, mask.data(), lb.data(), ub.data(), flags, info, seed);
     std::shared_ptr<zz::ZigZag<zz::DoubleSseTypeInfo>> shared = std::move(zz);
     shared->setMean(mean);
     shared->setPrecision(precision);
