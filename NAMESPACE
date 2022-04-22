@@ -2,8 +2,7 @@
 
 export(createEngine)
 export(createNutsEngine)
-export(getInitialValue)
-export(getInitialValueNew)
+export(getInitialPosition)
 export(getPrecCov)
 export(getSample)
 export(rcmg)

@@ -65,10 +65,10 @@ namespace zz {
                                             DblSpan gradient,
                                             DblSpan momentum) = 0;
 
-        virtual MinTravelInfo getNextBounceIrreversible(DblSpan position,
-                                                        DblSpan velocity,
-                                                        DblSpan action,
-                                                        DblSpan gradient) = 0;
+//        virtual MinTravelInfo getNextBounceIrreversible(DblSpan position,
+//                                                        DblSpan velocity,
+//                                                        DblSpan action,
+//                                                        DblSpan gradient) = 0;
 
         virtual void innerBounce(DblSpan position,
                                  DblSpan velocity,

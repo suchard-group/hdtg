@@ -7,18 +7,16 @@
 rcmg(
   n,
   mean,
-  cov = NULL,
+  cov,
   prec = NULL,
   lowerBounds,
   upperBounds,
-  t,
-  p0 = NULL,
+  x = NULL,
+  forcedStep = NULL,
   momentum = NULL,
-  cppFlg = FALSE,
   nutsFlg = FALSE,
   rSeed = 666,
-  randomFlg = TRUE,
-  debugFlg = F
+  randomFlg = TRUE
 )
 }
 \arguments{
@@ -28,13 +26,13 @@ rcmg(
 
 \item{prec}{a d-by-d precision matrix of the Gaussian distribution}
 
-\item{t}{time length to simulate the Markov process}
-
-\item{p0}{a d-dimensional vector of the initial value. It must satisfy all constraints. If not specified a random initial value will be used}
-
-\item{cppFlg}{}
+\item{x}{a d-dimensional vector of the initial value. It must satisfy all constraints. If not specified a random initial value will be used}
 
 \item{constraits}{a d-dimensional vector where a positive (negative) number means >0 (<0) truncation.}
+
+\item{t}{time length to simulate the Markov process}
+
+\item{cppFlg}{}
 }
 \value{
 An n-by-d matrix where each row is a multivariate sample

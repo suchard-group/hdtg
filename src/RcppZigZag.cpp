@@ -289,22 +289,17 @@ Rcpp::List oneIteration(SEXP sexp,
                         NumericVector &momentum,
                         double time) {
     auto ptr = parsePtr(sexp);
-    try {
-        auto returnValue = ptr->operate(
-                zz::DblSpan(position.begin(), position.end()),
-                zz::DblSpan(momentum.begin(), momentum.end()),
-                time
-        );
-        Rcpp::List list = Rcpp::List::create(
-                Rcpp::Named("returnValue") = returnValue,
-                Rcpp::Named("position") = position);
 
-        return list;
-    }
+    auto returnValue = ptr->operate(
+            zz::DblSpan(position.begin(), position.end()),
+            zz::DblSpan(momentum.begin(), momentum.end()),
+            time
+    );
+    Rcpp::List list = Rcpp::List::create(
+            Rcpp::Named("returnValue") = returnValue,
+            Rcpp::Named("position") = position);
 
-    catch (Rcpp::internal::InterruptedException &e) {
-        Rcout << "Caught an interrupt!" << std::endl;
-    }
+    return list;
 }
 
 // [[Rcpp::export(.oneNutsIteration)]]
@@ -312,16 +307,9 @@ Rcpp::List oneNutsIteration(SEXP sexp,
                             NumericVector &position,
                             NumericVector &momentum) {
     auto ptrNuts = parsePtrNuts(sexp);
-    try {
-        auto returnValue = ptrNuts->takeOneStep(zz::DblSpan(position.begin(), position.end()),
-                                                zz::DblSpan(momentum.begin(), momentum.end()));
 
-        Rcpp::List list = Rcpp::List::create(Rcpp::Named("position") = returnValue);
-        return list;
-    }
-
-    catch (Rcpp::internal::InterruptedException &e) {
-        Rcout << "Caught an interrupt!" << std::endl;
-    }
-
+    auto returnValue = ptrNuts->takeOneStep(zz::DblSpan(position.begin(), position.end()),
+                                            zz::DblSpan(momentum.begin(), momentum.end()));
+    Rcpp::List list = Rcpp::List::create(Rcpp::Named("position") = returnValue);
+    return list;
 }

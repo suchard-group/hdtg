@@ -44,10 +44,10 @@ namespace nuts {
                 double stepSize,
                 std::shared_ptr<zz::ZigZag<zz::DoubleSseTypeInfo>> zigzag) : logProbErrorTol(logProbErrorTol),
                                                                              maxHeight(maxHeight),
-                                                                             uniSeed(seed),
-                                                                             uniGenerator(UniformGenerator(seed, randomFlg)),
                                                                              stepSize(stepSize),
-                                                                             zzEngine(*zigzag) {
+                                                                             zzEngine(*zigzag),
+                                                                             uniGenerator(UniformGenerator(seed,
+                                                                                                           randomFlg)) {
             std::cerr << "nuts constructed" << '\n' << std::endl;
         }
 
@@ -199,7 +199,6 @@ namespace nuts {
         const int maxHeight = 10;
         double stepSize;
         zz::ZigZag<zz::DoubleSseTypeInfo> zzEngine;
-        int uniSeed;
         UniformGenerator uniGenerator;
     };
 
@@ -211,7 +210,6 @@ namespace nuts {
             double stepSize,
             std::shared_ptr<zz::ZigZag<zz::DoubleSseTypeInfo>> ptr) {
         std::cerr << "Factory: SSE" << std::endl;
-        //NoUTurn *newNuts = new NoUTurn(logProbErrorTol, findMax, maxHeight, seed, stepSize, ptr);
         return zz::make_unique<nuts::NoUTurn>(logProbErrorTol, maxHeight, seed, randomFlg, stepSize, ptr);
     }
 }

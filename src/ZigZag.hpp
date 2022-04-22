@@ -56,22 +56,21 @@ namespace zz {
                int nThreads,
                long seed) : AbstractZigZag(),
                             dimension(dimension),
-                            mask(constructMask(rawMask, dimension, true)),
                             lowerBounds(constructMask(rawLowerBounds, dimension, false)),
                             upperBounds(constructMask(rawUpperBounds, dimension, false)),
+                            mask(constructMask(rawMask, dimension, true)),
                             mmPosition(dimension),
                             mmVelocity(dimension),
                             mmAction(dimension),
                             mmGradient(dimension),
                             mmMomentum(dimension),
-                            flags(flags),
-                            nThreads(nThreads),
-                            seed(seed),
-                //logPrecDet(log(precisionMat.determinant())
                             meanV(dimension),
                             precisionMat(dimension, dimension),
                             meanSetFlg(false),
-                            precisionSetFlg(false) {
+                            precisionSetFlg(false),
+                            flags(flags),
+                            nThreads(nThreads),
+                            seed(seed){
             std::cerr << "ZigZag constructed" << std::endl;
             std::cout << '\n';
             if (flags & zz::Flags::TBB) {
@@ -317,58 +316,58 @@ namespace zz {
 #endif
         }
 
-        MinTravelInfo getNextBounceIrreversible(DblSpan position,
-                                                DblSpan velocity,
-                                                DblSpan action,
-                                                DblSpan gradient) {
+//        MinTravelInfo getNextBounceIrreversible(DblSpan position,
+//                                                DblSpan velocity,
+//                                                DblSpan action,
+//                                                DblSpan gradient) {
+//
+//            return getNextBounceIrreversible(
+//                    Dynamics<double>(position, velocity, action, gradient, nullptr, lowerBounds,
+//                                     upperBounds));
+//        }
 
-            return getNextBounceIrreversible(
-                    Dynamics<double>(position, velocity, action, gradient, nullptr, lowerBounds,
-                                     upperBounds));
-        }
-
-        template<typename R>
-        MinTravelInfo getNextBounceIrreversible(const Dynamics<R> &dynamics) {
-
-#ifdef TIMING
-            auto start = zz::chrono::steady_clock::now();
-#endif
-
-            auto task = [&](const size_t begin, const size_t end) -> MinTravelInfo {
-
-                const auto length = end - begin;
-                const auto vectorCount = length - length % SimdSize;
-
-                MinTravelInfo travel = vectorized_transform<SimdType, SimdSize>(begin, begin + vectorCount, dynamics,
-                                                                                InfoType());
-
-                if (vectorCount < length) { // Edge-case
-                    travel = vectorized_transform<RealType, 1>(begin + vectorCount, end, dynamics, travel);
-                }
-
-                return travel;
-            };
-
-//            MinTravelInfo travel = (nThreads <= 1) ?
-//                                   task(size_t(0), dimension) :
-//                                   parallel_task_reduce(
-//                                           size_t(0), dimension, MinTravelInfo(),
-//                                           task,
-//                                           [](MinTravelInfo lhs, MinTravelInfo rhs) {
-//                                               return (lhs.time < rhs.time) ? lhs : rhs;
-//                                           });
-
-            MinTravelInfo travel;
-            travel.time = 42.0;
-            travel.index = static_cast<int>(seed);
-
-#ifdef TIMING
-            auto end = zz::chrono::steady_clock::now();
-            duration["getNextBounceIrr"] += zz::chrono::duration_cast<chrono::TimingUnits>(end - start).count();
-#endif
-
-            return travel;
-        }
+//        template<typename R>
+//        MinTravelInfo getNextBounceIrreversible(const Dynamics<R> &dynamics) {
+//
+//#ifdef TIMING
+//            auto start = zz::chrono::steady_clock::now();
+//#endif
+//
+//            auto task = [&](const size_t begin, const size_t end) -> MinTravelInfo {
+//
+//                const auto length = end - begin;
+//                const auto vectorCount = length - length % SimdSize;
+//
+//                MinTravelInfo travel = vectorized_transform<SimdType, SimdSize>(begin, begin + vectorCount, dynamics,
+//                                                                                InfoType());
+//
+//                if (vectorCount < length) { // Edge-case
+//                    travel = vectorized_transform<RealType, 1>(begin + vectorCount, end, dynamics, travel);
+//                }
+//
+//                return travel;
+//            };
+//
+////            MinTravelInfo travel = (nThreads <= 1) ?
+////                                   task(size_t(0), dimension) :
+////                                   parallel_task_reduce(
+////                                           size_t(0), dimension, MinTravelInfo(),
+////                                           task,
+////                                           [](MinTravelInfo lhs, MinTravelInfo rhs) {
+////                                               return (lhs.time < rhs.time) ? lhs : rhs;
+////                                           });
+//
+//            MinTravelInfo travel;
+//            travel.time = 42.0;
+//            travel.index = static_cast<int>(seed);
+//
+//#ifdef TIMING
+//            auto end = zz::chrono::steady_clock::now();
+//            duration["getNextBounceIrr"] += zz::chrono::duration_cast<chrono::TimingUnits>(end - start).count();
+//#endif
+//
+//            return travel;
+//        }
 
         template<typename R>
         MinTravelInfo getNextBounce(const Dynamics<R> &dynamics) {
@@ -707,7 +706,6 @@ namespace zz {
 
         template<typename R>
         inline void updateAction(Dynamics<R> &dynamics, int index, const DblSpan precCol) {
-            auto momentum = dynamics.momentum;
             const auto action = dynamics.action;
             const auto velocity = dynamics.velocity;
             const auto mk = mask.data(); // TODO Delegate
@@ -715,8 +713,6 @@ namespace zz {
 #ifdef TIMING
             auto start = zz::chrono::steady_clock::now();
 #endif
-
-            //const auto column = callback.getColumn(index);
 
 #ifdef TIMING
             auto end = zz::chrono::steady_clock::now();
@@ -933,9 +929,10 @@ namespace zz {
         }
 
         size_t dimension;
-        mm::MemoryManager<MaskType> mask;
+
         mm::MemoryManager<MaskType> lowerBounds;
         mm::MemoryManager<MaskType> upperBounds;
+        mm::MemoryManager<MaskType> mask;
 
         mm::MemoryManager<double> mmPosition;
         mm::MemoryManager<double> mmVelocity;
@@ -948,15 +945,13 @@ namespace zz {
         bool meanSetFlg;
         bool precisionSetFlg;
 
+        long flags;
+        int nThreads;
+        long seed;
+
         double pi = 3.14159265358979323846;
         //const double logPrecDet;
         const double logNormalize = -0.5 * log(2.0 * pi);
-
-        long flags;
-        int nThreads;
-
-
-        long seed;
 
         std::shared_ptr<tbb::global_control> control;
 
