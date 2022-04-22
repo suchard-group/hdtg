@@ -244,7 +244,7 @@ Rcpp::List simulateWhitenedDynamics(
       std::tie(position, momentum) =
           advanceWhitenedDynamics(position, momentum, bounce_time);
       return Rcpp::List::create(
-          Rcpp::Named("sample") = position,
+          Rcpp::Named("position") = position,
           Rcpp::Named("bounce_distances") = bounce_distances.head(num_bounces));
     }
   }

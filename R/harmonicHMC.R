@@ -79,7 +79,7 @@ runBouncySampler = function(n,
       total_time,
       diagnostic_mode
     )
-    samples[, i] = position = results$sample
+    samples[, i] = position = results$position
     if (diagnostic_mode) {
       bounce_distances[[i]] = results$bounce_distances
     }
