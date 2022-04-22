@@ -52,8 +52,7 @@ runBouncySampler = function(n,
                             diagnostic_mode = FALSE) {
   set.seed(seed)
   samples = matrix(nrow = ncol(constraint_direc), ncol = n)
-  bounce_distances = vector(mode = "list",
-                            length = ifelse(diagnostic_mode, n, 0))
+  bounce_distances = vector(mode = "list", length = diagnostic_mode * n)
   whitened_constraints = applyWhitenTransform(
     constraint_direc,
     constraint_bound,
@@ -61,26 +60,37 @@ runBouncySampler = function(n,
     unconstrained_mean,
     prec_parametrized
   )
-  sample = initial_position
+  position = whitenPosition(
+    initial_position,
+    constraint_direc,
+    constraint_bound,
+    cholesky_factor,
+    unconstrained_mean,
+    prec_parametrized
+  )
   for (i in 1:n) {
-    initial_momentum = rnorm(ncol(constraint_direc))
-    results = generateSample(
-      sample,
-      initial_momentum,
+    momentum = rnorm(ncol(constraint_direc))
+    results =  simulateWhitenedDynamics(
+      position,
+      momentum,
       whitened_constraints$direc,
-      whitened_constraints$direc_rownorm_sq,
+      whitened_constraints$direc_row_norm_sq,
       whitened_constraints$bound,
-      cholesky_factor,
-      unconstrained_mean,
       total_time,
-      prec_parametrized,
       diagnostic_mode
     )
-    sample = results$sample
-    samples[, i] = sample
+    samples[, i] = position = results$sample
     if (diagnostic_mode) {
       bounce_distances[[i]] = results$bounce_distances
     }
   }
+  samples = apply(
+    samples,
+    2,
+    unwhitenPosition,
+    cholesky_factor,
+    unconstrained_mean,
+    prec_parametrized
+  )
   return(list("samples" = samples, "bounce_distances" = bounce_distances))
 }
