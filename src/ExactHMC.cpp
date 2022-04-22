@@ -272,15 +272,16 @@ Rcpp::List generateSample(
     const Eigen::Map<Eigen::VectorXd> unconstrained_mean, double total_time,
     bool prec_parametrized, bool diagnostic_mode) {
   Eigen::VectorXd bounce_distances;
-  Eigen::VectorXd sample;
+  Eigen::VectorXd whitened_sample;
   Eigen::VectorXd whitened_initial_position =
       whitenPosition(initial_position, constraint_direc, constraint_bound,
                      cholesky_factor, unconstrained_mean, prec_parametrized);
-  std::tie(sample, bounce_distances) = generateWhitenedSample(
+  std::tie(whitened_sample, bounce_distances) = generateWhitenedSample(
       whitened_initial_position, initial_momentum, constraint_direc, 
       constraint_row_normsq, constraint_bound, total_time, diagnostic_mode);
   return Rcpp::List::create(
       Rcpp::Named("sample") = unwhitenPosition(
-          sample, cholesky_factor, unconstrained_mean, prec_parametrized),
+          whitened_sample, cholesky_factor, unconstrained_mean, 
+          prec_parametrized),
       Rcpp::Named("bounce_distances") = bounce_distances);
 }
