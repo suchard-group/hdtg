@@ -21,32 +21,34 @@ BEGIN_RCPP
 END_RCPP
 }
 // createEngine
-Rcpp::List createEngine(int dimension, std::vector<double>& mask, std::vector<double>& observed, std::vector<double>& parameterSign, long flags, long info, long seed);
-RcppExport SEXP _hzz_createEngine(SEXP dimensionSEXP, SEXP maskSEXP, SEXP observedSEXP, SEXP parameterSignSEXP, SEXP flagsSEXP, SEXP infoSEXP, SEXP seedSEXP) {
+Rcpp::List createEngine(int dimension, std::vector<double>& mask, std::vector<double>& parameterSign, std::vector<double>& lowerBounds, std::vector<double>& upperBounds, long flags, long info, long seed);
+RcppExport SEXP _hzz_createEngine(SEXP dimensionSEXP, SEXP maskSEXP, SEXP parameterSignSEXP, SEXP lowerBoundsSEXP, SEXP upperBoundsSEXP, SEXP flagsSEXP, SEXP infoSEXP, SEXP seedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type dimension(dimensionSEXP);
     Rcpp::traits::input_parameter< std::vector<double>& >::type mask(maskSEXP);
-    Rcpp::traits::input_parameter< std::vector<double>& >::type observed(observedSEXP);
     Rcpp::traits::input_parameter< std::vector<double>& >::type parameterSign(parameterSignSEXP);
+    Rcpp::traits::input_parameter< std::vector<double>& >::type lowerBounds(lowerBoundsSEXP);
+    Rcpp::traits::input_parameter< std::vector<double>& >::type upperBounds(upperBoundsSEXP);
     Rcpp::traits::input_parameter< long >::type flags(flagsSEXP);
     Rcpp::traits::input_parameter< long >::type info(infoSEXP);
     Rcpp::traits::input_parameter< long >::type seed(seedSEXP);
-    rcpp_result_gen = Rcpp::wrap(createEngine(dimension, mask, observed, parameterSign, flags, info, seed));
+    rcpp_result_gen = Rcpp::wrap(createEngine(dimension, mask, parameterSign, lowerBounds, upperBounds, flags, info, seed));
     return rcpp_result_gen;
 END_RCPP
 }
 // createNutsEngine
-Rcpp::List createNutsEngine(int dimension, std::vector<double>& mask, std::vector<double>& observed, std::vector<double>& parameterSign, long flags, long info, long seed, bool randomFlg, double stepSize, NumericVector& mean, NumericVector& precision);
-RcppExport SEXP _hzz_createNutsEngine(SEXP dimensionSEXP, SEXP maskSEXP, SEXP observedSEXP, SEXP parameterSignSEXP, SEXP flagsSEXP, SEXP infoSEXP, SEXP seedSEXP, SEXP randomFlgSEXP, SEXP stepSizeSEXP, SEXP meanSEXP, SEXP precisionSEXP) {
+Rcpp::List createNutsEngine(int dimension, std::vector<double>& mask, std::vector<double>& parameterSign, std::vector<double>& lowerBounds, std::vector<double>& upperBounds, long flags, long info, long seed, bool randomFlg, double stepSize, NumericVector& mean, NumericVector& precision);
+RcppExport SEXP _hzz_createNutsEngine(SEXP dimensionSEXP, SEXP maskSEXP, SEXP parameterSignSEXP, SEXP lowerBoundsSEXP, SEXP upperBoundsSEXP, SEXP flagsSEXP, SEXP infoSEXP, SEXP seedSEXP, SEXP randomFlgSEXP, SEXP stepSizeSEXP, SEXP meanSEXP, SEXP precisionSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type dimension(dimensionSEXP);
     Rcpp::traits::input_parameter< std::vector<double>& >::type mask(maskSEXP);
-    Rcpp::traits::input_parameter< std::vector<double>& >::type observed(observedSEXP);
     Rcpp::traits::input_parameter< std::vector<double>& >::type parameterSign(parameterSignSEXP);
+    Rcpp::traits::input_parameter< std::vector<double>& >::type lowerBounds(lowerBoundsSEXP);
+    Rcpp::traits::input_parameter< std::vector<double>& >::type upperBounds(upperBoundsSEXP);
     Rcpp::traits::input_parameter< long >::type flags(flagsSEXP);
     Rcpp::traits::input_parameter< long >::type info(infoSEXP);
     Rcpp::traits::input_parameter< long >::type seed(seedSEXP);
@@ -54,7 +56,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type stepSize(stepSizeSEXP);
     Rcpp::traits::input_parameter< NumericVector& >::type mean(meanSEXP);
     Rcpp::traits::input_parameter< NumericVector& >::type precision(precisionSEXP);
-    rcpp_result_gen = Rcpp::wrap(createNutsEngine(dimension, mask, observed, parameterSign, flags, info, seed, randomFlg, stepSize, mean, precision));
+    rcpp_result_gen = Rcpp::wrap(createNutsEngine(dimension, mask, parameterSign, lowerBounds, upperBounds, flags, info, seed, randomFlg, stepSize, mean, precision));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -122,30 +124,29 @@ BEGIN_RCPP
 END_RCPP
 }
 // oneNutsIteration
-Rcpp::List oneNutsIteration(SEXP sexp, NumericVector& position, NumericVector& momentum, double stepsize);
-RcppExport SEXP _hzz_oneNutsIteration(SEXP sexpSEXP, SEXP positionSEXP, SEXP momentumSEXP, SEXP stepsizeSEXP) {
+Rcpp::List oneNutsIteration(SEXP sexp, NumericVector& position, NumericVector& momentum);
+RcppExport SEXP _hzz_oneNutsIteration(SEXP sexpSEXP, SEXP positionSEXP, SEXP momentumSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type sexp(sexpSEXP);
     Rcpp::traits::input_parameter< NumericVector& >::type position(positionSEXP);
     Rcpp::traits::input_parameter< NumericVector& >::type momentum(momentumSEXP);
-    Rcpp::traits::input_parameter< double >::type stepsize(stepsizeSEXP);
-    rcpp_result_gen = Rcpp::wrap(oneNutsIteration(sexp, position, momentum, stepsize));
+    rcpp_result_gen = Rcpp::wrap(oneNutsIteration(sexp, position, momentum));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_hzz_rcpp_hello_world", (DL_FUNC) &_hzz_rcpp_hello_world, 0},
-    {"_hzz_createEngine", (DL_FUNC) &_hzz_createEngine, 7},
-    {"_hzz_createNutsEngine", (DL_FUNC) &_hzz_createNutsEngine, 11},
+    {"_hzz_createEngine", (DL_FUNC) &_hzz_createEngine, 8},
+    {"_hzz_createNutsEngine", (DL_FUNC) &_hzz_createNutsEngine, 12},
     {"_hzz_setMean", (DL_FUNC) &_hzz_setMean, 2},
     {"_hzz_setPrecision", (DL_FUNC) &_hzz_setPrecision, 2},
     {"_hzz_doSomething", (DL_FUNC) &_hzz_doSomething, 2},
     {"_hzz_getNextEvent", (DL_FUNC) &_hzz_getNextEvent, 6},
     {"_hzz_oneIteration", (DL_FUNC) &_hzz_oneIteration, 4},
-    {"_hzz_oneNutsIteration", (DL_FUNC) &_hzz_oneNutsIteration, 4},
+    {"_hzz_oneNutsIteration", (DL_FUNC) &_hzz_oneNutsIteration, 3},
     {NULL, NULL, 0}
 };
 

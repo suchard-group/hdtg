@@ -7,7 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-source("~/Dropbox/zigzag/extra/funcsForCompare.R")
+#source("~/Dropbox/zigzag/extra/funcsForCompare.R")
 require(trialr)
 require(rbenchmark)
 require(hzz)
@@ -389,3 +389,28 @@ results.logit <- UPG(y = y, X = X, type = "probit", BOOST = F)
 UPG.Diag(results.logit)
 summary(results.logit)
 ```
+
+```{r test new boundary interface}
+require(hzz)
+d = 4
+t = rcmg(
+  n = 10,
+  mean = rep(0, d),
+  cov = NULL,
+  prec = diag(d),
+  constraits = rep(1, d),
+  lowerBounds = rep(0, d),
+  upperBounds = rep(Inf, d),
+  t = 1,
+  # burnin=1,
+  p0 = rep(0.1, d),
+  fixedMomentum = NULL,
+  cppFlg = TRUE,
+  nutsFlg = F,
+  random_seed = 666,
+  randomFlg = T,
+  debug_flg = F
+)
+t_new = t
+```
+

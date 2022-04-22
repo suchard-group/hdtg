@@ -13,7 +13,8 @@ namespace zz {
 
     enum BounceType : int {
         NONE = 0,
-        BOUNDARY,
+        BOUNDARY_LOWER,
+        BOUNDARY_UPPER,
         GRADIENT
     };
 
@@ -36,10 +37,12 @@ namespace zz {
         int getTypeInt() {
             if (type == BounceType::NONE) {
                 return 0;
-            } else if (type == BounceType::BOUNDARY) {
+            } else if (type == BounceType::BOUNDARY_LOWER) {
                 return 1;
-            } else if (type == BounceType::GRADIENT) {
+            } else if (type == BounceType::BOUNDARY_UPPER) {
                 return 2;
+            } else if (type == BounceType::GRADIENT) {
+                return 3;
             } else {
                 exit(-1);
             }

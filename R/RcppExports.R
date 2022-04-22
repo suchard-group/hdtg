@@ -20,8 +20,8 @@ rcpp_hello_world <- function() {
 #' @return zigZag engine object.
 #'
 #' @export
-createEngine <- function(dimension, mask, observed, parameterSign, flags, info, seed) {
-    .Call(`_hzz_createEngine`, dimension, mask, observed, parameterSign, flags, info, seed)
+createEngine <- function(dimension, mask, parameterSign, lowerBounds, upperBounds, flags, info, seed) {
+    .Call(`_hzz_createEngine`, dimension, mask, parameterSign, lowerBounds, upperBounds, flags, info, seed)
 }
 
 #' Create ZigZag nuts engine object
@@ -38,8 +38,8 @@ createEngine <- function(dimension, mask, observed, parameterSign, flags, info, 
 #' @return zigZag nuts engine object.
 #'
 #' @export
-createNutsEngine <- function(dimension, mask, observed, parameterSign, flags, info, seed, randomFlg, stepSize, mean, precision) {
-    .Call(`_hzz_createNutsEngine`, dimension, mask, observed, parameterSign, flags, info, seed, randomFlg, stepSize, mean, precision)
+createNutsEngine <- function(dimension, mask, parameterSign, lowerBounds, upperBounds, flags, info, seed, randomFlg, stepSize, mean, precision) {
+    .Call(`_hzz_createNutsEngine`, dimension, mask, parameterSign, lowerBounds, upperBounds, flags, info, seed, randomFlg, stepSize, mean, precision)
 }
 
 #' Set mean for MTN
@@ -68,7 +68,7 @@ getNextEvent <- function(sexp, position, velocity, action, logpdfGradient, momen
     .Call(`_hzz_oneIteration`, sexp, position, momentum, time)
 }
 
-.oneNutsIteration <- function(sexp, position, momentum, stepsize) {
-    .Call(`_hzz_oneNutsIteration`, sexp, position, momentum, stepsize)
+.oneNutsIteration <- function(sexp, position, momentum) {
+    .Call(`_hzz_oneNutsIteration`, sexp, position, momentum)
 }
 

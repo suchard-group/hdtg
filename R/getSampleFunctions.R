@@ -22,8 +22,7 @@ getSample <- function(position,
     res <- .oneNutsIteration(
       sexp = engine$engine,
       position = position,
-      momentum = momentum,
-      stepsize = t
+      momentum = momentum
     )
     
   } else {

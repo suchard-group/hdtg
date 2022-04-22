@@ -26,6 +26,7 @@
 #include <iomanip>
 #include "Timing.h"
 #include "Eigen/Dense"
+
 #endif // TIMING
 
 #include "threefry.h"
@@ -51,26 +52,30 @@ namespace zz {
                double *rawMask,
 //               double *rawObserved,
                double *rawParameterSign,
+               double *rawLowerBounds,
+               double *rawUpperBounds,
                long flags,
                int nThreads,
                long seed) : AbstractZigZag(),
-                                                dimension(dimension),
-                                                mask(constructMask(rawMask, dimension, true)),
+                            dimension(dimension),
+                            mask(constructMask(rawMask, dimension, true)),
 //                                                observed(constructMask(rawObserved, dimension, true)),
-                                                parameterSign(constructMask(rawParameterSign, dimension, false)),
-                                                mmPosition(dimension),
-                                                mmVelocity(dimension),
-                                                mmAction(dimension),
-                                                mmGradient(dimension),
-                                                mmMomentum(dimension),
-                                                flags(flags),
-                                                nThreads(nThreads),
-                                                seed(seed),
-                                                //logPrecDet(log(precisionMat.determinant())
-                                                meanV(dimension),
-                                                precisionMat(dimension, dimension),
-                                                meanSetFlg(false),
-                                                precisionSetFlg(false){
+                            parameterSign(constructMask(rawParameterSign, dimension, false)),
+                            lowerBounds(constructMask(rawLowerBounds, dimension, false)),
+                            upperBounds(constructMask(rawUpperBounds, dimension, false)),
+                            mmPosition(dimension),
+                            mmVelocity(dimension),
+                            mmAction(dimension),
+                            mmGradient(dimension),
+                            mmMomentum(dimension),
+                            flags(flags),
+                            nThreads(nThreads),
+                            seed(seed),
+                //logPrecDet(log(precisionMat.determinant())
+                            meanV(dimension),
+                            precisionMat(dimension, dimension),
+                            meanSetFlg(false),
+                            precisionSetFlg(false) {
             std::cerr << "ZigZag constructed" << std::endl;
             std::cout << '\n';
             if (flags & zz::Flags::TBB) {
@@ -109,14 +114,18 @@ namespace zz {
                      V &gradient,
                      V &momentum,
 //                     const W &observed,
-                     const W &parameterSign) : position(position.data()),
-                                               velocity(velocity.data()),
-                                               action(action.data()),
-                                               gradient(gradient.data()),
-                                               momentum(momentum.data()),
+                     const W &parameterSign,
+                     const W &lowerBounds,
+                     const W &upperBounds) : position(position.data()),
+                                             velocity(velocity.data()),
+                                             action(action.data()),
+                                             gradient(gradient.data()),
+                                             momentum(momentum.data()),
 //                                               observed(observed.data()),
-                                               parameterSign(parameterSign.data()),
-                                               column(nullptr) {}
+                                             parameterSign(parameterSign.data()),
+                                             lowerBounds(lowerBounds.data()),
+                                             upperBounds(upperBounds.data()),
+                                             column(nullptr) {}
 
             template<typename V, typename W>
             Dynamics(V &position,
@@ -125,14 +134,18 @@ namespace zz {
                      V &gradient,
                      std::nullptr_t,
 //                     const W &observed,
-                     const W &parameterSign) : position(position.data()),
-                                               velocity(velocity.data()),
-                                               action(action.data()),
-                                               gradient(gradient.data()),
-                                               momentum(nullptr),
+                     const W &parameterSign,
+                     const W &lowerBounds,
+                     const W &upperBounds) : position(position.data()),
+                                             velocity(velocity.data()),
+                                             action(action.data()),
+                                             gradient(gradient.data()),
+                                             momentum(nullptr),
 //                                               observed(observed.data()),
-                                               parameterSign(parameterSign.data()),
-                                               column(nullptr) {}
+                                             parameterSign(parameterSign.data()),
+                                             lowerBounds(lowerBounds.data()),
+                                             upperBounds(upperBounds.data()),
+                                             column(nullptr) {}
 
             template<typename V, typename W>
             Dynamics(V &position,
@@ -160,6 +173,8 @@ namespace zz {
             T *momentum;
 //            const T *observed;
             const T *parameterSign;
+            const T *lowerBounds;
+            const T *upperBounds;
             T *column;
         };
 
@@ -170,27 +185,28 @@ namespace zz {
                        DblSpan momentum,
                        double time) {
             if (!meanSetFlg || !precisionSetFlg) std::cerr << "mean or precision is not set!" << std::endl;
-            Dynamics<double> dynamics(position, velocity, action, gradient, momentum, parameterSign);
+            Dynamics<double> dynamics(position, velocity, action, gradient, momentum, parameterSign, lowerBounds,
+                                      upperBounds);
             return operateImpl(dynamics, time);
         }
 
-        std::vector<double> getVelocity(const DblSpan momentum){
+        std::vector<double> getVelocity(const DblSpan momentum) {
             std::vector<double> tmp(dimension);
             for (int i = 0; i < dimension; ++i) {
-                tmp[i] = (momentum[i] > 0)? 1: -1;
+                tmp[i] = (momentum[i] > 0) ? 1 : -1;
             }
             return tmp;
         }
 
-        std::unique_ptr<Eigen::VectorXd> getAction(const DblSpan velocity){
+        std::unique_ptr<Eigen::VectorXd> getAction(const DblSpan velocity) {
             Eigen::Map<Eigen::VectorXd> vVec(velocity.begin(), dimension);
-            Eigen::VectorXd productVec= precisionMat * vVec;
+            Eigen::VectorXd productVec = precisionMat * vVec;
             return zz::make_unique<Eigen::VectorXd>(productVec);
         }
 
-        std::unique_ptr<Eigen::VectorXd> getLogdGradient(const DblSpan position){
+        std::unique_ptr<Eigen::VectorXd> getLogdGradient(const DblSpan position) {
             Eigen::Map<Eigen::VectorXd> pVec(position.begin(), dimension);
-            Eigen::VectorXd gradientVec= - precisionMat * (pVec - meanV);
+            Eigen::VectorXd gradientVec = -precisionMat * (pVec - meanV);
             return zz::make_unique<Eigen::VectorXd>(gradientVec);
         }
 
@@ -206,7 +222,8 @@ namespace zz {
             DblSpan action(*aPtr);
             std::unique_ptr<Eigen::VectorXd> gPtr = getLogdGradient(position);
             DblSpan gradient(*gPtr);
-            Dynamics<double> dynamics(position, velocity, action, gradient, momentum, parameterSign);
+            Dynamics<double> dynamics(position, velocity, action, gradient, momentum, parameterSign, lowerBounds,
+                                      upperBounds);
             return operateImpl(dynamics, time);
         }
 
@@ -230,7 +247,8 @@ namespace zz {
             auto start = zz::chrono::steady_clock::now();
 #endif
 
-            Dynamics<double> dynamics(position, velocity, action, gradient, momentum, parameterSign);
+            Dynamics<double> dynamics(position, velocity, action, gradient, momentum, parameterSign, lowerBounds,
+                                      upperBounds);
             innerBounceImpl(dynamics, time, index, type);
 
 #ifdef TIMING
@@ -271,10 +289,12 @@ namespace zz {
             BounceState bounceState(BounceType::NONE, -1, time);
 
             while (bounceState.isTimeRemaining()) {
+                std::cerr << "start " << dynamics.position[0] <<" "<< dynamics.position[1] << " "<<dynamics.position[2] << " "<< dynamics.position[3] << "\n";
 
                 const auto firstBounce = getNextBounce(dynamics);
-
                 bounceState = doBounce(bounceState, firstBounce, dynamics);
+                std::cerr << "end " << dynamics.position[0] << " "<< dynamics.position[1] << " "<< dynamics.position[2] << " "<< dynamics.position[3] << "\n";
+
             }
 
 #ifdef TIMING
@@ -308,7 +328,8 @@ namespace zz {
                     Dynamics<double>(mmPosition, mmVelocity, mmAction, mmGradient, mmMomentum, observed, parameterSign, dimension));
 #else
             return getNextBounce(
-                    Dynamics<double>(position, velocity, action, gradient, momentum, parameterSign));
+                    Dynamics<double>(position, velocity, action, gradient, momentum, parameterSign, lowerBounds,
+                                     upperBounds));
 #endif
         }
 
@@ -318,7 +339,8 @@ namespace zz {
                                                 DblSpan gradient) {
 
             return getNextBounceIrreversible(
-                    Dynamics<double>(position, velocity, action, gradient, nullptr, parameterSign));
+                    Dynamics<double>(position, velocity, action, gradient, nullptr, parameterSign, lowerBounds,
+                                     upperBounds));
         }
 
         template<typename R>
@@ -439,18 +461,18 @@ namespace zz {
                                               DblSpan momentum,
                                               DblSpan gradient,
                                               int direction,
-                                                double time) {// todo only give WrappedVector position, WrappedVector momentum, WrappedVector gradient,int direction, double time
-            if (direction == -1){
+                                              double time) {// todo only give WrappedVector position, WrappedVector momentum, WrappedVector gradient,int direction, double time
+            if (direction == -1) {
                 std::transform(momentum.begin(), momentum.end(), momentum.begin(), std::negate<double>());
             }
             operate(position, momentum, time);
-            if (direction == -1){
+            if (direction == -1) {
                 std::transform(momentum.begin(), momentum.end(), momentum.begin(), std::negate<double>());
             }
         }
 
 
-        double getLogPDFnoDet(DblSpan position, DblSpan momentum){
+        double getLogPDFnoDet(DblSpan position, DblSpan momentum) {
 
             Eigen::Map<Eigen::VectorXd> positionV(position.data(), dimension);
             Eigen::VectorXd delta = positionV - meanV;
@@ -464,7 +486,7 @@ namespace zz {
             return likelihood - getKineticEnergy(momentum);
         }
 
-        double getKineticEnergy(DblSpan momentum){
+        double getKineticEnergy(DblSpan momentum) {
             double energy = 0;
             for (int i = 0; i < momentum.size(); ++i) {
                 energy += abs(momentum[i]);
@@ -485,16 +507,30 @@ namespace zz {
             const auto *momentum = dynamics.momentum;
 //            const auto *observed = dynamics.observed;
             const auto *parameterSign = dynamics.parameterSign;
+            const auto *lowerBounds = dynamics.lowerBounds;
+            const auto *upperBounds = dynamics.upperBounds;
 
             for (; i < end; i += SimdSize) {
 
-                const auto boundaryTime = findBoundaryTime(
+                const auto boundaryTimeLower = findBoundaryTime(
                         SimdHelper<S, R>::get(position + i),
                         SimdHelper<S, R>::get(velocity + i),
 //                        SimdHelper<S, R>::get(observed + i),
-                        SimdHelper<S, R>::get(parameterSign + i)
+                        SimdHelper<S, R>::get(parameterSign + i),
+                        SimdHelper<S, R>::get(lowerBounds + i),
+                        -1
                 );
-                reduce_min(result, boundaryTime, i, BounceType::BOUNDARY); // TODO Try: result = reduce_min(result, ...)
+                reduce_min(result, boundaryTimeLower, i, BounceType::BOUNDARY_LOWER);
+                const auto boundaryTimeUpper = findBoundaryTime(
+                        SimdHelper<S, R>::get(position + i),
+                        SimdHelper<S, R>::get(velocity + i),
+//                        SimdHelper<S, R>::get(observed + i),
+                        SimdHelper<S, R>::get(parameterSign + i),
+                        SimdHelper<S, R>::get(upperBounds + i),
+                        1
+                );
+                reduce_min(result, boundaryTimeUpper, i,
+                           BounceType::BOUNDARY_UPPER); // TODO Try: result = reduce_min(result, ...)
                 const auto gradientTime = minimumPositiveRoot(
                         -SimdHelper<S, R>::get(action + i) / 2,
                         SimdHelper<S, R>::get(gradient + i),
@@ -514,7 +550,7 @@ namespace zz {
             updatePosition<SimdType, SimdSize>(dynamics, eventTime);
             updateMomentum<SimdType, SimdSize>(dynamics, eventTime);
 
-            if (eventType == BounceType::BOUNDARY) {
+            if (eventType == BounceType::BOUNDARY_LOWER || eventType == BounceType::BOUNDARY_UPPER) {
 
                 reflectMomentum(dynamics, eventIndex);
 
@@ -613,10 +649,10 @@ namespace zz {
                 const int eventIndex = firstBounce.index;
 
                 DblSpan precisionColumn = DblSpan(&precisionMat(0, eventIndex), dimension);
-                if (eventType == BounceType::BOUNDARY) {
-
+                if (eventType == BounceType::BOUNDARY_LOWER || eventType == BounceType::BOUNDARY_UPPER) {
+                    // std::cerr << lowerBounds[1] << std::endl;
                     reflectMomentum(dynamics, eventIndex);
-                    setZeroPosition(dynamics, eventIndex);
+                    setBoundaryPosition(dynamics, eventIndex, eventType);
                 } else {
                     setZeroMomentum(dynamics, eventIndex);
                 }
@@ -760,10 +796,16 @@ namespace zz {
         }
 
         template<typename R>
-        static inline void setZeroPosition(Dynamics<R> &dynamics, int index) {
+        inline void setBoundaryPosition(Dynamics<R> &dynamics, int index, int eventType) {
             auto position = dynamics.position;
-
-            position[index] = R(0.0);
+            if (eventType == BounceType::BOUNDARY_LOWER) {
+                position[index] = R(lowerBounds[index]);
+            } else if (eventType == BounceType::BOUNDARY_UPPER) {
+                position[index] = R(upperBounds[index]);
+            } else {
+                std::cerr << "trying to set boundary position at non-boundary event" << std::endl;
+                exit(-1);
+            }
         }
 
         template<typename R>
@@ -862,18 +904,38 @@ namespace zz {
         static inline T findBoundaryTime(const T position,
                                          const T velocity,
 //                                         const T observed,
-                                         const T parameterSign) {
-            //std::cerr << parameterSign << std::endl;
-            return select(headingTowardsBoundary(parameterSign, velocity),
-                          fabs(position / velocity),
-                          infinity<T>());
+                                         const T parameterSign,
+                                         const T bound,
+                                         const int hittingLowerBoundInt
+        ) {
+//            std::cerr << "old sign" << std::endl;
+//            return select(headingTowardsBoundary(parameterSign, velocity),
+//                          fabs(position / velocity),
+//                          infinity<T>());
+           std::cerr << "new sign" << std::endl;
+            return select(headingTowardsBoundaryNew(bound, position, velocity, hittingLowerBoundInt),
+                   fabs((position - bound) / velocity),
+                   infinity<T>());
         }
 
         template<typename T>
+        //todo: delegate
         static inline auto headingTowardsBoundary(const T parameterSign,
                                                   const T velocity)
         -> decltype(T(1.0) > T(0.0)) {
-            return parameterSign * velocity * 1 < T(0.0);
+            return parameterSign * velocity < T(0.0);
+        }
+
+        template<typename T>
+        static inline auto headingTowardsBoundaryNew(const T bound,
+                                                     const T position,
+                                                     const T velocity,
+                                                     const int hittingLowerBoundInt)
+        -> decltype(T(1.0) > T(0.0)) {
+            // 2 ways hitting the boundary: 1. at the boundary and hit it 2. move towards the boundary
+            // also the boundary should be finite
+            return fabs(bound) != T(INFINITY) && ((position - bound) * velocity < T(0.0) ||
+                                                  (position == bound && hittingLowerBoundInt * velocity > T(0.0)));
         }
 
         template<typename T>
@@ -912,6 +974,8 @@ namespace zz {
         mm::MemoryManager<MaskType> mask;
 //        mm::MemoryManager<MaskType> observed;
         mm::MemoryManager<MaskType> parameterSign;
+        mm::MemoryManager<MaskType> lowerBounds;
+        mm::MemoryManager<MaskType> upperBounds;
 
         mm::MemoryManager<double> mmPosition;
         mm::MemoryManager<double> mmVelocity;
@@ -930,8 +994,8 @@ namespace zz {
 
         long flags;
         int nThreads;
-        
-        
+
+
         long seed;
 
         std::shared_ptr<tbb::global_control> control;
@@ -947,8 +1011,10 @@ namespace zz {
     std::unique_ptr<zz::AbstractZigZag> dispatch(
             int dimension,
             double *rawMask,
-            double *rawObserved,
+//            double *rawObserved,
             double *rawParameterSign,
+            double *rawLowerBounds,
+            double *rawUpperBounds,
             long flags,
             int info,
             long seed) {
@@ -956,15 +1022,15 @@ namespace zz {
         if (static_cast<unsigned long>(flags) & zz::Flags::AVX) {
             std::cerr << "Factory: AVX" << std::endl;
             return zz::make_unique<zz::ZigZag<zz::DoubleAvxTypeInfo>>(
-                    dimension, rawMask, rawParameterSign, flags, info, seed);
+                    dimension, rawMask, rawParameterSign, rawLowerBounds, rawUpperBounds, flags, info, seed);
         } else if (static_cast<unsigned long>(flags) & zz::Flags::SSE) {
             std::cerr << "Factory: SSE" << std::endl;
             return zz::make_unique<zz::ZigZag<zz::DoubleSseTypeInfo>>(
-                    dimension, rawMask, rawParameterSign, flags, info, seed);
+                    dimension, rawMask, rawParameterSign, rawLowerBounds, rawUpperBounds, flags, info, seed);
         } else {
             std::cerr << "Factory: No SIMD" << std::endl;
             return zz::make_unique<zz::ZigZag<zz::DoubleNoSimdTypeInfo>>(
-                    dimension, rawMask, rawParameterSign, flags, info, seed);
+                    dimension, rawMask, rawParameterSign, rawLowerBounds, rawUpperBounds, flags, info, seed);
         }
     }
 }
