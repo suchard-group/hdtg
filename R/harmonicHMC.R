@@ -1,4 +1,4 @@
-#' Run Bouncy HMC Sampler
+#' Run Harmonic HMC Sampler
 #'
 #' Sample from a truncated Gaussian distribution with constraints Fx+g >= 0.
 #'
@@ -31,7 +31,7 @@
 #' constraint_direc = diag(d)
 #' constraint_bound = rep(0,d)
 #' initial = rep(1, d)
-#' results = runBouncySampler(
+#' results = runHHMC(
 #' 10000,
 #' initial,
 #' constraint_direc,
@@ -40,19 +40,19 @@
 #' mu,
 #' )
 
-runBouncySampler = function(n,
-                            initial_position,
-                            constraint_direc,
-                            constraint_bound,
-                            cholesky_factor,
-                            unconstrained_mean,
-                            prec_parametrized = TRUE,
-                            total_time = pi / 2,
-                            seed = 1,
-                            diagnostic_mode = FALSE) {
+runHHMC = function(n,
+                   initial_position,
+                   constraint_direc,
+                   constraint_bound,
+                   cholesky_factor,
+                   unconstrained_mean,
+                   prec_parametrized = TRUE,
+                   total_time = pi / 2,
+                   seed = 1,
+                   diagnostic_mode = FALSE) {
   set.seed(seed)
   samples = matrix(nrow = ncol(constraint_direc), ncol = n)
-  bounce_distances = vector(mode = "list", 
+  bounce_distances = vector(mode = "list",
                             length = ifelse(diagnostic_mode, n, 0))
   whitened_constraints = applyWhitenTransform(
     constraint_direc,
