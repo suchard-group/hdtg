@@ -29,18 +29,18 @@ Eigen::MatrixXd solveFromRight(const Eigen::Map<Eigen::MatrixXd> A,
 
 //' Whiten constraints for use in GenerateUnwhitenedSample
 //'
-//' Transforms constraints of the form Fx+g >= 0 for a target normal distribution
-//' into the corresponding constraints for a standard normal.
+//' Transforms constraints of the form Fx+g >= 0 for a target normal
+//  distribution ' into the corresponding constraints for a standard normal.
 //'
-//' @param constraint_direc F matrix (k-by-d matrix where k is the number of 
+//' @param constraint_direc F matrix (k-by-d matrix where k is the number of
 //' linear constraints)
 //' @param constraint_bound g vector (k dimensional)
-//' @param cholesky_factor upper triangular matrix R from cholesky decomposition of 
-//' precision or covariance matrix into R^TR
+//' @param cholesky_factor upper triangular matrix R from cholesky decomposition
+//' of precision or covariance matrix into R^TR
 //' @param unconstrained_mean mean of unconstrained Gaussian
-//' @param prec_parametrized boolean for whether parametrization is by precision (true) 
-//' or covariance matrix (false)
-//' @return List of new constraint directions, the squared row norms of those 
+//' @param prec_parametrized boolean for whether parametrization is by precision
+//'  (true) or covariance matrix (false)
+//' @return List of new constraint directions, the squared row norms of those
 //' constraints (for computational efficiency later), and new bounds
 //' @export
 // [[Rcpp::export]]
@@ -77,15 +77,15 @@ std::pair<Eigen::VectorXd, Eigen::VectorXd> advanceWhitenedDynamics(
 }
 
 //' Reflect momentum off of a constraint boundary.
-//' 
-//' Given a constraint boundary, calculate the momentum as if that boundary 
-//' was a wall and there is an elastic collision, and the angle of incidence 
+//'
+//' Given a constraint boundary, calculate the momentum as if that boundary
+//' was a wall and there is an elastic collision, and the angle of incidence
 //' equals the angle of reflection.
 //'
 //' @param momentum starting momentum
-//' @param constraint_direc F matrix (k-by-d matrix where k is the number of 
+//' @param constraint_direc F matrix (k-by-d matrix where k is the number of
 //' linear constraints)
-//' @param constraint_row_normsq vector of squared row norms ofr constraint_direc
+//' @param constraint_row_normsq vector of squared row norms of constraint_direc
 //' @param bounce_idx integer index of which constraint is being bounced off of
 //' @param time amount of time the system is run for
 //' @return momentum after bouncing
@@ -136,14 +136,14 @@ std::pair<double, int> computeNextBounce(
 //'
 //' @param position starting position
 //' @param momentum starting momentum
-//' @param constraint_direc F matrix (k-by-d matrix where k is the number of 
+//' @param constraint_direc F matrix (k-by-d matrix where k is the number of
 //' linear constraints)
 //' @param constraint_bound g vector (k dimensional)
-//' @param cholesky_factor upper triangular matrix R from cholesky decomposition 
+//' @param cholesky_factor upper triangular matrix R from cholesky decomposition
 //' of precision or covariance matrix into R^TR
 //' @param unconstrained_mean mean of unconstrained Gaussian
-//' @param prec_parametrized boolean for whether parametrization is by 
-//' precision (true) 
+//' @param prec_parametrized boolean for whether parametrization is by
+//' precision (true)
 //' or covariance matrix (false)
 //' @return vector of position in standard normal frame
 // [[Rcpp::export]]
@@ -165,11 +165,11 @@ Eigen::VectorXd whitenPosition(
 //' Convert a position from standard normal frame back to original frame.
 //'
 //' @param position starting position
-//' @param cholesky_factor upper triangular matrix R from cholesky decomposition 
+//' @param cholesky_factor upper triangular matrix R from cholesky decomposition
 //' of precision or covariance matrix into R^TR
-//' @param unconstrained_mean mean of unconstrained Gaussian 
-//' @param prec_parametrized boolean for whether parametrization is by 
-//' precision (true) 
+//' @param unconstrained_mean mean of unconstrained Gaussian
+//' @param prec_parametrized boolean for whether parametrization is by
+//' precision (true)
 //' or covariance matrix (false)
 //' @return vector of position in original frame
 // [[Rcpp::export]]
@@ -190,12 +190,12 @@ Eigen::VectorXd unwhitenPosition(
 //'
 //' @param initial_position starting position
 //' @param initial_momentum starting momentum
-//' @param constraint_direc F matrix (k-by-d matrix where k is the number of 
+//' @param constraint_direc F matrix (k-by-d matrix where k is the number of
 //' linear constraints)
 //' @param constraint_row_normsq vector of squared row norms of constraint_direc
 //' @param constraint_bound g vector (k dimensional)
 //' @param total_time total time the particle will bounce for
-//' @param param diagnostic_mode boolean for whether to return the bounce 
+//' @param param diagnostic_mode boolean for whether to return the bounce
 //' distances for each sample
 //' @return vector of position in standard normal frame
 // [[Rcpp::export]]
@@ -220,11 +220,11 @@ Rcpp::List simulateWhitenedDynamics(
   double travelled_time = 0;
   while (true) {
     std::tie(bounce_time, bounce_constraint) = computeNextBounce(
-      position, momentum, constraint_direc, constraint_bound);
+        position, momentum, constraint_direc, constraint_bound);
     if (bounce_time < total_time - travelled_time) {
       if (diagnostic_mode) {
         std::tie(new_position, momentum) =
-          advanceWhitenedDynamics(position, momentum, bounce_time);
+            advanceWhitenedDynamics(position, momentum, bounce_time);
         bounced_distance = (new_position - position).norm();
         if (num_bounces > bounce_distances.size()) {
           bounce_distances.conservativeResize(2 * num_bounces);
@@ -234,7 +234,7 @@ Rcpp::List simulateWhitenedDynamics(
         position = new_position;
       } else {
         std::tie(position, momentum) =
-          advanceWhitenedDynamics(position, momentum, bounce_time);
+            advanceWhitenedDynamics(position, momentum, bounce_time);
       }
       momentum = reflectMomentum(momentum, constraint_direc,
                                  constraint_row_norm_sq, bounce_constraint);
@@ -242,10 +242,10 @@ Rcpp::List simulateWhitenedDynamics(
     } else {
       bounce_time = total_time - travelled_time;
       std::tie(position, momentum) =
-        advanceWhitenedDynamics(position, momentum, bounce_time);
+          advanceWhitenedDynamics(position, momentum, bounce_time);
       return Rcpp::List::create(
-        Rcpp::Named("sample") = position,
-        Rcpp::Named("bounce_distances") = bounce_distances.head(num_bounces));
+          Rcpp::Named("sample") = position,
+          Rcpp::Named("bounce_distances") = bounce_distances.head(num_bounces));
     }
   }
 }
