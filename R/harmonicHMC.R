@@ -23,21 +23,22 @@
 #'
 #' @examples
 #' set.seed(1)
-#' d = 100
+#' d = 10
 #' A = matrix(runif(d^2)*2-1, ncol=d)
 #' Sigma = t(A) %*% A
-#' R = cholesky(solve(Sigma))
+#' R = cholesky(Sigma)
 #' mu = rep(0,d)
 #' constraint_direc = diag(d)
 #' constraint_bound = rep(0,d)
 #' initial = rep(1, d)
 #' results = runHHMC(
-#' 10000,
+#' 100,
 #' initial,
 #' constraint_direc,
 #' constraint_bound,
 #' R,
 #' mu,
+#' prec_parametrized = TRUE
 #' )
 
 runHHMC = function(n,
