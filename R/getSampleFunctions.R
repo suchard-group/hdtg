@@ -35,3 +35,7 @@ getSample <- function(position,
   }
   return(res$position)
 }
+
+drawMomentum <- function(dim){
+  return((2 * (runif(dim) > .5) - 1) * rexp(dim, rate = 1))
+}

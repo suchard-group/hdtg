@@ -17,5 +17,6 @@ Imports:
     mgcv
 LinkingTo: 
     Rcpp,
+    RcppEigen,
     RcppParallel,
     RcppXsimd

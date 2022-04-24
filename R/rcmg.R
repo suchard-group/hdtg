@@ -72,7 +72,7 @@ rcmg <- function(n,
         A = prec, k = 1, kl = 1
       )[['values']]))
     }
-    cat("NUTS base step size is", t)
+    cat("NUTS base step size is", t, "\n")
     engine <- createNutsEngine(
       dimension = ndim,
       mask = rep(1, ndim),
@@ -96,7 +96,7 @@ rcmg <- function(n,
           A = prec, k = 1, kl = 1
         )[['values']], na.rm = T))
     }
-    cat("HZZ step size is", t)
+    cat("HZZ step size is", t, "\n")
     engine <- createEngine(
       dimension = ndim,
       mask = rep(1, ndim),

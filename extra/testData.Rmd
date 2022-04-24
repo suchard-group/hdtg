@@ -398,18 +398,13 @@ t = rcmg(
   mean = rep(0, d),
   cov = NULL,
   prec = diag(d),
-  constraits = rep(1, d),
   lowerBounds = rep(0, d),
   upperBounds = rep(Inf, d),
-  t = 1,
-  # burnin=1,
-  p0 = rep(0.1, d),
-  fixedMomentum = NULL,
-  cppFlg = TRUE,
+  forcedStep = 1,
+  momentum = NULL,
   nutsFlg = T,
-  random_seed = 666,
-  randomFlg = T,
-  debug_flg = F
+  rSeed = 666,
+  randomFlg = T
 )
 t_new = t
 ```

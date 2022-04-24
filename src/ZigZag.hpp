@@ -25,7 +25,7 @@
 #include <map>
 #include <iomanip>
 #include "Timing.h"
-#include "Eigen/Dense"
+#include <RcppEigen.h>
 
 #endif // TIMING
 
@@ -270,13 +270,13 @@ namespace zz {
             BounceState bounceState(BounceType::NONE, -1, time);
 
             while (bounceState.isTimeRemaining()) {
-                std::cerr << "start " << dynamics.position[0] << " " << dynamics.position[1] << " "
-                          << dynamics.position[2] << " " << dynamics.position[3] << "\n";
+//                std::cerr << "start " << dynamics.position[0] << " " << dynamics.position[1] << " "
+//                          << dynamics.position[2] << " " << dynamics.position[3] << "\n";
 
                 const auto firstBounce = getNextBounce(dynamics);
                 bounceState = doBounce(bounceState, firstBounce, dynamics);
-                std::cerr << "end " << dynamics.position[0] << " " << dynamics.position[1] << " "
-                          << dynamics.position[2] << " " << dynamics.position[3] << "\n";
+//                std::cerr << "end " << dynamics.position[0] << " " << dynamics.position[1] << " "
+//                          << dynamics.position[2] << " " << dynamics.position[3] << "\n";
 
             }
 
