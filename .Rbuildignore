@@ -8,3 +8,6 @@ CMakeModules
 build
 
 extra
+
+configure.ac
+cleanup
