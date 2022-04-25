@@ -11,6 +11,79 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// cholesky
+Eigen::MatrixXd cholesky(const Eigen::Map<Eigen::MatrixXd> A);
+RcppExport SEXP _hzz_cholesky(SEXP ASEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd> >::type A(ASEXP);
+    rcpp_result_gen = Rcpp::wrap(cholesky(A));
+    return rcpp_result_gen;
+END_RCPP
+}
+// applyWhitenTransform
+Rcpp::List applyWhitenTransform(const Eigen::Map<Eigen::MatrixXd> constraint_direc, const Eigen::Map<Eigen::VectorXd> constraint_bound, const Eigen::Map<Eigen::MatrixXd> cholesky_factor, const Eigen::Map<Eigen::VectorXd> unconstrained_mean, bool prec_parametrized);
+RcppExport SEXP _hzz_applyWhitenTransform(SEXP constraint_direcSEXP, SEXP constraint_boundSEXP, SEXP cholesky_factorSEXP, SEXP unconstrained_meanSEXP, SEXP prec_parametrizedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd> >::type constraint_direc(constraint_direcSEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type constraint_bound(constraint_boundSEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd> >::type cholesky_factor(cholesky_factorSEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type unconstrained_mean(unconstrained_meanSEXP);
+    Rcpp::traits::input_parameter< bool >::type prec_parametrized(prec_parametrizedSEXP);
+    rcpp_result_gen = Rcpp::wrap(applyWhitenTransform(constraint_direc, constraint_bound, cholesky_factor, unconstrained_mean, prec_parametrized));
+    return rcpp_result_gen;
+END_RCPP
+}
+// whitenPosition
+Eigen::VectorXd whitenPosition(const Eigen::Map<Eigen::VectorXd> position, const Eigen::Map<Eigen::MatrixXd> constraint_direc, const Eigen::Map<Eigen::VectorXd> constraint_bound, const Eigen::Map<Eigen::MatrixXd> cholesky_factor, const Eigen::Map<Eigen::VectorXd> unconstrained_mean, bool prec_parametrized);
+RcppExport SEXP _hzz_whitenPosition(SEXP positionSEXP, SEXP constraint_direcSEXP, SEXP constraint_boundSEXP, SEXP cholesky_factorSEXP, SEXP unconstrained_meanSEXP, SEXP prec_parametrizedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type position(positionSEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd> >::type constraint_direc(constraint_direcSEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type constraint_bound(constraint_boundSEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd> >::type cholesky_factor(cholesky_factorSEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type unconstrained_mean(unconstrained_meanSEXP);
+    Rcpp::traits::input_parameter< bool >::type prec_parametrized(prec_parametrizedSEXP);
+    rcpp_result_gen = Rcpp::wrap(whitenPosition(position, constraint_direc, constraint_bound, cholesky_factor, unconstrained_mean, prec_parametrized));
+    return rcpp_result_gen;
+END_RCPP
+}
+// unwhitenPosition
+Eigen::VectorXd unwhitenPosition(const Eigen::VectorXd position, const Eigen::Map<Eigen::MatrixXd> cholesky_factor, const Eigen::Map<Eigen::VectorXd> unconstrained_mean, bool prec_parametrized);
+RcppExport SEXP _hzz_unwhitenPosition(SEXP positionSEXP, SEXP cholesky_factorSEXP, SEXP unconstrained_meanSEXP, SEXP prec_parametrizedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::VectorXd >::type position(positionSEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd> >::type cholesky_factor(cholesky_factorSEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type unconstrained_mean(unconstrained_meanSEXP);
+    Rcpp::traits::input_parameter< bool >::type prec_parametrized(prec_parametrizedSEXP);
+    rcpp_result_gen = Rcpp::wrap(unwhitenPosition(position, cholesky_factor, unconstrained_mean, prec_parametrized));
+    return rcpp_result_gen;
+END_RCPP
+}
+// simulateWhitenedDynamics
+Rcpp::List simulateWhitenedDynamics(const Eigen::Map<Eigen::VectorXd> initial_position, const Eigen::Map<Eigen::VectorXd> initial_momentum, const Eigen::Map<Eigen::MatrixXd> constraint_direc, const Eigen::Map<Eigen::VectorXd> constraint_row_norm_sq, const Eigen::Map<Eigen::VectorXd> constraint_bound, double total_time, bool diagnostic_mode);
+RcppExport SEXP _hzz_simulateWhitenedDynamics(SEXP initial_positionSEXP, SEXP initial_momentumSEXP, SEXP constraint_direcSEXP, SEXP constraint_row_norm_sqSEXP, SEXP constraint_boundSEXP, SEXP total_timeSEXP, SEXP diagnostic_modeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type initial_position(initial_positionSEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type initial_momentum(initial_momentumSEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd> >::type constraint_direc(constraint_direcSEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type constraint_row_norm_sq(constraint_row_norm_sqSEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type constraint_bound(constraint_boundSEXP);
+    Rcpp::traits::input_parameter< double >::type total_time(total_timeSEXP);
+    Rcpp::traits::input_parameter< bool >::type diagnostic_mode(diagnostic_modeSEXP);
+    rcpp_result_gen = Rcpp::wrap(simulateWhitenedDynamics(initial_position, initial_momentum, constraint_direc, constraint_row_norm_sq, constraint_bound, total_time, diagnostic_mode));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpp_hello_world
 List rcpp_hello_world();
 RcppExport SEXP _hzz_rcpp_hello_world() {
@@ -137,6 +210,11 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_hzz_cholesky", (DL_FUNC) &_hzz_cholesky, 1},
+    {"_hzz_applyWhitenTransform", (DL_FUNC) &_hzz_applyWhitenTransform, 5},
+    {"_hzz_whitenPosition", (DL_FUNC) &_hzz_whitenPosition, 6},
+    {"_hzz_unwhitenPosition", (DL_FUNC) &_hzz_unwhitenPosition, 4},
+    {"_hzz_simulateWhitenedDynamics", (DL_FUNC) &_hzz_simulateWhitenedDynamics, 7},
     {"_hzz_rcpp_hello_world", (DL_FUNC) &_hzz_rcpp_hello_world, 0},
     {"_hzz_createEngine", (DL_FUNC) &_hzz_createEngine, 7},
     {"_hzz_createNutsEngine", (DL_FUNC) &_hzz_createNutsEngine, 11},
