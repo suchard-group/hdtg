@@ -4,7 +4,7 @@
 #include <vector>
 #include <algorithm>
 
-#include "aligned_allocator.hpp"
+#include "aligned_allocator.h"
 
 namespace zz {
 namespace mm {

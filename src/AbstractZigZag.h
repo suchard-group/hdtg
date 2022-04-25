@@ -7,8 +7,8 @@
 
 //#define TCB_SPAN_NAMESPACE_NAME std
 //#define TCB_SPAN_NO_CONTRACT_CHECKING
-#include "span.hpp"
-#include "PrecisionColumn.hpp"
+#include "span.h"
+#include "PrecisionColumn.h"
 
 //namespace std {
 //    template <typename T>

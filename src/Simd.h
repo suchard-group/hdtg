@@ -7,7 +7,7 @@
 
 
 #include "xsimd/xsimd.hpp"
-#include "ZigZag.hpp"
+#include "ZigZag.h"
 
 namespace zz {
 

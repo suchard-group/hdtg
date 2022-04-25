@@ -19,10 +19,10 @@
 
 #include "threefry.h"
 //#include "dr_evomodel_operators_NativeZigZag.h"
-#include "MemoryManagement.hpp"
-#include "Simd.hpp"
-#include "ZigZag.hpp"
-#include "NoUTurn.hpp"
+#include "MemoryManagement.h"
+#include "Simd.h"
+#include "ZigZag.h"
+#include "NoUTurn.h"
 #include "UniformGenerator.h"
 
 namespace nuts {

@@ -24,10 +24,10 @@
 #endif // TIMING
 
 #include "threefry.h"
-#include "MemoryManagement.hpp"
-#include "Simd.hpp"
-#include "ZigZag.hpp"
-#include "NutsTreeState.hpp"
+#include "MemoryManagement.h"
+#include "Simd.h"
+#include "ZigZag.h"
+#include "NutsTreeState.h"
 #include "UniformGenerator.h"
 
 namespace nuts {

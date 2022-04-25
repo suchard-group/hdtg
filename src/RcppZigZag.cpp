@@ -7,8 +7,8 @@ using namespace Rcpp;
 // [[Rcpp::depends(RcppParallel,RcppXsimd)]]
 #include <RcppParallel.h>
 
-#include "ZigZag.hpp"
-#include "NoUTurn.hpp"
+#include "ZigZag.h"
+#include "NoUTurn.h"
 
 //' @export
 // [[Rcpp::export]]
