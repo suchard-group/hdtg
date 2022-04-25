@@ -1,0 +1,13 @@
+$(info The name of the shared library to be created is: $(SHLIB))
+
+CXX_STD = CXX11
+
+PKG_CXXFLAGS = -I. @SIMD_FLAGS@ @AVX_FLAGS@ @SSE_FLAGS@
+
+PKG_LIBS = @RCPPPAR_LIB@ 
+
+OBJECTS.zigzag = \
+    RcppZigZag.o \
+    RcppExports.o
+
+OBJECTS = $(OBJECTS.zigzag)

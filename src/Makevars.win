@@ -1,0 +1,23 @@
+$(info The name of the shared library to be created is: $(SHLIB))
+
+ifeq ("$(WIN)", "64")
+  ARCH_DIR=x64/
+else
+  ARCH_DIR=i386/
+endif
+
+CXX_STD = CXX11
+
+PKG_CXXFLAGS = -I. -I../inst/include -DUSE_SIMD -DUSE_SSE -msse4.1
+
+# Uncomment the following line for AVX use
+# PKG_CXXFLAGS += -DUSE_AVX -mavx -mavx2 -mfma -mfpmath=both
+
+PKG_LIBS += $(shell "${R_HOME}/bin${R_ARCH_BIN}/Rscript.exe" \
+              -e "RcppParallel::RcppParallelLibs()")
+
+OBJECTS.zigzag = \
+    RcppZigZag.o \
+    RcppExports.o
+
+OBJECTS = $(OBJECTS.zigzag)
