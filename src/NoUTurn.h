@@ -5,8 +5,8 @@
 #ifndef NUTS_HPP
 #define NUTS_HPP
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCUnusedMacroInspection" // Turn off warning for TBB_PREVIEW_GLOBAL_CONTROL
+//#pragma clang diagnostic push
+//#pragma ide diagnostic ignored "OCUnusedMacroInspection" // Turn off warning for TBB_PREVIEW_GLOBAL_CONTROL
 
 #include <vector>
 #include <cmath>
@@ -70,7 +70,7 @@ namespace nuts {
 
             TreeState *newState = new TreeState(initialPosition, initialMomentum, gradient, 1, true,
                                                 0, 0, uniGenerator);
-            SharedPtrTreeState trajectoryTree = std::move(zz::make_unique<TreeState>(*newState));
+            SharedPtrTreeState trajectoryTree = zz::make_unique<TreeState>(*newState);
 
             int height = 0;
 
@@ -214,6 +214,6 @@ namespace nuts {
     }
 }
 
-#pragma clang diagnostic pop
+//#pragma clang diagnostic pop
 
 #endif //ZIG_ZAG_ZIGZAG_HPP

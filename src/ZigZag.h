@@ -5,8 +5,8 @@
 #ifndef ZIG_ZAG_ZIGZAG_HPP
 #define ZIG_ZAG_ZIGZAG_HPP
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCUnusedMacroInspection" // Turn off warning for TBB_PREVIEW_GLOBAL_CONTROL
+//#pragma clang diagnostic push
+//#pragma ide diagnostic ignored "OCUnusedMacroInspection" // Turn off warning for TBB_PREVIEW_GLOBAL_CONTROL
 
 #include <vector>
 #include <cmath>
@@ -999,7 +999,5 @@ namespace zz {
         }
     }
 }
-
-#pragma clang diagnostic pop
 
 #endif //ZIG_ZAG_ZIGZAG_HPP
