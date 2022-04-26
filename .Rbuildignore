@@ -8,6 +8,6 @@ CMakeModules
 build
 
 extra
-
+.idea
 configure.ac
 cleanup

@@ -24,15 +24,25 @@ rcmg(
 
 \item{mean}{a d-dimensional mean vector}
 
+\item{cov}{todo}
+
 \item{prec}{a d-by-d precision matrix of the Gaussian distribution}
+
+\item{lowerBounds}{todo}
+
+\item{upperBounds}{todo}
 
 \item{x}{a d-dimensional vector of the initial value. It must satisfy all constraints. If not specified a random initial value will be used}
 
-\item{constraits}{a d-dimensional vector where a positive (negative) number means >0 (<0) truncation.}
+\item{forcedStep}{todo}
 
-\item{t}{time length to simulate the Markov process}
+\item{momentum}{todo}
 
-\item{cppFlg}{}
+\item{nutsFlg}{todo}
+
+\item{rSeed}{todo}
+
+\item{randomFlg}{todo}
 }
 \value{
 An n-by-d matrix where each row is a multivariate sample

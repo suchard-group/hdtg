@@ -48,15 +48,15 @@ namespace nuts {
                                                                              zzEngine(*zigzag),
                                                                              uniGenerator(UniformGenerator(seed,
                                                                                                            randomFlg)) {
-            std::cerr << "nuts constructed" << '\n' << std::endl;
+//            std::cerr << "nuts constructed" << '\n' << std::endl;
         }
 
         ~NoUTurn() = default;
 
-        template<typename T>
-        void printDblSpan(T &span) {
-            for (auto e: span) std::cout << e << ' ';
-        }
+//        template<typename T>
+//        void printDblSpan(T &span) {
+//            for (auto e: span) std::cout << e << ' ';
+//        }
 
 
         std::vector<double> takeOneStep(DblSpan initialPosition, DblSpan initialMomentum) {
@@ -209,7 +209,7 @@ namespace nuts {
             bool randomFlg,
             double stepSize,
             std::shared_ptr<zz::ZigZag<zz::DoubleSseTypeInfo>> ptr) {
-        std::cerr << "Factory: SSE" << std::endl;
+//        std::cerr << "Factory: SSE" << std::endl;
         return zz::make_unique<nuts::NoUTurn>(logProbErrorTol, maxHeight, seed, randomFlg, stepSize, ptr);
     }
 }

@@ -10,17 +10,6 @@ using namespace Rcpp;
 #include "ZigZag.h"
 #include "NoUTurn.h"
 
-//' @export
-// [[Rcpp::export]]
-List rcpp_hello_world() {
-
-    CharacterVector x = CharacterVector::create("foo", "bar");
-    NumericVector y = NumericVector::create(0.0, 1.0);
-    List z = List::create(x, y);
-
-    return z;
-}
-
 using ZigZagSharedPtr = std::shared_ptr<zz::AbstractZigZag>;
 
 class ZigZagWrapper {
@@ -98,25 +87,21 @@ NutsSharedPtr &parsePtrNuts(SEXP sexp) {
 
 //' Create ZigZag engine object
 //'
-//' Helper function creates zigZag engine object with given latent dimension, location count and various
-//' implementation details. Called by \code{MassivezigZag::engineInitial()}.
-//'
-//' @param locationCount Number of locations and size of distance matrix.
-//' @param tbb Number of CPU cores to be used.
-//' @param simd For CPU implementation: no SIMD (\code{0}), SSE (\code{1}) or AVX (\code{2}).
-//' @param truncation Likelihood includes truncation term? Defaults to \code{TRUE}.
-//' @param gpu Which GPU to use? If only 1 available, use \code{gpu=1}. Defaults to \code{0}, no GPU.
-//' @param single Set \code{single=1} if your GPU does not accommodate doubles.
-//' @return zigZag engine object.
+//' @param dimension the dimension of MTN (d)
+//' @param lowerBounds the d-dimensional lower bound
+//' @param upperBounds the d-dimensional upper bound
+//' @param flags todo
+//' @param info todo
+//' @param seed random seed
+//' @return a zigzag engine object.
 //'
 //' @export
 // [[Rcpp::export(createEngine)]]
 Rcpp::List createEngine(int dimension,
-                        std::vector<double> &mask,
                         std::vector<double> &lowerBounds,
                         std::vector<double> &upperBounds,
                         long flags, long info, long seed) {
-
+    std::vector<double> mask(dimension, 1);
     auto zigZag = new ZigZagWrapper(
             zz::dispatch(dimension, mask.data(), lowerBounds.data(), upperBounds.data(),
                          flags, info, seed));
@@ -124,13 +109,9 @@ Rcpp::List createEngine(int dimension,
     XPtrZigZagWrapper engine(zigZag);
 
     Rcpp::List list = Rcpp::List::create(
-            Rcpp::Named("engine") = engine,//todo it seems only the ptr("engine") was used by hzz?
+            Rcpp::Named("engine") = engine,
             Rcpp::Named("dimension") = dimension,
             Rcpp::Named("mask") = mask,
-            //   Rcpp::Named("dataInitialzied") = false,
-            //    Rcpp::Named("locationsInitialized") = false,
-            //   Rcpp::Named("threads") = threads,
-            //   Rcpp::Named("deviceNumber") = deviceNumber,
             Rcpp::Named("flags") = flags,
             Rcpp::Named("info") = info
     );
@@ -143,18 +124,21 @@ Rcpp::List createEngine(int dimension,
 //' Helper function creates zigZag nuts engine object with given latent dimension, location count and various
 //' implementation details. 
 //'
-//' @param locationCount Number of locations and size of distance matrix.
-//' @param tbb Number of CPU cores to be used.
-//' @param simd For CPU implementation: no SIMD (\code{0}), SSE (\code{1}) or AVX (\code{2}).
-//' @param truncation Likelihood includes truncation term? Defaults to \code{TRUE}.
-//' @param gpu Which GPU to use? If only 1 available, use \code{gpu=1}. Defaults to \code{0}, no GPU.
-//' @param single Set \code{single=1} if your GPU does not accommodate doubles.
-//' @return zigZag nuts engine object.
+//' @param dimension the dimension of MTN (d)
+//' @param lowerBounds the d-dimensional lower bound
+//' @param upperBounds the d-dimensional upper bound
+//' @param flags todo
+//' @param info todo
+//' @param seed random seed
+//' @param randomFlg todo
+//' @param stepSize todo
+//' @param mean todo
+//' @param precision todo
+//' @return a zigzag-nuts engine object.
 //'
 //' @export
 // [[Rcpp::export(createNutsEngine)]]
 Rcpp::List createNutsEngine(int dimension,
-                            std::vector<double> &mask,
                             std::vector<double> &lowerBounds,
                             std::vector<double> &upperBounds,
                             long flags, long info, long seed,
@@ -162,7 +146,7 @@ Rcpp::List createNutsEngine(int dimension,
                             double stepSize,
                             NumericVector &mean,
                             NumericVector &precision) {
-
+    std::vector<double> mask(dimension, 1); 
     auto zigZag = new ZigZagWrapper(
             zz::dispatch(dimension, mask.data(), lowerBounds.data(), upperBounds.data(), flags, info, seed));
     XPtrZigZagWrapper engineZZ(zigZag);
@@ -184,7 +168,7 @@ Rcpp::List createNutsEngine(int dimension,
 //' Set mean for MTN
 //'
 //' @param sexp pointer to zigzag object
-//' @param mean a numerica vector containing the MTN mean
+//' @param mean a numeric vector containing the MTN mean
 //' @export
 // [[Rcpp::export(setMean)]]
 void setMean(SEXP sexp, NumericVector &mean) {
@@ -198,6 +182,10 @@ void setMean(SEXP sexp, NumericVector &mean) {
     }
 }
 
+//' Set the precision matrix for the target MTN
+//'
+//' @param sexp pointer to zigzag object
+//' @param precision the MTN precision matrix
 //' @export
 // [[Rcpp::export(setPrecision)]]
 void setPrecision(SEXP sexp, NumericVector &precision) {

@@ -9,7 +9,7 @@ setMean(sexp, mean)
 \arguments{
 \item{sexp}{pointer to zigzag object}
 
-\item{mean}{a numerica vector containing the MTN mean}
+\item{mean}{a numeric vector containing the MTN mean}
 }
 \description{
 Set mean for MTN

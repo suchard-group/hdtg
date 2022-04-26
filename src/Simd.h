@@ -43,9 +43,10 @@ namespace zz {
                 return 2;
             } else if (type == BounceType::GRADIENT) {
                 return 3;
-            } else {
-                exit(-1);
             }
+//            else {
+//                exit(-1);
+//            }
         }
 
         int type;

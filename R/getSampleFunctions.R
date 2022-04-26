@@ -2,13 +2,12 @@
 #'
 #' @param position a d-dimensional vector of the initial position
 #' @param momentum a d-dimensional vector of the initial momentum
-#' @param nutsFlg 
-#' @param engine 
+#' @param nutsFlg todo
+#' @param engine todo
 #' @param t time length to simulate the Markov process
 #'
-#' @return
+#' @return one MCMC sample from the target MTN
 #' @export
-#' @examples
 getSample <- function(position,
                        momentum,
                        t,
@@ -37,5 +36,5 @@ getSample <- function(position,
 }
 
 drawMomentum <- function(dim){
-  return((2 * (runif(dim) > .5) - 1) * rexp(dim, rate = 1))
+  return((2 * (stats::runif(dim) > .5) - 1) * stats::rexp(dim, rate = 1))
 }

@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "dr_evomodel_operators_NativeZigZag.h"
-#include "ZigZag.hpp"
+#include "ZigZag.h"
 
 std::vector<std::unique_ptr<zz::AbstractZigZag>> implementation;
 
