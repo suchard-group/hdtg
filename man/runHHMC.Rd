@@ -6,47 +6,47 @@
 \usage{
 runHHMC(
   n,
-  initial_position,
-  constraint_direc,
-  constraint_bound,
-  cholesky_factor,
-  unconstrained_mean,
-  prec_parametrized = TRUE,
-  total_time = pi/2,
+  initialPosition,
+  constraintDirec,
+  constraintBound,
+  choleskyFactor,
+  unconstrainedMean,
+  precParametrized = TRUE,
+  totalTime = pi/2,
   seed = 1,
-  diagnostic_mode = FALSE
+  diagnosticMode = FALSE
 )
 }
 \arguments{
 \item{n}{number of samples}
 
-\item{initial_position}{starting value for parameters}
+\item{initialPosition}{starting value for parameters}
 
-\item{constraint_direc}{F matrix (k-by-d matrix where k is the number of
+\item{constraintDirec}{F matrix (k-by-d matrix where k is the number of
 linear constraints)}
 
-\item{constraint_bound}{g vector (k dimensional)}
+\item{constraintBound}{g vector (k dimensional)}
 
-\item{cholesky_factor}{upper triangular matrix R from cholesky decomposition of
+\item{choleskyFactor}{upper triangular matrix R from cholesky decomposition of
 precision or covariance matrix into R^TR}
 
-\item{unconstrained_mean}{mean of unconstrained Gaussian}
+\item{unconstrainedMean}{mean of unconstrained Gaussian}
 
-\item{prec_parametrized}{boolean for whether parametrization is by precision (TRUE)
+\item{precParametrized}{boolean for whether parametrization is by precision (TRUE)
 or covariance matrix (FALSE)}
 
-\item{total_time}{amount of time the particle bounces for each sample}
+\item{totalTime}{amount of time the particle bounces for each sample}
 
 \item{seed}{random seed}
 
-\item{diagnostic_mode}{boolean for whether to return the bounce distances for
+\item{diagnosticMode}{boolean for whether to return the bounce distances for
 each sample}
 }
 \value{
 List of
 "samples": d x n matrix of samples
-"bounces_distances": list of bounces for each sample, only present if
-diagnostic_mode is TRUE
+"bounceDistances": list of bounces for each sample, only present if
+diagnosticMode is TRUE
 }
 \description{
 Sample from a truncated Gaussian distribution with constraints Fx+g >= 0.
@@ -58,16 +58,16 @@ A = matrix(runif(d^2)*2-1, ncol=d)
 Sigma = t(A) \%*\% A
 R = cholesky(Sigma)
 mu = rep(0,d)
-constraint_direc = diag(d)
-constraint_bound = rep(0,d)
+constraintDirec = diag(d)
+constraintBound = rep(0,d)
 initial = rep(1, d)
 results = runHHMC(
 100,
 initial,
-constraint_direc,
-constraint_bound,
+constraintDirec,
+constraintBound,
 R,
 mu,
-prec_parametrized = FALSE
+precParametrized = FALSE
 )
 }

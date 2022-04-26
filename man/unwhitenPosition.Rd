@@ -4,22 +4,17 @@
 \alias{unwhitenPosition}
 \title{Convert a position from standard normal frame back to original frame.}
 \usage{
-unwhitenPosition(
-  position,
-  cholesky_factor,
-  unconstrained_mean,
-  prec_parametrized
-)
+unwhitenPosition(position, choleskyFactor, unconstrainedMean, precParametrized)
 }
 \arguments{
 \item{position}{starting position}
 
-\item{cholesky_factor}{upper triangular matrix R from cholesky decomposition
+\item{choleskyFactor}{upper triangular matrix R from cholesky decomposition
 of precision or covariance matrix into R^TR}
 
-\item{unconstrained_mean}{mean of unconstrained Gaussian}
+\item{unconstrainedMean}{mean of unconstrained Gaussian}
 
-\item{prec_parametrized}{boolean for whether parametrization is by
+\item{precParametrized}{boolean for whether parametrization is by
 precision (true)
 or covariance matrix (false)}
 }

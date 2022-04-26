@@ -6,27 +6,27 @@
 \usage{
 whitenPosition(
   position,
-  constraint_direc,
-  constraint_bound,
-  cholesky_factor,
-  unconstrained_mean,
-  prec_parametrized
+  constraintDirec,
+  constraintBound,
+  choleskyFactor,
+  unconstrainedMean,
+  precParametrized
 )
 }
 \arguments{
 \item{position}{starting position}
 
-\item{constraint_direc}{F matrix (k-by-d matrix where k is the number of
+\item{constraintDirec}{F matrix (k-by-d matrix where k is the number of
 linear constraints)}
 
-\item{constraint_bound}{g vector (k dimensional)}
+\item{constraintBound}{g vector (k dimensional)}
 
-\item{cholesky_factor}{upper triangular matrix R from cholesky decomposition
+\item{choleskyFactor}{upper triangular matrix R from cholesky decomposition
 of precision or covariance matrix into R^TR}
 
-\item{unconstrained_mean}{mean of unconstrained Gaussian}
+\item{unconstrainedMean}{mean of unconstrained Gaussian}
 
-\item{prec_parametrized}{boolean for whether parametrization is by
+\item{precParametrized}{boolean for whether parametrization is by
 precision (true)
 or covariance matrix (false)}
 

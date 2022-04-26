@@ -26,10 +26,10 @@ NULL
 #' equals the angle of reflection.
 #'
 #' @param momentum starting momentum
-#' @param constraint_direc F matrix (k-by-d matrix where k is the number of
+#' @param constraintDirec F matrix (k-by-d matrix where k is the number of
 #' linear constraints)
-#' @param constraint_row_normsq vector of squared row norms of constraint_direc
-#' @param bounce_idx integer index of which constraint is being bounced off of
+#' @param constraintRowNormSq vector of squared row norms of constraintDirec
+#' @param bounceIdx integer index of which constraint is being bounced off of
 #' @param time amount of time the system is run for
 #' @return momentum after bouncing
 NULL
@@ -38,9 +38,9 @@ NULL
 #'
 #' @param position starting position
 #' @param momentum starting momentum
-#' @param constraint_direc F matrix (k-by-d matrix where k is the number of
+#' @param constraintDirec F matrix (k-by-d matrix where k is the number of
 #' linear constraints)
-#' @param constraint_bound g vector (k dimensional)
+#' @param constraintBound g vector (k dimensional)
 #' @return pair of new (time until bounce, constraint index corresponding to
 #' bounce)
 NULL
@@ -59,67 +59,67 @@ cholesky <- function(A) {
 #' Transforms constraints of the form Fx+g >= 0 for a target normal
 #' distribution into the corresponding constraints for a standard normal.
 #'
-#' @param constraint_direc F matrix (k-by-d matrix where k is the number of
+#' @param constraintDirec F matrix (k-by-d matrix where k is the number of
 #' linear constraints)
-#' @param constraint_bound g vector (k dimensional)
-#' @param cholesky_factor upper triangular matrix R from cholesky decomposition
+#' @param constraintBound g vector (k dimensional)
+#' @param choleskyFactor upper triangular matrix R from cholesky decomposition
 #'  of precision or covariance matrix into R^TR
-#' @param unconstrained_mean mean of unconstrained Gaussian
-#' @param prec_parametrized boolean for whether parametrization is by precision
+#' @param unconstrainedMean mean of unconstrained Gaussian
+#' @param precParametrized boolean for whether parametrization is by precision
 #'  (true) or covariance matrix (false)
 #' @return List of new constraint directions, the squared row norms of those
 #' constraints (for computational efficiency later), and new bounds
 #' @export
-applyWhitenTransform <- function(constraint_direc, constraint_bound, cholesky_factor, unconstrained_mean, prec_parametrized) {
-    .Call(`_largeMTN_applyWhitenTransform`, constraint_direc, constraint_bound, cholesky_factor, unconstrained_mean, prec_parametrized)
+applyWhitenTransform <- function(constraintDirec, constraintBound, choleskyFactor, unconstrainedMean, precParametrized) {
+    .Call(`_largeMTN_applyWhitenTransform`, constraintDirec, constraintBound, choleskyFactor, unconstrainedMean, precParametrized)
 }
 
 #' Whiten a given position into the standard normal frame.
 #'
 #' @param position starting position
 #' @param momentum starting momentum
-#' @param constraint_direc F matrix (k-by-d matrix where k is the number of
+#' @param constraintDirec F matrix (k-by-d matrix where k is the number of
 #' linear constraints)
-#' @param constraint_bound g vector (k dimensional)
-#' @param cholesky_factor upper triangular matrix R from cholesky decomposition
+#' @param constraintBound g vector (k dimensional)
+#' @param choleskyFactor upper triangular matrix R from cholesky decomposition
 #' of precision or covariance matrix into R^TR
-#' @param unconstrained_mean mean of unconstrained Gaussian
-#' @param prec_parametrized boolean for whether parametrization is by
+#' @param unconstrainedMean mean of unconstrained Gaussian
+#' @param precParametrized boolean for whether parametrization is by
 #' precision (true)
 #' or covariance matrix (false)
 #' @return vector of position in standard normal frame
-whitenPosition <- function(position, constraint_direc, constraint_bound, cholesky_factor, unconstrained_mean, prec_parametrized) {
-    .Call(`_largeMTN_whitenPosition`, position, constraint_direc, constraint_bound, cholesky_factor, unconstrained_mean, prec_parametrized)
+whitenPosition <- function(position, constraintDirec, constraintBound, choleskyFactor, unconstrainedMean, precParametrized) {
+    .Call(`_largeMTN_whitenPosition`, position, constraintDirec, constraintBound, choleskyFactor, unconstrainedMean, precParametrized)
 }
 
 #' Convert a position from standard normal frame back to original frame.
 #'
 #' @param position starting position
-#' @param cholesky_factor upper triangular matrix R from cholesky decomposition
+#' @param choleskyFactor upper triangular matrix R from cholesky decomposition
 #' of precision or covariance matrix into R^TR
-#' @param unconstrained_mean mean of unconstrained Gaussian
-#' @param prec_parametrized boolean for whether parametrization is by
+#' @param unconstrainedMean mean of unconstrained Gaussian
+#' @param precParametrized boolean for whether parametrization is by
 #' precision (true)
 #' or covariance matrix (false)
 #' @return vector of position in original frame
-unwhitenPosition <- function(position, cholesky_factor, unconstrained_mean, prec_parametrized) {
-    .Call(`_largeMTN_unwhitenPosition`, position, cholesky_factor, unconstrained_mean, prec_parametrized)
+unwhitenPosition <- function(position, choleskyFactor, unconstrainedMean, precParametrized) {
+    .Call(`_largeMTN_unwhitenPosition`, position, choleskyFactor, unconstrainedMean, precParametrized)
 }
 
 #' Simulate bouncing particle in whitened frame.
 #'
-#' @param initial_position starting position
-#' @param initial_momentum starting momentum
-#' @param constraint_direc F matrix (k-by-d matrix where k is the number of
+#' @param initialPosition starting position
+#' @param initialMomentum starting momentum
+#' @param constraintDirec F matrix (k-by-d matrix where k is the number of
 #' linear constraints)
-#' @param constraint_row_normsq vector of squared row norms of constraint_direc
-#' @param constraint_bound g vector (k dimensional)
-#' @param total_time total time the particle will bounce for
-#' @param param diagnostic_mode boolean for whether to return the bounce
+#' @param constraintRowNormSq vector of squared row norms of constraintDirec
+#' @param constraintBound g vector (k dimensional)
+#' @param totalTime total time the particle will bounce for
+#' @param param diagnosticMode boolean for whether to return the bounce
 #' distances for each sample
 #' @return vector of position in standard normal frame
-simulateWhitenedDynamics <- function(initial_position, initial_momentum, constraint_direc, constraint_row_norm_sq, constraint_bound, total_time, diagnostic_mode) {
-    .Call(`_largeMTN_simulateWhitenedDynamics`, initial_position, initial_momentum, constraint_direc, constraint_row_norm_sq, constraint_bound, total_time, diagnostic_mode)
+simulateWhitenedDynamics <- function(initialPosition, initialMomentum, constraintDirec, constraintRowNormSq, constraintBound, totalTime, diagnosticMode) {
+    .Call(`_largeMTN_simulateWhitenedDynamics`, initialPosition, initialMomentum, constraintDirec, constraintRowNormSq, constraintBound, totalTime, diagnosticMode)
 }
 
 #' Create ZigZag engine object

@@ -5,30 +5,30 @@
 \title{Simulate bouncing particle in whitened frame.}
 \usage{
 simulateWhitenedDynamics(
-  initial_position,
-  initial_momentum,
-  constraint_direc,
-  constraint_row_norm_sq,
-  constraint_bound,
-  total_time,
-  diagnostic_mode
+  initialPosition,
+  initialMomentum,
+  constraintDirec,
+  constraintRowNormSq,
+  constraintBound,
+  totalTime,
+  diagnosticMode
 )
 }
 \arguments{
-\item{initial_position}{starting position}
+\item{initialPosition}{starting position}
 
-\item{initial_momentum}{starting momentum}
+\item{initialMomentum}{starting momentum}
 
-\item{constraint_direc}{F matrix (k-by-d matrix where k is the number of
+\item{constraintDirec}{F matrix (k-by-d matrix where k is the number of
 linear constraints)}
 
-\item{constraint_bound}{g vector (k dimensional)}
+\item{constraintRowNormSq}{vector of squared row norms of constraintDirec}
 
-\item{total_time}{total time the particle will bounce for}
+\item{constraintBound}{g vector (k dimensional)}
 
-\item{constraint_row_normsq}{vector of squared row norms of constraint_direc}
+\item{totalTime}{total time the particle will bounce for}
 
-\item{param}{diagnostic_mode boolean for whether to return the bounce
+\item{param}{diagnosticMode boolean for whether to return the bounce
 distances for each sample}
 }
 \value{

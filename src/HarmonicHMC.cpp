@@ -59,8 +59,7 @@ Rcpp::List applyWhitenTransform(
   return Rcpp::List::create(
       Rcpp::_["direc"] = direc,
       Rcpp::_["direcRowNormSq"] = direc.square().rowwise().sum(),
-      Rcpp::_["bound"] =
-          constraintBound + constraintDirec * unconstrainedMean);
+      Rcpp::_["bound"] = constraintBound + constraintDirec * unconstrainedMean);
 }
 
 //' Compute Hamiltonian dynamics after specified time.
@@ -219,8 +218,8 @@ Rcpp::List simulateWhitenedDynamics(
   int numBounces = 0;
   double travelledTime = 0;
   while (true) {
-    std::tie(bounceTime, bounceConstraint) = computeNextBounce(
-        position, momentum, constraintDirec, constraintBound);
+    std::tie(bounceTime, bounceConstraint) =
+        computeNextBounce(position, momentum, constraintDirec, constraintBound);
     if (bounceTime < totalTime - travelledTime) {
       if (diagnosticMode) {
         std::tie(newPosition, momentum) =
@@ -236,8 +235,8 @@ Rcpp::List simulateWhitenedDynamics(
         std::tie(position, momentum) =
             advanceWhitenedDynamics(position, momentum, bounceTime);
       }
-      momentum = reflectMomentum(momentum, constraintDirec,
-                                 constraintRowNormSq, bounceConstraint);
+      momentum = reflectMomentum(momentum, constraintDirec, constraintRowNormSq,
+                                 bounceConstraint);
       travelledTime += bounceTime;
     } else {
       bounceTime = totalTime - travelledTime;
