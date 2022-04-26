@@ -4,25 +4,24 @@
 \alias{createEngine}
 \title{Create ZigZag engine object}
 \usage{
-createEngine(dimension, mask, lowerBounds, upperBounds, flags, info, seed)
+createEngine(dimension, lowerBounds, upperBounds, flags, info, seed)
 }
 \arguments{
-\item{locationCount}{Number of locations and size of distance matrix.}
+\item{dimension}{the dimension of MTN (d)}
 
-\item{tbb}{Number of CPU cores to be used.}
+\item{lowerBounds}{the d-dimensional lower bound}
 
-\item{simd}{For CPU implementation: no SIMD (\code{0}), SSE (\code{1}) or AVX (\code{2}).}
+\item{upperBounds}{the d-dimensional upper bound}
 
-\item{truncation}{Likelihood includes truncation term? Defaults to \code{TRUE}.}
+\item{flags}{todo}
 
-\item{gpu}{Which GPU to use? If only 1 available, use \code{gpu=1}. Defaults to \code{0}, no GPU.}
+\item{info}{todo}
 
-\item{single}{Set \code{single=1} if your GPU does not accommodate doubles.}
+\item{seed}{random seed}
 }
 \value{
-zigZag engine object.
+a zigzag engine object.
 }
 \description{
-Helper function creates zigZag engine object with given latent dimension, location count and various
-implementation details. Called by \code{MassivezigZag::engineInitial()}.
+Create ZigZag engine object
 }
