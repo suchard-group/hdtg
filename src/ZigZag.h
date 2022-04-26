@@ -840,6 +840,7 @@ namespace zz {
             }
         }
 
+#ifdef USE_AVX
         static inline void reduce_min(DoubleAvxMinTravelInfo &result, // TODO Remove code-dup with above
                                       const D4 time, const int index, const int type) {
             const auto lessThan = time < result.time;
@@ -851,6 +852,7 @@ namespace zz {
                 result.type = select(mask, D4Index(type), result.type);
             }
         }
+#endif        
 
         static inline MinTravelInfo horizontal_min(DoubleSseMinTravelInfo vector) {
             return (vector.time[0] < vector.time[1]) ?
@@ -858,22 +860,24 @@ namespace zz {
                    MinTravelInfo(static_cast<int>(vector.type[1]), static_cast<int>(vector.index[1]), vector.time[1]);
         }
 
+#ifdef USE_AVX
         static inline MinTravelInfo horizontal_min(DoubleAvxMinTravelInfo vector) {
-
+        
             auto const firstHalf = (vector.time[0] < vector.time[1]) ?
                                    MinTravelInfo(static_cast<int>(vector.type[0]), static_cast<int>(vector.index[0]),
                                                  vector.time[0]) :
                                    MinTravelInfo(static_cast<int>(vector.type[1]), static_cast<int>(vector.index[1]),
                                                  vector.time[1]);
-
+        
             auto const secondHalf = (vector.time[2] < vector.time[3]) ?
                                     MinTravelInfo(static_cast<int>(vector.type[2]), static_cast<int>(vector.index[2]),
                                                   vector.time[2]) :
                                     MinTravelInfo(static_cast<int>(vector.type[3]), static_cast<int>(vector.index[3]),
                                                   vector.time[3]);
-
+        
             return (firstHalf.time < secondHalf.time) ? firstHalf : secondHalf;
         }
+#endif        
 
         template<typename T>
         static inline T findBoundaryTime(const T position,
@@ -977,8 +981,13 @@ namespace zz {
 
         if (static_cast<unsigned long>(flags) & zz::Flags::AVX) {
 //            std::cerr << "Factory: AVX" << std::endl;
+#ifdef USE_AVX
             return zz::make_unique<zz::ZigZag<zz::DoubleAvxTypeInfo>>(
                     dimension, rawMask, rawLowerBounds, rawUpperBounds, flags, info, seed);
+#else
+            return zz::make_unique<zz::ZigZag<zz::DoubleSseTypeInfo>>(
+              dimension, rawMask, rawLowerBounds, rawUpperBounds, flags, info, seed);
+#endif            
         } else if (static_cast<unsigned long>(flags) & zz::Flags::SSE) {
 //            std::cerr << "Factory: SSE" << std::endl;
             return zz::make_unique<zz::ZigZag<zz::DoubleSseTypeInfo>>(
