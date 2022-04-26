@@ -13,7 +13,7 @@
 #'
 #' @export
 createEngine <- function(dimension, lowerBounds, upperBounds, flags, info, seed) {
-    .Call(`_hzz_createEngine`, dimension, lowerBounds, upperBounds, flags, info, seed)
+    .Call(`_largeMTN_createEngine`, dimension, lowerBounds, upperBounds, flags, info, seed)
 }
 
 #' Create ZigZag nuts engine object
@@ -35,7 +35,7 @@ createEngine <- function(dimension, lowerBounds, upperBounds, flags, info, seed)
 #'
 #' @export
 createNutsEngine <- function(dimension, lowerBounds, upperBounds, flags, info, seed, randomFlg, stepSize, mean, precision) {
-    .Call(`_hzz_createNutsEngine`, dimension, lowerBounds, upperBounds, flags, info, seed, randomFlg, stepSize, mean, precision)
+    .Call(`_largeMTN_createNutsEngine`, dimension, lowerBounds, upperBounds, flags, info, seed, randomFlg, stepSize, mean, precision)
 }
 
 #' Set mean for MTN
@@ -44,7 +44,7 @@ createNutsEngine <- function(dimension, lowerBounds, upperBounds, flags, info, s
 #' @param mean a numeric vector containing the MTN mean
 #' @export
 setMean <- function(sexp, mean) {
-    invisible(.Call(`_hzz_setMean`, sexp, mean))
+    invisible(.Call(`_largeMTN_setMean`, sexp, mean))
 }
 
 #' Set the precision matrix for the target MTN
@@ -53,22 +53,22 @@ setMean <- function(sexp, mean) {
 #' @param precision the MTN precision matrix
 #' @export
 setPrecision <- function(sexp, precision) {
-    invisible(.Call(`_hzz_setPrecision`, sexp, precision))
+    invisible(.Call(`_largeMTN_setPrecision`, sexp, precision))
 }
 
 .doSomething <- function(sexp, data) {
-    invisible(.Call(`_hzz_doSomething`, sexp, data))
+    invisible(.Call(`_largeMTN_doSomething`, sexp, data))
 }
 
 getNextEvent <- function(sexp, position, velocity, action, logpdfGradient, momentum) {
-    .Call(`_hzz_getNextEvent`, sexp, position, velocity, action, logpdfGradient, momentum)
+    .Call(`_largeMTN_getNextEvent`, sexp, position, velocity, action, logpdfGradient, momentum)
 }
 
 .oneIteration <- function(sexp, position, momentum, time) {
-    .Call(`_hzz_oneIteration`, sexp, position, momentum, time)
+    .Call(`_largeMTN_oneIteration`, sexp, position, momentum, time)
 }
 
 .oneNutsIteration <- function(sexp, position, momentum) {
-    .Call(`_hzz_oneNutsIteration`, sexp, position, momentum)
+    .Call(`_largeMTN_oneNutsIteration`, sexp, position, momentum)
 }
 
