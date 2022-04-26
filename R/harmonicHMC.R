@@ -3,23 +3,23 @@
 #' Sample from a truncated Gaussian distribution with constraints Fx+g >= 0.
 #'
 #' @param n number of samples
-#' @param initial_position starting value for parameters
-#' @param constraint_direc F matrix (k-by-d matrix where k is the number of
+#' @param initialPosition starting value for parameters
+#' @param constraintDirec F matrix (k-by-d matrix where k is the number of
 #' linear constraints)
-#' @param constraint_bound g vector (k dimensional)
-#' @param cholesky_factor upper triangular matrix R from cholesky decomposition of
+#' @param constraintBound g vector (k dimensional)
+#' @param choleskyFactor upper triangular matrix R from cholesky decomposition of
 #' precision or covariance matrix into R^TR
-#' @param unconstrained_mean mean of unconstrained Gaussian
-#' @param prec_parametrized boolean for whether parametrization is by precision (TRUE)
+#' @param unconstrainedMean mean of unconstrained Gaussian
+#' @param precParametrized boolean for whether parametrization is by precision (TRUE)
 #' or covariance matrix (FALSE)
-#' @param total_time amount of time the particle bounces for each sample
+#' @param totalTime amount of time the particle bounces for each sample
 #' @param seed random seed
-#' @param diagnostic_mode boolean for whether to return the bounce distances for
+#' @param diagnosticMode boolean for whether to return the bounce distances for
 #' each sample
 #' @return List of
 #' "samples": d x n matrix of samples
-#' "bounces_distances": list of bounces for each sample, only present if 
-#' diagnostic_mode is TRUE
+#' "bounceDistances": list of bounces for each sample, only present if
+#' diagnosticMode is TRUE
 #' @export
 #'
 #' @examples
@@ -29,70 +29,70 @@
 #' Sigma = t(A) %*% A
 #' R = cholesky(Sigma)
 #' mu = rep(0,d)
-#' constraint_direc = diag(d)
-#' constraint_bound = rep(0,d)
+#' constraintDirec = diag(d)
+#' constraintBound = rep(0,d)
 #' initial = rep(1, d)
 #' results = runHHMC(
 #' 100,
 #' initial,
-#' constraint_direc,
-#' constraint_bound,
+#' constraintDirec,
+#' constraintBound,
 #' R,
 #' mu,
-#' prec_parametrized = FALSE
+#' precParametrized = FALSE
 #' )
 
 runHHMC = function(n,
-                   initial_position,
-                   constraint_direc,
-                   constraint_bound,
-                   cholesky_factor,
-                   unconstrained_mean,
-                   prec_parametrized = TRUE,
-                   total_time = pi / 2,
+                   initialPosition,
+                   constraintDirec,
+                   constraintBound,
+                   choleskyFactor,
+                   unconstrainedMean,
+                   precParametrized = TRUE,
+                   totalTime = pi / 2,
                    seed = 1,
-                   diagnostic_mode = FALSE) {
+                   diagnosticMode = FALSE) {
   set.seed(seed)
-  samples = matrix(nrow = ncol(constraint_direc), ncol = n)
-  bounce_distances = vector(mode = "list",
-                            length = ifelse(diagnostic_mode, n, 0))
-  whitened_constraints = applyWhitenTransform(
-    constraint_direc,
-    constraint_bound,
-    cholesky_factor,
-    unconstrained_mean,
-    prec_parametrized
+  samples = matrix(nrow = ncol(constraintDirec), ncol = n)
+  bounceDistances = vector(mode = "list",
+                           length = ifelse(diagnosticMode, n, 0))
+  whitenedConstraints = applyWhitenTransform(
+    constraintDirec,
+    constraintBound,
+    choleskyFactor,
+    unconstrainedMean,
+    precParametrized
   )
   position = whitenPosition(
-    initial_position,
-    constraint_direc,
-    constraint_bound,
-    cholesky_factor,
-    unconstrained_mean,
-    prec_parametrized
+    initialPosition,
+    constraintDirec,
+    constraintBound,
+    choleskyFactor,
+    unconstrainedMean,
+    precParametrized
   )
   for (i in 1:n) {
-    momentum = rnorm(ncol(constraint_direc))
+    momentum = rnorm(ncol(constraintDirec))
     results =  simulateWhitenedDynamics(
       position,
       momentum,
-      whitened_constraints$direc,
-      whitened_constraints$direc_row_norm_sq,
-      whitened_constraints$bound,
-      total_time,
-      diagnostic_mode
+      whitenedConstraints$direc,
+      whitenedConstraints$direcRowNormSq,
+      whitenedConstraints$bound,
+      totalTime,
+      diagnosticMode
     )
     position = results$position
     samples[, i] = unwhitenPosition(position,
-                                    cholesky_factor,
-                                    unconstrained_mean,
-                                    prec_parametrized)
-    if (diagnostic_mode) {
-      bounce_distances[[i]] = results$bounce_distances
+                                    choleskyFactor,
+                                    unconstrainedMean,
+                                    precParametrized)
+    if (diagnosticMode) {
+      bounceDistances[[i]] = results$bounceDistances
     }
   }
-  if (diagnostic_mode) {
-    return(list("samples" = samples, "bounce_distances" = bounce_distances))
+  if (diagnosticMode) {
+    return(list("samples" = samples, "bounceDistances" = bounceDistances))
   } else {
     return(list("samples" = samples))
   }
