@@ -1,11 +1,16 @@
-Package: hzz
-Title: Generate samples from a constrained Gaussian distribution
-Version: 0.0.0.9000
+Package: largeMTN
+Title: Generate samples from multivariate truncated normal distributions
+Version: 0.1.0
 Authors@R: 
   c(person("Zhenyu", "Zhang", email = "zhangzhenyusa@gmail.com", role = c("aut", "cre")),
     person("Akihiko", "Nishimura", email = "akihiko4@gmail.com", role = "aut"),
-    person("Marc A.", "Suchard", email = "msuchard@ucla.edu", role = "aut"))
-Description: A package to sample from high-dimensional constrained Gaussian distribution with Hamiltonian zigzag sampler.
+    person("Andrew", "Chin", email = "achin23@jhu.edu", role = "aut"),
+    person("Marc A.", "Suchard", email = "msuchard@ucla.edu", role = "aut"),
+    person("John W.", "Ratcliff et al.", role = c("cph", "ctb"),
+      comment = "authors and copyright holders of see2neon.h under an MIT license"))
+Description: High-performance sampling from high-dimensional constrained Gaussian 
+  distributions.  Techniques include harmonic Hamiltonian Monte Carlo, zig zag Hamiltonian
+  Monte Carlo and the minimax tilting accept-reject sampler.  
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -14,7 +19,9 @@ Imports:
     Rcpp,
     RcppParallel,
     RcppXsimd,
-    mgcv
+    mgcv,
+    stats,
+    assertthat
 LinkingTo: 
     Rcpp,
     RcppEigen,

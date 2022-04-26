@@ -5,9 +5,12 @@
 #ifndef ZIG_ZAG_SIMD_HPP
 #define ZIG_ZAG_SIMD_HPP
 
-
 #include "xsimd/xsimd.hpp"
 #include "ZigZag.h"
+
+#if defined(__ARM64_ARCH_8__)    
+#include "sse2neon.h"
+#endif
 
 namespace zz {
 
@@ -44,8 +47,8 @@ namespace zz {
             } else if (type == BounceType::GRADIENT) {
                 return 3;
             } else {
-                exit(-1);
-            }
+               return -1;
+           }
         }
 
         int type;
@@ -91,9 +94,11 @@ namespace zz {
     using D2Bool = xsimd::batch_bool<double, 2>;
     using D2Index = xsimd::batch<int64_t, 2>;
 
+#ifdef USE_AVX
     using D4 = xsimd::batch<double, 4>;
     using D4Bool = xsimd::batch_bool<double, 4>;
     using D4Index = xsimd::batch<int64_t, 4>;
+#endif
 
 //#define MERGE
 #ifdef MERGE
@@ -133,18 +138,20 @@ namespace zz {
         D2 time;
     };
 
+#ifdef USE_AVX
     class DoubleAvxMinTravelInfo {
     public:
         DoubleAvxMinTravelInfo() : type(BounceType::NONE),
                                    index(-1),
                                    time(std::numeric_limits<double>::infinity()) { }
-
+    
         ~DoubleAvxMinTravelInfo() = default;
-
+    
         D4Index type;
         D4Index index;
         D4 time;
     };
+#endif    
 
 #endif
 
@@ -166,6 +173,7 @@ namespace zz {
         static const int SimdSize = 2;
     };
 
+#ifdef USE_AVX
     struct DoubleAvxTypeInfo {
         using BaseType = double;
         using SimdType = xsimd::batch<double, 4>;
@@ -174,6 +182,7 @@ namespace zz {
         using IndexType = xsimd::batch<int64_t, 4>;
         static const int SimdSize = 4;
     };
+#endif    
 
 
 //    template <typename T, size_t N>
@@ -210,10 +219,10 @@ namespace zz {
                 std::numeric_limits<D2::value_type>::infinity()};
     }
 
+#ifdef USE_AVX
     template<>
     inline D4 SimdHelper<D4, D4::value_type>::get(const double *iterator) {
         return D4(iterator, xsimd::unaligned_mode());
-//        return D2(iterator, xsimd::aligned_mode()); // TODO Check nearer end of development
     }
 
     template<>
@@ -228,7 +237,8 @@ namespace zz {
                 std::numeric_limits<D4::value_type>::infinity(),
                 std::numeric_limits<D4::value_type>::infinity()};
     }
-
+#endif
+    
     template<>
     inline double SimdHelper<double, double>::get(const double *iterator) {
         return *iterator;
@@ -267,6 +277,7 @@ namespace zz {
         return xsimd::select(test, lhs, rhs);
     }
 
+#ifdef USE_AVX
     template<>
     inline D4 select(const D4Bool test, const D4 lhs, const D4 rhs) {
         return xsimd::select(test, lhs, rhs);
@@ -276,6 +287,7 @@ namespace zz {
     inline D4Index select(const B test, const D4Index lhs, const D4Index rhs) {
         return xsimd::select(test, lhs, rhs);
     }
+#endif    
 
     template <typename T>
     inline T infinity() noexcept;
@@ -290,10 +302,12 @@ namespace zz {
         return D2(std::numeric_limits<double>::infinity());
     }
 
+#ifdef USE_AVX
     template<>
     inline D4 infinity() noexcept {
         return D4(std::numeric_limits<double>::infinity());
     }
+#endif    
 
     template <typename T>
     inline T makeSimdIndex(int index) noexcept;
@@ -308,10 +322,12 @@ namespace zz {
         return {index, index + 1};
     }
 
+#ifdef USE_AVX
     template <>
     inline D4Index makeSimdIndex(int index) noexcept {
         return {index, index + 1, index + 2, index + 3};
     }
+#endif    
 }
 
 #endif //ZIG_ZAG_SIMD_HPP

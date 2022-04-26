@@ -5,8 +5,8 @@
 #ifndef NUTS_HPP
 #define NUTS_HPP
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCUnusedMacroInspection" // Turn off warning for TBB_PREVIEW_GLOBAL_CONTROL
+//#pragma clang diagnostic push
+//#pragma ide diagnostic ignored "OCUnusedMacroInspection" // Turn off warning for TBB_PREVIEW_GLOBAL_CONTROL
 
 #include <vector>
 #include <cmath>
@@ -48,15 +48,15 @@ namespace nuts {
                                                                              zzEngine(*zigzag),
                                                                              uniGenerator(UniformGenerator(seed,
                                                                                                            randomFlg)) {
-            std::cerr << "nuts constructed" << '\n' << std::endl;
+//            std::cerr << "nuts constructed" << '\n' << std::endl;
         }
 
         ~NoUTurn() = default;
 
-        template<typename T>
-        void printDblSpan(T &span) {
-            for (auto e: span) std::cout << e << ' ';
-        }
+//        template<typename T>
+//        void printDblSpan(T &span) {
+//            for (auto e: span) std::cout << e << ' ';
+//        }
 
 
         std::vector<double> takeOneStep(DblSpan initialPosition, DblSpan initialMomentum) {
@@ -70,7 +70,7 @@ namespace nuts {
 
             TreeState *newState = new TreeState(initialPosition, initialMomentum, gradient, 1, true,
                                                 0, 0, uniGenerator);
-            SharedPtrTreeState trajectoryTree = std::move(zz::make_unique<TreeState>(*newState));
+            SharedPtrTreeState trajectoryTree = zz::make_unique<TreeState>(*newState);
 
             int height = 0;
 
@@ -209,11 +209,11 @@ namespace nuts {
             bool randomFlg,
             double stepSize,
             std::shared_ptr<zz::ZigZag<zz::DoubleSseTypeInfo>> ptr) {
-        std::cerr << "Factory: SSE" << std::endl;
+//        std::cerr << "Factory: SSE" << std::endl;
         return zz::make_unique<nuts::NoUTurn>(logProbErrorTol, maxHeight, seed, randomFlg, stepSize, ptr);
     }
 }
 
-#pragma clang diagnostic pop
+//#pragma clang diagnostic pop
 
 #endif //ZIG_ZAG_ZIGZAG_HPP

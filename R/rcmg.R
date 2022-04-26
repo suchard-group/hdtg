@@ -5,10 +5,15 @@
 #' @param n number of samples
 #' @param mean a d-dimensional mean vector
 #' @param prec a d-by-d precision matrix of the Gaussian distribution
-#' @param constraits a d-dimensional vector where a positive (negative) number means >0 (<0) truncation.
+#' @param cov todo
+#' @param lowerBounds todo
+#' @param upperBounds todo
 #' @param x a d-dimensional vector of the initial value. It must satisfy all constraints. If not specified a random initial value will be used
-#' @param t time length to simulate the Markov process
-#' @param cppFlg
+#' @param forcedStep todo
+#' @param momentum todo
+#' @param nutsFlg todo
+#' @param rSeed todo
+#' @param randomFlg todo
 #'
 #' @return An n-by-d matrix where each row is a multivariate sample
 #' @export
@@ -75,7 +80,6 @@ rcmg <- function(n,
     cat("NUTS base step size is", t, "\n")
     engine <- createNutsEngine(
       dimension = ndim,
-      mask = rep(1, ndim),
       lowerBounds = lowerBounds,
       upperBounds = upperBounds,
       flags = 128,
@@ -99,7 +103,6 @@ rcmg <- function(n,
     cat("HZZ step size is", t, "\n")
     engine <- createEngine(
       dimension = ndim,
-      mask = rep(1, ndim),
       lowerBounds = lowerBounds,
       upperBounds = upperBounds,
       flags = 128,
@@ -124,12 +127,16 @@ rcmg <- function(n,
 }
 
 
-#' @param mean the mean vector for the MTN distribution
+
+#' A function to get an eligible initial value for a MTN
 #'
-#' @param lowerBounds the lower bound vector
-#' @param upperBounds the upper bound vector
+#' @param mean a d-dimensional mean vector 
+#' @param lowerBounds a d-dimensional lower bound 
+#' @param upperBounds a d-dimensional lower bound 
 #'
+#' @return an eligible d-dimensional initial value
 #' @export
+#'
 getInitialPosition <- function(mean, lowerBounds, upperBounds) {
   bL <- upperBounds - lowerBounds
   midPoint <- (upperBounds + lowerBounds) / 2

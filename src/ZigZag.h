@@ -5,8 +5,8 @@
 #ifndef ZIG_ZAG_ZIGZAG_HPP
 #define ZIG_ZAG_ZIGZAG_HPP
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCUnusedMacroInspection" // Turn off warning for TBB_PREVIEW_GLOBAL_CONTROL
+//#pragma clang diagnostic push
+//#pragma ide diagnostic ignored "OCUnusedMacroInspection" // Turn off warning for TBB_PREVIEW_GLOBAL_CONTROL
 
 #include <vector>
 #include <cmath>
@@ -71,14 +71,14 @@ namespace zz {
                             flags(flags),
                             nThreads(nThreads),
                             seed(seed){
-            std::cerr << "ZigZag constructed" << std::endl;
-            std::cout << '\n';
+//            std::cerr << "ZigZag constructed" << std::endl;
+//            std::cout << '\n';
             if (flags & zz::Flags::TBB) {
                 if (nThreads <= 0) {
                     nThreads = tbb::this_task_arena::max_concurrency();
                 }
 
-                std::cout << "Using " << nThreads << " threads" << std::endl;
+//                std::cout << "Using " << nThreads << " threads" << std::endl;
 
                 control = std::make_shared<tbb::global_control>(tbb::global_control::max_allowed_parallelism, nThreads);
             }
@@ -91,11 +91,11 @@ namespace zz {
 
         virtual ~ZigZag() {
 #ifdef TIMING
-            std::cerr << std::endl;
-            for (auto &d: duration) {
-                std::cerr << d.first << " " << std::scientific <<
-                          static_cast<double>(d.second) * 0.001 << std::endl;
-            }
+//            std::cerr << std::endl;
+//            for (auto &d: duration) {
+//                std::cerr << d.first << " " << std::scientific <<
+//                          static_cast<double>(d.second) * 0.001 << std::endl;
+//            }
 #endif
         };
 
@@ -165,7 +165,7 @@ namespace zz {
                        DblSpan gradient,
                        DblSpan momentum,
                        double time) {
-            if (!meanSetFlg || !precisionSetFlg) std::cerr << "mean or precision is not set!" << std::endl;
+//            if (!meanSetFlg || !precisionSetFlg) std::cerr << "mean or precision is not set!" << std::endl;
             Dynamics<double> dynamics(position, velocity, action, gradient, momentum, lowerBounds,
                                       upperBounds);
             return operateImpl(dynamics, time);
@@ -195,7 +195,7 @@ namespace zz {
                        DblSpan momentum,
                        double time) {
 
-            if (!meanSetFlg || !precisionSetFlg) std::cerr << "mean or precision is not set!" << std::endl;
+//            if (!meanSetFlg || !precisionSetFlg) std::cerr << "mean or precision is not set!" << std::endl;
 
             std::vector<double> v = getVelocity(momentum);
             DblSpan velocity = zz::DblSpan(v);
@@ -699,9 +699,10 @@ namespace zz {
                                           simd_for_each<Size>(begin, end, simd, scalar);
                                       });
                 }
-            } else {
-                exit(-1); // TODO Implement
             }
+//            else {
+//                exit(-1); // TODO Implement
+//            }
         }
 
         template<typename R>
@@ -726,9 +727,10 @@ namespace zz {
                                     [action, precCol, mk, twoV](size_t i) {
                                         action[i] = mk[i] * (action[i] + twoV * precCol[i]);
                                     });
-            } else {
-                exit(-1); // TODO Implement
             }
+//            else {
+//                exit(-1); // TODO Implement
+//            }
         }
 
         template<typename R>
@@ -774,10 +776,11 @@ namespace zz {
                 position[index] = R(lowerBounds[index]);
             } else if (eventType == BounceType::BOUNDARY_UPPER) {
                 position[index] = R(upperBounds[index]);
-            } else {
-                std::cerr << "trying to set boundary position at non-boundary event" << std::endl;
-                exit(-1);
             }
+//            else {
+//                std::cerr << "trying to set boundary position at non-boundary event" << std::endl;
+//                exit(-1);
+//            }
         }
 
         template<typename R>
@@ -837,6 +840,7 @@ namespace zz {
             }
         }
 
+#ifdef USE_AVX
         static inline void reduce_min(DoubleAvxMinTravelInfo &result, // TODO Remove code-dup with above
                                       const D4 time, const int index, const int type) {
             const auto lessThan = time < result.time;
@@ -848,6 +852,7 @@ namespace zz {
                 result.type = select(mask, D4Index(type), result.type);
             }
         }
+#endif        
 
         static inline MinTravelInfo horizontal_min(DoubleSseMinTravelInfo vector) {
             return (vector.time[0] < vector.time[1]) ?
@@ -855,22 +860,24 @@ namespace zz {
                    MinTravelInfo(static_cast<int>(vector.type[1]), static_cast<int>(vector.index[1]), vector.time[1]);
         }
 
+#ifdef USE_AVX
         static inline MinTravelInfo horizontal_min(DoubleAvxMinTravelInfo vector) {
-
+        
             auto const firstHalf = (vector.time[0] < vector.time[1]) ?
                                    MinTravelInfo(static_cast<int>(vector.type[0]), static_cast<int>(vector.index[0]),
                                                  vector.time[0]) :
                                    MinTravelInfo(static_cast<int>(vector.type[1]), static_cast<int>(vector.index[1]),
                                                  vector.time[1]);
-
+        
             auto const secondHalf = (vector.time[2] < vector.time[3]) ?
                                     MinTravelInfo(static_cast<int>(vector.type[2]), static_cast<int>(vector.index[2]),
                                                   vector.time[2]) :
                                     MinTravelInfo(static_cast<int>(vector.type[3]), static_cast<int>(vector.index[3]),
                                                   vector.time[3]);
-
+        
             return (firstHalf.time < secondHalf.time) ? firstHalf : secondHalf;
         }
+#endif        
 
         template<typename T>
         static inline T findBoundaryTime(const T position,
@@ -973,21 +980,24 @@ namespace zz {
             long seed) {
 
         if (static_cast<unsigned long>(flags) & zz::Flags::AVX) {
-            std::cerr << "Factory: AVX" << std::endl;
+//            std::cerr << "Factory: AVX" << std::endl;
+#ifdef USE_AVX
             return zz::make_unique<zz::ZigZag<zz::DoubleAvxTypeInfo>>(
                     dimension, rawMask, rawLowerBounds, rawUpperBounds, flags, info, seed);
+#else
+            return zz::make_unique<zz::ZigZag<zz::DoubleSseTypeInfo>>(
+              dimension, rawMask, rawLowerBounds, rawUpperBounds, flags, info, seed);
+#endif            
         } else if (static_cast<unsigned long>(flags) & zz::Flags::SSE) {
-            std::cerr << "Factory: SSE" << std::endl;
+//            std::cerr << "Factory: SSE" << std::endl;
             return zz::make_unique<zz::ZigZag<zz::DoubleSseTypeInfo>>(
                     dimension, rawMask, rawLowerBounds, rawUpperBounds, flags, info, seed);
         } else {
-            std::cerr << "Factory: No SIMD" << std::endl;
+//            std::cerr << "Factory: No SIMD" << std::endl;
             return zz::make_unique<zz::ZigZag<zz::DoubleNoSimdTypeInfo>>(
                     dimension, rawMask, rawLowerBounds, rawUpperBounds, flags, info, seed);
         }
     }
 }
-
-#pragma clang diagnostic pop
 
 #endif //ZIG_ZAG_ZIGZAG_HPP

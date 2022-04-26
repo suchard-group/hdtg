@@ -13,12 +13,12 @@ getSample(position, momentum, t, nutsFlg, engine)
 
 \item{t}{time length to simulate the Markov process}
 
-\item{nutsFlg}{}
+\item{nutsFlg}{todo}
 
-\item{engine}{}
+\item{engine}{todo}
 }
 \value{
-
+one MCMC sample from the target MTN
 }
 \description{
 Title

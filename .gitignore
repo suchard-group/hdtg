@@ -53,3 +53,7 @@ po/*~
 
 # autoconf giles
 autom4te.cache/
+config.log
+config.status
+src/Makevars
+
