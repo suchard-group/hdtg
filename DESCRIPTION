@@ -20,10 +20,11 @@ Imports:
     RcppParallel,
     RcppXsimd,
     mgcv,
-    stats,
-    assertthat
+    stats
 LinkingTo: 
     Rcpp,
     RcppEigen,
     RcppParallel,
     RcppXsimd
+Suggest:
+    assertthat
