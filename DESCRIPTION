@@ -3,14 +3,14 @@ Title: Generate samples from multivariate truncated normal distributions
 Version: 0.1.0
 Authors@R: 
   c(person("Zhenyu", "Zhang", email = "zhangzhenyusa@gmail.com", role = c("aut", "cre")),
-    person("Akihiko", "Nishimura", email = "akihiko4@gmail.com", role = "aut"),
     person("Andrew", "Chin", email = "achin23@jhu.edu", role = "aut"),
+    person("Akihiko", "Nishimura", email = "akihiko4@gmail.com", role = "aut"),
     person("Marc A.", "Suchard", email = "msuchard@ucla.edu", role = "aut"),
     person("John W.", "Ratcliff et al.", role = c("cph", "ctb"),
       comment = "authors and copyright holders of see2neon.h under an MIT license"))
 Description: High-performance sampling from high-dimensional constrained Gaussian 
-  distributions.  Techniques include harmonic Hamiltonian Monte Carlo, zig zag Hamiltonian
-  Monte Carlo and the minimax tilting accept-reject sampler.  
+  distributions.  Techniques include harmonic Hamiltonian Monte Carlo and zig zag Hamiltonian
+  Monte Carlo.  
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -26,5 +26,3 @@ LinkingTo:
     RcppEigen,
     RcppParallel,
     RcppXsimd
-Suggest:
-    assertthat
