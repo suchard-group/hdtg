@@ -8,6 +8,7 @@ Authors@R:
     person("Marc A.", "Suchard", email = "msuchard@ucla.edu", role = "aut"),
     person("John W.", "Ratcliff et al.", role = c("cph", "ctb"),
       comment = "authors and copyright holders of see2neon.h under an MIT license"))
+Maintainer: Zhenyu Zhang <zhangzhenyusa@gmail.com>
 Description: High-performance sampling from high-dimensional constrained Gaussian 
   distributions.  Techniques include harmonic Hamiltonian Monte Carlo and zig zag Hamiltonian
   Monte Carlo.  
