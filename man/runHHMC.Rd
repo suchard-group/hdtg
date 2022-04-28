@@ -12,7 +12,7 @@ runHHMC(
   choleskyFactor,
   unconstrainedMean,
   precParametrized = TRUE,
-  totalTime = pi/2,
+  totalTime = c(pi/8, pi/2),
   seed = 1,
   diagnosticMode = FALSE
 )
@@ -27,15 +27,18 @@ linear constraints)}
 
 \item{constraintBound}{g vector (k dimensional)}
 
-\item{choleskyFactor}{upper triangular matrix R from cholesky decomposition of
-precision or covariance matrix into R^TR}
+\item{choleskyFactor}{upper triangular matrix R from cholesky decomposition
+of precision or covariance matrix into R^TR}
 
 \item{unconstrainedMean}{mean of unconstrained Gaussian}
 
-\item{precParametrized}{boolean for whether parametrization is by precision (TRUE)
-or covariance matrix (FALSE)}
+\item{precParametrized}{boolean for whether parametrization is by precision
+(TRUE) or covariance matrix (FALSE)}
 
-\item{totalTime}{amount of time the particle bounces for each sample}
+\item{totalTime}{amount of time the particle bounces for each sample. Can
+either be a scalar value for a fixed time across all samples, or a length 2
+vector of a lower and upper bound for uniform distribution from which the
+bounce time is drawn from for each sample.}
 
 \item{seed}{random seed}
 

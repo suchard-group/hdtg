@@ -7,12 +7,15 @@
 #' @param constraintDirec F matrix (k-by-d matrix where k is the number of
 #' linear constraints)
 #' @param constraintBound g vector (k dimensional)
-#' @param choleskyFactor upper triangular matrix R from cholesky decomposition of
-#' precision or covariance matrix into R^TR
+#' @param choleskyFactor upper triangular matrix R from cholesky decomposition
+#' of precision or covariance matrix into R^TR
 #' @param unconstrainedMean mean of unconstrained Gaussian
-#' @param precParametrized boolean for whether parametrization is by precision (TRUE)
-#' or covariance matrix (FALSE)
-#' @param totalTime amount of time the particle bounces for each sample
+#' @param precParametrized boolean for whether parametrization is by precision
+#' (TRUE) or covariance matrix (FALSE)
+#' @param totalTime amount of time the particle bounces for each sample. Can
+#' either be a scalar value for a fixed time across all samples, or a length 2
+#' vector of a lower and upper bound for uniform distribution from which the
+#' bounce time is drawn from for each sample.
 #' @param seed random seed
 #' @param diagnosticMode boolean for whether to return the bounce distances for
 #' each sample
@@ -49,11 +52,14 @@ runHHMC = function(n,
                    choleskyFactor,
                    unconstrainedMean,
                    precParametrized = TRUE,
-                   totalTime = pi / 2,
+                   totalTime = c(pi / 8, pi / 2),
                    seed = 1,
                    diagnosticMode = FALSE) {
   set.seed(seed)
   samples = matrix(nrow = ncol(constraintDirec), ncol = n)
+  bounceTimes = runif(n,
+                      totalTime[1],
+                      ifelse(!is.na(totalTime[2]), totalTime[2], totalTime[1]))
   bounceDistances = vector(mode = "list",
                            length = ifelse(diagnosticMode, n, 0))
   whitenedConstraints = applyWhitenTransform(
@@ -79,7 +85,7 @@ runHHMC = function(n,
       whitenedConstraints$direc,
       whitenedConstraints$direcRowNormSq,
       whitenedConstraints$bound,
-      totalTime,
+      bounceTimes[i],
       diagnosticMode
     )
     position = results$position
