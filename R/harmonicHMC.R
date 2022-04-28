@@ -57,9 +57,7 @@ runHHMC = function(n,
                    diagnosticMode = FALSE) {
   set.seed(seed)
   samples = matrix(nrow = ncol(constraintDirec), ncol = n)
-  bounceTimes = runif(n,
-                      totalTime[1],
-                      ifelse(!is.na(totalTime[2]), totalTime[2], totalTime[1]))
+  randomBounceTime = ifelse(length(totalTime)==2, TRUE, FALSE)
   bounceDistances = vector(mode = "list",
                            length = ifelse(diagnosticMode, n, 0))
   whitenedConstraints = applyWhitenTransform(
@@ -78,6 +76,9 @@ runHHMC = function(n,
     precParametrized
   )
   for (i in 1:n) {
+    bounceTime = ifelse(randomBounceTime, 
+                        runif(1, totalTime[1], totalTime[2]), 
+                        totalTime)
     momentum = rnorm(ncol(constraintDirec))
     results =  simulateWhitenedDynamics(
       position,
@@ -85,7 +86,7 @@ runHHMC = function(n,
       whitenedConstraints$direc,
       whitenedConstraints$direcRowNormSq,
       whitenedConstraints$bound,
-      bounceTimes[i],
+      bounceTime,
       diagnosticMode
     )
     position = results$position
