@@ -114,12 +114,12 @@ unwhitenPosition <- function(position, choleskyFactor, unconstrainedMean, precPa
 #' linear constraints)
 #' @param constraintRowNormSq vector of squared row norms of constraintDirec
 #' @param constraintBound g vector (k dimensional)
-#' @param totalTime total time the particle will bounce for
+#' @param integrationTime total time the particle will bounce for
 #' @param param diagnosticMode boolean for whether to return the bounce
 #' distances for each sample
 #' @return vector of position in standard normal frame
-simulateWhitenedDynamics <- function(initialPosition, initialMomentum, constraintDirec, constraintRowNormSq, constraintBound, totalTime, diagnosticMode) {
-    .Call(`_largeMTN_simulateWhitenedDynamics`, initialPosition, initialMomentum, constraintDirec, constraintRowNormSq, constraintBound, totalTime, diagnosticMode)
+simulateWhitenedDynamics <- function(initialPosition, initialMomentum, constraintDirec, constraintRowNormSq, constraintBound, integrationTime, diagnosticMode) {
+    .Call(`_largeMTN_simulateWhitenedDynamics`, initialPosition, initialMomentum, constraintDirec, constraintRowNormSq, constraintBound, integrationTime, diagnosticMode)
 }
 
 #' Create ZigZag engine object

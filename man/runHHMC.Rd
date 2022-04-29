@@ -12,7 +12,7 @@ runHHMC(
   choleskyFactor,
   unconstrainedMean,
   precParametrized = TRUE,
-  totalTime = c(pi/8, pi/2),
+  integrationTime = c(pi/8, pi/2),
   seed = 1,
   diagnosticMode = FALSE
 )
@@ -35,7 +35,7 @@ of precision or covariance matrix into R^TR}
 \item{precParametrized}{boolean for whether parametrization is by precision
 (TRUE) or covariance matrix (FALSE)}
 
-\item{totalTime}{amount of time the particle bounces for each sample. Can
+\item{integrationTime}{amount of time the particle bounces for each sample. Can
 either be a scalar value for a fixed time across all samples, or a length 2
 vector of a lower and upper bound for uniform distribution from which the
 bounce time is drawn from for each sample.}

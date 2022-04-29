@@ -193,7 +193,7 @@ Eigen::VectorXd unwhitenPosition(
 //' linear constraints)
 //' @param constraintRowNormSq vector of squared row norms of constraintDirec
 //' @param constraintBound g vector (k dimensional)
-//' @param totalTime total time the particle will bounce for
+//' @param integrationTime total time the particle will bounce for
 //' @param param diagnosticMode boolean for whether to return the bounce
 //' distances for each sample
 //' @return vector of position in standard normal frame
@@ -203,7 +203,7 @@ Rcpp::List simulateWhitenedDynamics(
     const Eigen::Map<Eigen::VectorXd> initialMomentum,
     const Eigen::Map<Eigen::MatrixXd> constraintDirec,
     const Eigen::Map<Eigen::VectorXd> constraintRowNormSq,
-    const Eigen::Map<Eigen::VectorXd> constraintBound, double totalTime,
+    const Eigen::Map<Eigen::VectorXd> constraintBound, double integrationTime,
     bool diagnosticMode) {
   int bounceConstraint;
   double bounceTime;
@@ -220,7 +220,7 @@ Rcpp::List simulateWhitenedDynamics(
   while (true) {
     std::tie(bounceTime, bounceConstraint) =
         computeNextBounce(position, momentum, constraintDirec, constraintBound);
-    if (bounceTime < totalTime - travelledTime) {
+    if (bounceTime < integrationTime - travelledTime) {
       if (diagnosticMode) {
         std::tie(newPosition, momentum) =
             advanceWhitenedDynamics(position, momentum, bounceTime);
@@ -239,7 +239,7 @@ Rcpp::List simulateWhitenedDynamics(
                                  bounceConstraint);
       travelledTime += bounceTime;
     } else {
-      bounceTime = totalTime - travelledTime;
+      bounceTime = integrationTime - travelledTime;
       std::tie(position, momentum) =
           advanceWhitenedDynamics(position, momentum, bounceTime);
       return Rcpp::List::create(

@@ -12,7 +12,7 @@
 #' @param unconstrainedMean mean of unconstrained Gaussian
 #' @param precParametrized boolean for whether parametrization is by precision
 #' (TRUE) or covariance matrix (FALSE)
-#' @param totalTime amount of time the particle bounces for each sample. Can
+#' @param integrationTime amount of time the particle bounces for each sample. Can
 #' either be a scalar value for a fixed time across all samples, or a length 2
 #' vector of a lower and upper bound for uniform distribution from which the
 #' bounce time is drawn from for each sample.
@@ -52,12 +52,12 @@ runHHMC = function(n,
                    choleskyFactor,
                    unconstrainedMean,
                    precParametrized = TRUE,
-                   totalTime = c(pi / 8, pi / 2),
+                   integrationTime = c(pi / 8, pi / 2),
                    seed = 1,
                    diagnosticMode = FALSE) {
   set.seed(seed)
   samples = matrix(nrow = ncol(constraintDirec), ncol = n)
-  randomBounceTime = ifelse(length(totalTime)==2, TRUE, FALSE)
+  randomBounceTime = ifelse(length(integrationTime)==2, TRUE, FALSE)
   bounceDistances = vector(mode = "list",
                            length = ifelse(diagnosticMode, n, 0))
   whitenedConstraints = applyWhitenTransform(
@@ -77,8 +77,8 @@ runHHMC = function(n,
   )
   for (i in 1:n) {
     bounceTime = ifelse(randomBounceTime, 
-                        runif(1, totalTime[1], totalTime[2]), 
-                        totalTime)
+                        runif(1, integrationTime[1], integrationTime[2]), 
+                        integrationTime)
     momentum = rnorm(ncol(constraintDirec))
     results =  simulateWhitenedDynamics(
       position,

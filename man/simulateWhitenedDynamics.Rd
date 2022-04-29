@@ -10,7 +10,7 @@ simulateWhitenedDynamics(
   constraintDirec,
   constraintRowNormSq,
   constraintBound,
-  totalTime,
+  integrationTime,
   diagnosticMode
 )
 }
@@ -26,7 +26,7 @@ linear constraints)}
 
 \item{constraintBound}{g vector (k dimensional)}
 
-\item{totalTime}{total time the particle will bounce for}
+\item{integrationTime}{total time the particle will bounce for}
 
 \item{param}{diagnosticMode boolean for whether to return the bounce
 distances for each sample}
