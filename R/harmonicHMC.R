@@ -55,6 +55,12 @@ runHHMC = function(n,
                    integrationTime = c(pi / 8, pi / 2),
                    seed = 1,
                    diagnosticMode = FALSE) {
+  if (length(integrationTime)==1){
+    integrationTime[2] = integrationTime[1]
+  }
+  if (integrationTime[2] < integrationTime[1]){
+    stop("Upper bound for integration time must be greater than lower bound.")
+  }
   set.seed(seed)
   samples = matrix(nrow = ncol(constraintDirec), ncol = n)
   randomBounceTime = ifelse(length(integrationTime)==2, TRUE, FALSE)
@@ -76,9 +82,6 @@ runHHMC = function(n,
     precParametrized
   )
   for (i in 1:n) {
-    bounceTime = ifelse(randomBounceTime, 
-                        runif(1, integrationTime[1], integrationTime[2]), 
-                        integrationTime)
     momentum = rnorm(ncol(constraintDirec))
     results =  simulateWhitenedDynamics(
       position,
@@ -86,7 +89,7 @@ runHHMC = function(n,
       whitenedConstraints$direc,
       whitenedConstraints$direcRowNormSq,
       whitenedConstraints$bound,
-      bounceTime,
+      runif(1, integrationTime[1], integrationTime[2]),
       diagnosticMode
     )
     position = results$position
