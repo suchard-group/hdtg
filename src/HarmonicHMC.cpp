@@ -225,7 +225,7 @@ Rcpp::List simulateWhitenedDynamics(
         std::tie(newPosition, momentum) =
             advanceWhitenedDynamics(position, momentum, bounceTime);
         bouncedDistance = (newPosition - position).norm();
-        if (numBounces > bounceDistances.size()) {
+        if (numBounces >= bounceDistances.size()) {
           bounceDistances.conservativeResize(2 * numBounces);
         }
         bounceDistances(numBounces) = bouncedDistance;
