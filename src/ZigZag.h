@@ -25,7 +25,6 @@
 #include <map>
 #include <iomanip>
 #include "Timing.h"
-#include <RcppEigen.h>
 
 #endif // TIMING
 
@@ -34,6 +33,8 @@
 #include "MemoryManagement.h"
 #include "Simd.h"
 #include "AbstractZigZag.h"
+
+#include <Eigen/Dense>
 
 namespace zz {
 
