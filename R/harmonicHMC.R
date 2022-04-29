@@ -12,8 +12,8 @@
 #' @param unconstrainedMean mean of unconstrained Gaussian
 #' @param precParametrized boolean for whether parametrization is by precision
 #' (TRUE) or covariance matrix (FALSE)
-#' @param integrationTime amount of time the particle bounces for each sample. Can
-#' either be a scalar value for a fixed time across all samples, or a length 2
+#' @param integrationTime amount of time the particle travels for each sample.
+#' Can either be a scalar value for a fixed time across all samples, or a length 2
 #' vector of a lower and upper bound for uniform distribution from which the
 #' bounce time is drawn from for each sample.
 #' @param seed random seed

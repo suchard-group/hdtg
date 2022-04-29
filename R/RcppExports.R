@@ -114,7 +114,7 @@ unwhitenPosition <- function(position, choleskyFactor, unconstrainedMean, precPa
 #' linear constraints)
 #' @param constraintRowNormSq vector of squared row norms of constraintDirec
 #' @param constraintBound g vector (k dimensional)
-#' @param integrationTime total time the particle will bounce for
+#' @param integrationTime total time the particle will travel for
 #' @param param diagnosticMode boolean for whether to return the bounce
 #' distances for each sample
 #' @return vector of position in standard normal frame
