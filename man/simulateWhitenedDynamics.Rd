@@ -28,7 +28,7 @@ linear constraints)}
 
 \item{integrationTime}{total time the particle will travel for}
 
-\item{param}{diagnosticMode boolean for whether to return the bounce
+\item{diagnosticMode}{boolean for whether to return the bounce
 distances for each sample}
 }
 \value{

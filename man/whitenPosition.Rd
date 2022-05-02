@@ -29,8 +29,6 @@ of precision or covariance matrix into R^TR}
 \item{precParametrized}{boolean for whether parametrization is by
 precision (true)
 or covariance matrix (false)}
-
-\item{momentum}{starting momentum}
 }
 \value{
 vector of position in standard normal frame

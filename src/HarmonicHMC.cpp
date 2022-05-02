@@ -134,7 +134,6 @@ std::pair<double, int> computeNextBounce(
 //' Whiten a given position into the standard normal frame.
 //'
 //' @param position starting position
-//' @param momentum starting momentum
 //' @param constraintDirec F matrix (k-by-d matrix where k is the number of
 //' linear constraints)
 //' @param constraintBound g vector (k dimensional)
@@ -194,7 +193,7 @@ Eigen::VectorXd unwhitenPosition(
 //' @param constraintRowNormSq vector of squared row norms of constraintDirec
 //' @param constraintBound g vector (k dimensional)
 //' @param integrationTime total time the particle will travel for
-//' @param param diagnosticMode boolean for whether to return the bounce
+//' @param diagnosticMode boolean for whether to return the bounce
 //' distances for each sample
 //' @return vector of position in standard normal frame
 // [[Rcpp::export]]
