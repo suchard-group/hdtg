@@ -1,4 +1,4 @@
-#' @useDynLib largeMTN, .registration = TRUE
+#' @useDynLib hdtg, .registration = TRUE
 #' @importFrom Rcpp sourceCpp
 #' @importFrom RcppParallel RcppParallelLibs
 #' @importFrom RcppXsimd supportsSSE supportsAVX
@@ -6,5 +6,5 @@
 NULL
 
 .onUnload <- function (libpath) {
-  library.dynam.unload("largeMTN", libpath)
+  library.dynam.unload("hdtg", libpath)
 }

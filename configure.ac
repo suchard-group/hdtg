@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT(largeMTN, 0.1, msuchard@ucla.edu)
+AC_INIT(hdtg, 0.1, msuchard@ucla.edu)
 
 # find R home and set CC/CFLAGS
 : ${R_HOME=`R RHOME`}

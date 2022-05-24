@@ -7,7 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-#source("~/Dropbox/zigzag/extra/funcsForCompare.R")
+#source("~/Dropbox/hdtg/extra/funcsForCompare.R")
 require(trialr)
 require(rbenchmark)
 require(hzz)

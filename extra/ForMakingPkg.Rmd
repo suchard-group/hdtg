@@ -148,7 +148,7 @@ require(hzz)
 library(MASS)
 mu = seq(1,d,1)
 n_hzz = 10000
-#debugSource("~/zigzag/R/hzz.R", echo=TRUE)
+#debugSource("~/hdtg/R/hzz.R", echo=TRUE)
 t0 = proc.time()
 samples = rcmg(n = n_hzz, mean = mu, prec = prec, constraits = rep(1, d), t = 1, burnin = 0, p0 = p0, randomFlg = T, cppFlg = T, nutsFlg = F, debug_flg = F)
 

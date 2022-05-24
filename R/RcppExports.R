@@ -51,7 +51,7 @@ NULL
 #' @return upper triangular matrix R such that A = R'R.
 #' @export
 cholesky <- function(A) {
-    .Call(`_largeMTN_cholesky`, A)
+    .Call(`_hdtg_cholesky`, A)
 }
 
 #' Whiten constraints for use in generateUnwhitenedSample
@@ -71,7 +71,7 @@ cholesky <- function(A) {
 #' constraints (for computational efficiency later), and new bounds
 #' @export
 applyWhitenTransform <- function(constraintDirec, constraintBound, choleskyFactor, unconstrainedMean, precParametrized) {
-    .Call(`_largeMTN_applyWhitenTransform`, constraintDirec, constraintBound, choleskyFactor, unconstrainedMean, precParametrized)
+    .Call(`_hdtg_applyWhitenTransform`, constraintDirec, constraintBound, choleskyFactor, unconstrainedMean, precParametrized)
 }
 
 #' Whiten a given position into the standard normal frame.
@@ -88,7 +88,7 @@ applyWhitenTransform <- function(constraintDirec, constraintBound, choleskyFacto
 #' or covariance matrix (false)
 #' @return vector of position in standard normal frame
 whitenPosition <- function(position, constraintDirec, constraintBound, choleskyFactor, unconstrainedMean, precParametrized) {
-    .Call(`_largeMTN_whitenPosition`, position, constraintDirec, constraintBound, choleskyFactor, unconstrainedMean, precParametrized)
+    .Call(`_hdtg_whitenPosition`, position, constraintDirec, constraintBound, choleskyFactor, unconstrainedMean, precParametrized)
 }
 
 #' Convert a position from standard normal frame back to original frame.
@@ -102,7 +102,7 @@ whitenPosition <- function(position, constraintDirec, constraintBound, choleskyF
 #' or covariance matrix (false)
 #' @return vector of position in original frame
 unwhitenPosition <- function(position, choleskyFactor, unconstrainedMean, precParametrized) {
-    .Call(`_largeMTN_unwhitenPosition`, position, choleskyFactor, unconstrainedMean, precParametrized)
+    .Call(`_hdtg_unwhitenPosition`, position, choleskyFactor, unconstrainedMean, precParametrized)
 }
 
 #' Simulate bouncing particle in whitened frame.
@@ -118,7 +118,7 @@ unwhitenPosition <- function(position, choleskyFactor, unconstrainedMean, precPa
 #' distances for each sample
 #' @return vector of position in standard normal frame
 simulateWhitenedDynamics <- function(initialPosition, initialMomentum, constraintDirec, constraintRowNormSq, constraintBound, integrationTime, diagnosticMode) {
-    .Call(`_largeMTN_simulateWhitenedDynamics`, initialPosition, initialMomentum, constraintDirec, constraintRowNormSq, constraintBound, integrationTime, diagnosticMode)
+    .Call(`_hdtg_simulateWhitenedDynamics`, initialPosition, initialMomentum, constraintDirec, constraintRowNormSq, constraintBound, integrationTime, diagnosticMode)
 }
 
 #' Create ZigZag engine object
@@ -133,7 +133,7 @@ simulateWhitenedDynamics <- function(initialPosition, initialMomentum, constrain
 #'
 #' @export
 createEngine <- function(dimension, lowerBounds, upperBounds, flags, info, seed) {
-    .Call(`_largeMTN_createEngine`, dimension, lowerBounds, upperBounds, flags, info, seed)
+    .Call(`_hdtg_createEngine`, dimension, lowerBounds, upperBounds, flags, info, seed)
 }
 
 #' Create ZigZag nuts engine object
@@ -155,7 +155,7 @@ createEngine <- function(dimension, lowerBounds, upperBounds, flags, info, seed)
 #'
 #' @export
 createNutsEngine <- function(dimension, lowerBounds, upperBounds, flags, info, seed, randomFlg, stepSize, mean, precision) {
-    .Call(`_largeMTN_createNutsEngine`, dimension, lowerBounds, upperBounds, flags, info, seed, randomFlg, stepSize, mean, precision)
+    .Call(`_hdtg_createNutsEngine`, dimension, lowerBounds, upperBounds, flags, info, seed, randomFlg, stepSize, mean, precision)
 }
 
 #' Set mean for MTN
@@ -164,7 +164,7 @@ createNutsEngine <- function(dimension, lowerBounds, upperBounds, flags, info, s
 #' @param mean a numeric vector containing the MTN mean
 #' @export
 setMean <- function(sexp, mean) {
-    invisible(.Call(`_largeMTN_setMean`, sexp, mean))
+    invisible(.Call(`_hdtg_setMean`, sexp, mean))
 }
 
 #' Set the precision matrix for the target MTN
@@ -173,22 +173,22 @@ setMean <- function(sexp, mean) {
 #' @param precision the MTN precision matrix
 #' @export
 setPrecision <- function(sexp, precision) {
-    invisible(.Call(`_largeMTN_setPrecision`, sexp, precision))
+    invisible(.Call(`_hdtg_setPrecision`, sexp, precision))
 }
 
 .doSomething <- function(sexp, data) {
-    invisible(.Call(`_largeMTN_doSomething`, sexp, data))
+    invisible(.Call(`_hdtg_doSomething`, sexp, data))
 }
 
 getNextEvent <- function(sexp, position, velocity, action, logpdfGradient, momentum) {
-    .Call(`_largeMTN_getNextEvent`, sexp, position, velocity, action, logpdfGradient, momentum)
+    .Call(`_hdtg_getNextEvent`, sexp, position, velocity, action, logpdfGradient, momentum)
 }
 
 .oneIteration <- function(sexp, position, momentum, time) {
-    .Call(`_largeMTN_oneIteration`, sexp, position, momentum, time)
+    .Call(`_hdtg_oneIteration`, sexp, position, momentum, time)
 }
 
 .oneNutsIteration <- function(sexp, position, momentum) {
-    .Call(`_largeMTN_oneNutsIteration`, sexp, position, momentum)
+    .Call(`_hdtg_oneNutsIteration`, sexp, position, momentum)
 }
 

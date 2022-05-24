@@ -1,4 +1,4 @@
-Package: largeMTN
+Package: hdtg
 Title: Generate samples from multivariate truncated normal distributions
 Version: 0.1.0
 Authors@R: 
@@ -15,7 +15,7 @@ Description: High-performance sampling from high-dimensional constrained Gaussia
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0
 Imports: 
     Rcpp,
     RcppParallel,
