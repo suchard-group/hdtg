@@ -10,7 +10,7 @@ Authors@R:
       comment = "authors and copyright holders of see2neon.h under an MIT license"))
 Maintainer: Zhenyu Zhang <zhangzhenyusa@gmail.com>
 Description: High-performance sampling from high-dimensional constrained Gaussian 
-  distributions.  Techniques include harmonic Hamiltonian Monte Carlo and zig zag Hamiltonian
+  distributions.  Techniques include harmonic Hamiltonian Monte Carlo and zigzag Hamiltonian
   Monte Carlo.  
 License: MIT + file LICENSE
 Encoding: UTF-8

@@ -2,6 +2,7 @@
 #' @importFrom Rcpp sourceCpp
 #' @importFrom RcppParallel RcppParallelLibs
 #' @importFrom RcppXsimd supportsSSE supportsAVX
+#' @importFrom stats rnorm runif
 NULL
 
 .onUnload <- function (libpath) {
