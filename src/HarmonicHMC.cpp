@@ -11,14 +11,13 @@ Eigen::MatrixXd cholesky(const Eigen::Map<Eigen::MatrixXd> A) {
   return A.llt().matrixU();
 }
 
-//' Solve XA=B for two matrices A and B.
-//'
-//' Eigen does not have builtin methods to solve XA=B, only AX=B, so we
-//' solve A'X'= B'
-//'
-//' @param A matrix
-//' @param B matrix
-//' @return X matrix
+// ' Solve XA=B for two matrices A and B.
+// '
+
+// '
+// ' @param A matrix
+// ' @param B matrix
+// ' @return X matrix
 Eigen::MatrixXd solveFromRight(const Eigen::Map<Eigen::MatrixXd> A,
                                const Eigen::Map<Eigen::MatrixXd> B) {
   return A.transpose()
@@ -62,12 +61,12 @@ Rcpp::List applyWhitenTransform(
       Rcpp::_["bound"] = constraintBound + constraintDirec * unconstrainedMean);
 }
 
-//' Compute Hamiltonian dynamics after specified time.
-//'
-//' @param position starting position
-//' @param momentum starting momentum
-//' @param time amount of time the system is run for
-//' @return pair of new (position, momentum)
+// ' Compute Hamiltonian dynamics after specified time.
+// '
+// ' @param position starting position
+// ' @param momentum starting momentum
+// ' @param time amount of time the system is run for
+// ' @return pair of new (position, momentum)
 std::pair<Eigen::VectorXd, Eigen::VectorXd> advanceWhitenedDynamics(
     const Eigen::VectorXd position, const Eigen::VectorXd momentum,
     const double time) {
@@ -75,19 +74,19 @@ std::pair<Eigen::VectorXd, Eigen::VectorXd> advanceWhitenedDynamics(
                         momentum * cos(time) - position * sin(time));
 }
 
-//' Reflect momentum off of a constraint boundary.
-//'
-//' Given a constraint boundary, calculate the momentum as if that boundary
-//' was a wall and there is an elastic collision, and the angle of incidence
-//' equals the angle of reflection.
-//'
-//' @param momentum starting momentum
-//' @param constraintDirec F matrix (k-by-d matrix where k is the number of
-//' linear constraints)
-//' @param constraintRowNormSq vector of squared row norms of constraintDirec
-//' @param bounceIdx integer index of which constraint is being bounced off of
-//' @param time amount of time the system is run for
-//' @return momentum after bouncing
+// ' Reflect momentum off of a constraint boundary.
+// '
+// ' Given a constraint boundary, calculate the momentum as if that boundary
+// ' was a wall and there is an elastic collision, and the angle of incidence
+// ' equals the angle of reflection.
+// '
+// ' @param momentum starting momentum
+// ' @param constraintDirec F matrix (k-by-d matrix where k is the number of
+// ' linear constraints)
+// ' @param constraintRowNormSq vector of squared row norms of constraintDirec
+// ' @param bounceIdx integer index of which constraint is being bounced off of
+// ' @param time amount of time the system is run for
+// ' @return momentum after bouncing
 Eigen::VectorXd reflectMomentum(
     const Eigen::VectorXd momentum,
     const Eigen::Map<Eigen::MatrixXd> constraintDirec,
@@ -98,15 +97,15 @@ Eigen::VectorXd reflectMomentum(
                         constraintDirec.row(bounceIdx - 1).transpose();
 }
 
-//' Compute when the next bounce occurs and which constraint it occurs on.
-//'
-//' @param position starting position
-//' @param momentum starting momentum
-//' @param constraintDirec F matrix (k-by-d matrix where k is the number of
-//' linear constraints)
-//' @param constraintBound g vector (k dimensional)
-//' @return pair of new (time until bounce, constraint index corresponding to
-//' bounce)
+//  ' Compute when the next bounce occurs and which constraint it occurs on.
+// '
+// ' @param position starting position
+// ' @param momentum starting momentum
+// ' @param constraintDirec F matrix (k-by-d matrix where k is the number of
+// ' linear constraints)
+// ' @param constraintBound g vector (k dimensional)
+// ' @return pair of new (time until bounce, constraint index corresponding to
+// ' bounce)
 std::pair<double, int> computeNextBounce(
     const Eigen::VectorXd position, const Eigen::VectorXd momentum,
     const Eigen::Map<Eigen::MatrixXd> constraintDirec,
