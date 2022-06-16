@@ -1,0 +1,31 @@
+citHeader("To cite hdtg in publications use:")
+
+citEntry(
+  entry    = "Article",
+  title    = "Hamiltonian zigzag sampler got more momentum than its Markovian counterpart: Equivalence of two zigzags under a momentum refreshment limit",
+  author   = personList(as.person("Akihiko Nishimura"),
+                                   as.person("Zhenyu Zhang"),
+                                   as.person("Marc A. Suchard")),
+  journal  = "arXiv preprint arXiv:2104.07694",
+  year     = "2021",
+  textVersion = paste("Akihiko Nishimura, Zhenyu Zhang, and Marc A. Suchard (2021)",
+                              "Hamiltonian zigzag sampler got more momentum than 
+                              its markovian counterpart: Equivalence of two zigzags 
+                              under a momentum refreshment limit,",
+                              "arXiv preprint,",
+                              "<arXiv:2104.07694>."))
+                              
+citEntry(
+  entry    = "Article",
+  title    = "Exact Hamiltonian Monte Carlo for Truncated 
+                              Multivariate Gaussians",
+  author   = personList(as.person("Ari Pakman"),
+                                   as.person("Liam Paninski")),
+  journal  = "Journal of Computational and Graphical Statistics",
+  year     = "2014",
+  textVersion = paste("Ari Pakman and Liam Paninski (2014)",
+                              "Exact Hamiltonian Monte Carlo for Truncated 
+                              Multivariate Gaussians,",
+                              "Journal of Computational and Graphical Statistics,",
+                              "<doi:10.1080/10618600.2013.788448>."))
+  
