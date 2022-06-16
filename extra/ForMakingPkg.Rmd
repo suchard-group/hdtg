@@ -43,7 +43,7 @@ prec = solve(cor_mat)
 # compared to the result from BEAST on the SAME target distribution and momentum. BEAST random seed = 666.
 # Remember to use the same 1. deterministic 0.1 - 0.9 sequence. 2. step size = 0.1
 require(data.table)
-require(hzz)
+require(hdtg)
 d = 20
 n_iter = 1
 mu = rep(0, d)
@@ -57,7 +57,7 @@ momentum = c(-0.3980153048394741, 2.2483327571774736, -0.2952917086118517, -1.16
 
 resBeast = c(2.559161,2.644123,2.618147,2.900000,2.787300,2.755389,2.667188,2.715712, 2.627473,2.829323,2.603972,2.696163,2.695163,2.629874,2.595481,2.769309, 2.822751,2.558309,2.900000,2.684678)
 
-res = rcmg(
+res = zigzagHMC(
   n = n_iter,
   mean = mu,
   prec = prec,
@@ -74,6 +74,47 @@ res = rcmg(
 # df[2, 3:22]
 assertthat::assert_that(max(resBeast - res) < 1e-5)
 ```
+
+```{r test HHMC as in doc}
+set.seed(1)
+d <- 10
+A <- matrix(runif(d^2)*2-1, ncol=d)
+Sigma <- t(A) %*% A
+R <- cholesky(Sigma)
+mu <- rep(0,d)
+constraintDirec <- diag(d)
+constraintBound <- rep(0,d)
+initial <- rep(1, d)
+resultsHHMC <- harmonicHMC(1000,
+                           1000,
+                           mu,
+                           R,
+                           constraintDirec,
+                           constraintBound,
+                           initial,
+                           precParametrized = FALSE)
+```
+
+```{r test ZZHMC as in doc}
+set.seed(1)
+d <- 10
+A <- matrix(runif(d ^ 2) * 2 - 1, ncol = d)
+covMat <- t(A) %*% A
+initial <- rep(1, d)
+resultsZZHMC <- zigzagHMC(
+  n = 1000,
+  burnin = 1000,
+  mean = rep(0, d),
+  cov = covMat,
+  lowerBounds = rep(0, d),
+  upperBounds = rep(Inf, d)
+)
+```
+```{r results from two samplers are close}
+colMeans(resultsZZHMC)
+colMeans(resultsHHMC$samples)
+```
+
 
 
 ```{r to profile}

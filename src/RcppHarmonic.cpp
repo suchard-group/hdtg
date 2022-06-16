@@ -41,7 +41,6 @@ Eigen::MatrixXd solveFromRight(const Eigen::Map<Eigen::MatrixXd> A,
 //'  (true) or covariance matrix (false)
 //' @return List of new constraint directions, the squared row norms of those
 //' constraints (for computational efficiency later), and new bounds
-//' @export
 // [[Rcpp::export]]
 Rcpp::List applyWhitenTransform(
     const Eigen::Map<Eigen::MatrixXd> constraintDirec,

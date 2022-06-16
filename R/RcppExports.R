@@ -25,7 +25,6 @@ cholesky <- function(A) {
 #'  (true) or covariance matrix (false)
 #' @return List of new constraint directions, the squared row norms of those
 #' constraints (for computational efficiency later), and new bounds
-#' @export
 applyWhitenTransform <- function(constraintDirec, constraintBound, choleskyFactor, unconstrainedMean, precParametrized) {
     .Call(`_hdtg_applyWhitenTransform`, constraintDirec, constraintBound, choleskyFactor, unconstrainedMean, precParametrized)
 }

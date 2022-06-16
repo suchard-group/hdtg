@@ -21,7 +21,9 @@ Imports:
     RcppParallel,
     RcppXsimd,
     mgcv,
-    stats
+    stats,
+    Rdpack
+RdMacros: Rdpack
 LinkingTo: 
     Rcpp,
     RcppEigen,

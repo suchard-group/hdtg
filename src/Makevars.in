@@ -4,10 +4,10 @@ CXX_STD = CXX11
 
 PKG_CXXFLAGS = -I. @SIMD_FLAGS@ @AVX_FLAGS@ @SSE_FLAGS@
 
-PKG_LIBS = @RCPPPAR_LIB@ 
+PKG_LIBS = @RCPPPAR_LIB@
 
 OBJECTS.zigzag = \
-    HarmonicHMC.o \
+    RcppHarmonic.o \
     RcppZigZag.o \
     RcppExports.o
 
