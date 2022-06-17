@@ -10,123 +10,35 @@ cholesky <- function(A) {
     .Call(`_hdtg_cholesky`, A)
 }
 
-#' Whiten constraints for use in generateUnwhitenedSample
-#'
-#' Transforms constraints of the form Fx+g >= 0 for a target normal
-#' distribution into the corresponding constraints for a standard normal.
-#'
-#' @param constraintDirec F matrix (k-by-d matrix where k is the number of
-#' linear constraints)
-#' @param constraintBound g vector (k dimensional)
-#' @param choleskyFactor upper triangular matrix R from cholesky decomposition
-#'  of precision or covariance matrix into R^TR
-#' @param unconstrainedMean mean of unconstrained Gaussian
-#' @param precParametrized boolean for whether parametrization is by precision
-#'  (true) or covariance matrix (false)
-#' @return List of new constraint directions, the squared row norms of those
-#' constraints (for computational efficiency later), and new bounds
 applyWhitenTransform <- function(constraintDirec, constraintBound, choleskyFactor, unconstrainedMean, precParametrized) {
     .Call(`_hdtg_applyWhitenTransform`, constraintDirec, constraintBound, choleskyFactor, unconstrainedMean, precParametrized)
 }
 
-#' Whiten a given position into the standard normal frame.
-#'
-#' @param position starting position
-#' @param constraintDirec F matrix (k-by-d matrix where k is the number of
-#' linear constraints)
-#' @param constraintBound g vector (k dimensional)
-#' @param choleskyFactor upper triangular matrix R from cholesky decomposition
-#' of precision or covariance matrix into R^TR
-#' @param unconstrainedMean mean of unconstrained Gaussian
-#' @param precParametrized boolean for whether parametrization is by
-#' precision (true)
-#' or covariance matrix (false)
-#' @return vector of position in standard normal frame
 whitenPosition <- function(position, constraintDirec, constraintBound, choleskyFactor, unconstrainedMean, precParametrized) {
     .Call(`_hdtg_whitenPosition`, position, constraintDirec, constraintBound, choleskyFactor, unconstrainedMean, precParametrized)
 }
 
-#' Convert a position from standard normal frame back to original frame.
-#'
-#' @param position starting position
-#' @param choleskyFactor upper triangular matrix R from cholesky decomposition
-#' of precision or covariance matrix into R^TR
-#' @param unconstrainedMean mean of unconstrained Gaussian
-#' @param precParametrized boolean for whether parametrization is by
-#' precision (true)
-#' or covariance matrix (false)
-#' @return vector of position in original frame
 unwhitenPosition <- function(position, choleskyFactor, unconstrainedMean, precParametrized) {
     .Call(`_hdtg_unwhitenPosition`, position, choleskyFactor, unconstrainedMean, precParametrized)
 }
 
-#' Simulate bouncing particle in whitened frame.
-#'
-#' @param initialPosition starting position
-#' @param initialMomentum starting momentum
-#' @param constraintDirec F matrix (k-by-d matrix where k is the number of
-#' linear constraints)
-#' @param constraintRowNormSq vector of squared row norms of constraintDirec
-#' @param constraintBound g vector (k dimensional)
-#' @param integrationTime total time the particle will travel for
-#' @param diagnosticMode boolean for whether to return the bounce
-#' distances for each sample
-#' @return vector of position in standard normal frame
 simulateWhitenedDynamics <- function(initialPosition, initialMomentum, constraintDirec, constraintRowNormSq, constraintBound, integrationTime, diagnosticMode) {
     .Call(`_hdtg_simulateWhitenedDynamics`, initialPosition, initialMomentum, constraintDirec, constraintRowNormSq, constraintBound, integrationTime, diagnosticMode)
 }
 
-#' Create ZigZag engine object
-#'
-#' @param dimension the dimension of MTN (d)
-#' @param lowerBounds the d-dimensional lower bound
-#' @param upperBounds the d-dimensional upper bound
-#' @param flags todo
-#' @param info todo
-#' @param seed random seed
-#' @return a zigzag engine object.
-#'
-#' @export
 createEngine <- function(dimension, lowerBounds, upperBounds, flags, info, seed) {
     .Call(`_hdtg_createEngine`, dimension, lowerBounds, upperBounds, flags, info, seed)
 }
 
-#' Create ZigZag nuts engine object
 #'
-#' Helper function creates zigZag nuts engine object with given latent dimension, location count and various
-#' implementation details. 
-#'
-#' @param dimension the dimension of MTN (d)
-#' @param lowerBounds the d-dimensional lower bound
-#' @param upperBounds the d-dimensional upper bound
-#' @param flags todo
-#' @param info todo
-#' @param seed random seed
-#' @param randomFlg todo
-#' @param stepSize todo
-#' @param mean todo
-#' @param precision todo
-#' @return a zigzag-nuts engine object.
-#'
-#' @export
 createNutsEngine <- function(dimension, lowerBounds, upperBounds, flags, info, seed, randomFlg, stepSize, mean, precision) {
     .Call(`_hdtg_createNutsEngine`, dimension, lowerBounds, upperBounds, flags, info, seed, randomFlg, stepSize, mean, precision)
 }
 
-#' Set mean for MTN
-#'
-#' @param sexp pointer to zigzag object
-#' @param mean a numeric vector containing the MTN mean
-#' @export
 setMean <- function(sexp, mean) {
     invisible(.Call(`_hdtg_setMean`, sexp, mean))
 }
 
-#' Set the precision matrix for the target MTN
-#'
-#' @param sexp pointer to zigzag object
-#' @param precision the MTN precision matrix
-#' @export
 setPrecision <- function(sexp, precision) {
     invisible(.Call(`_hdtg_setPrecision`, sexp, precision))
 }

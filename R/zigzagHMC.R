@@ -145,15 +145,14 @@ zigzagHMC <- function(n,
 
 
 
-#' A function to get an eligible initial value for a MTN
-#'
-#' @param mean a d-dimensional mean vector
-#' @param lowerBounds a d-dimensional lower bound
-#' @param upperBounds a d-dimensional lower bound
-#'
-#' @return an eligible d-dimensional initial value
-#' @export
-#'
+# ' A function to get an eligible initial value for a MTN
+# '
+# ' @param mean a d-dimensional mean vector
+# ' @param lowerBounds a d-dimensional lower bound
+# ' @param upperBounds a d-dimensional lower bound
+# '
+# ' @return an eligible d-dimensional initial value
+# '
 getInitialPosition <- function(mean, lowerBounds, upperBounds) {
   bL <- upperBounds - lowerBounds
   midPoint <- (upperBounds + lowerBounds) / 2

@@ -85,17 +85,16 @@ NutsSharedPtr &parsePtrNuts(SEXP sexp) {
 }
 
 
-//' Create ZigZag engine object
-//'
-//' @param dimension the dimension of MTN (d)
-//' @param lowerBounds the d-dimensional lower bound
-//' @param upperBounds the d-dimensional upper bound
-//' @param flags todo
-//' @param info todo
-//' @param seed random seed
-//' @return a zigzag engine object.
-//'
-//' @export
+// ' Create ZigZag engine object
+// '
+// ' @param dimension the dimension of MTN (d)
+// ' @param a d-dimensional vector specifying the lower bounds.
+// ' @param a d-dimensional vector specifying the upper bounds.
+// ' @param flags 128
+// ' @param info 1
+// ' @param seed random seed
+// ' @return a zigzag engine object.
+// '
 // [[Rcpp::export(createEngine)]]
 Rcpp::List createEngine(int dimension,
                         std::vector<double> &lowerBounds,
@@ -119,24 +118,23 @@ Rcpp::List createEngine(int dimension,
     return list;
 }
 
-//' Create ZigZag nuts engine object
+// ' Create ZigZag nuts engine object
+// '
+// ' Helper function creates zigZag nuts engine object with given latent dimension, location count and various
+// ' implementation details. 
+// '
+// ' @param dimension the dimension of MTN (d).
+// ' @param lowerBounds the d-dimensional lower bound.
+// ' @param upperBounds the d-dimensional upper bound.
+// ' @param flags 128.
+// ' @param info 1.
+// ' @param seed random seed.
+// ' @param randomFlg set to TRUE.
+// ' @param stepSize step size.
+// ' @param mean mean vector.
+// ' @param precision precision matrix.
+// ' @return a zigzag-nuts engine object.
 //'
-//' Helper function creates zigZag nuts engine object with given latent dimension, location count and various
-//' implementation details. 
-//'
-//' @param dimension the dimension of MTN (d)
-//' @param lowerBounds the d-dimensional lower bound
-//' @param upperBounds the d-dimensional upper bound
-//' @param flags todo
-//' @param info todo
-//' @param seed random seed
-//' @param randomFlg todo
-//' @param stepSize todo
-//' @param mean todo
-//' @param precision todo
-//' @return a zigzag-nuts engine object.
-//'
-//' @export
 // [[Rcpp::export(createNutsEngine)]]
 Rcpp::List createNutsEngine(int dimension,
                             std::vector<double> &lowerBounds,
@@ -165,11 +163,10 @@ Rcpp::List createNutsEngine(int dimension,
     return list;
 }
 
-//' Set mean for MTN
-//'
-//' @param sexp pointer to zigzag object
-//' @param mean a numeric vector containing the MTN mean
-//' @export
+// ' Set mean for MTN
+// '
+// ' @param sexp pointer to zigzag object
+// ' @param mean a numeric vector containing the MTN mean
 // [[Rcpp::export(setMean)]]
 void setMean(SEXP sexp, NumericVector &mean) {
     auto ptr = parsePtr(sexp);
@@ -182,11 +179,10 @@ void setMean(SEXP sexp, NumericVector &mean) {
     }
 }
 
-//' Set the precision matrix for the target MTN
-//'
-//' @param sexp pointer to zigzag object
-//' @param precision the MTN precision matrix
-//' @export
+// ' Set the precision matrix for the target MTN
+// '
+// ' @param sexp pointer to zigzag object
+// ' @param precision the MTN precision matrix
 // [[Rcpp::export(setPrecision)]]
 void setPrecision(SEXP sexp, NumericVector &precision) {
     auto ptr = parsePtr(sexp);

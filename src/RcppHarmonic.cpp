@@ -26,21 +26,21 @@ Eigen::MatrixXd solveFromRight(const Eigen::Map<Eigen::MatrixXd> A,
       .transpose();
 }
 
-//' Whiten constraints for use in generateUnwhitenedSample
-//'
-//' Transforms constraints of the form Fx+g >= 0 for a target normal
-//' distribution into the corresponding constraints for a standard normal.
-//'
-//' @param constraintDirec F matrix (k-by-d matrix where k is the number of
-//' linear constraints)
-//' @param constraintBound g vector (k dimensional)
-//' @param choleskyFactor upper triangular matrix R from cholesky decomposition
-//'  of precision or covariance matrix into R^TR
-//' @param unconstrainedMean mean of unconstrained Gaussian
-//' @param precParametrized boolean for whether parametrization is by precision
-//'  (true) or covariance matrix (false)
-//' @return List of new constraint directions, the squared row norms of those
-//' constraints (for computational efficiency later), and new bounds
+// ' Whiten constraints for use in generateUnwhitenedSample
+// '
+// ' Transforms constraints of the form Fx+g >= 0 for a target normal
+// ' distribution into the corresponding constraints for a standard normal.
+// '
+// ' @param constraintDirec F matrix (k-by-d matrix where k is the number of
+// ' linear constraints)
+// ' @param constraintBound g vector (k dimensional)
+// ' @param choleskyFactor upper triangular matrix R from cholesky decomposition
+// '  of precision or covariance matrix into R^TR
+// ' @param unconstrainedMean mean of unconstrained Gaussian
+// ' @param precParametrized boolean for whether parametrization is by precision
+// '  (true) or covariance matrix (false)
+// ' @return List of new constraint directions, the squared row norms of those
+// ' constraints (for computational efficiency later), and new bounds
 // [[Rcpp::export]]
 Rcpp::List applyWhitenTransform(
     const Eigen::Map<Eigen::MatrixXd> constraintDirec,
@@ -129,19 +129,19 @@ std::pair<double, int> computeNextBounce(
   return std::make_pair(minTime, constraintIdx);
 }
 
-//' Whiten a given position into the standard normal frame.
-//'
-//' @param position starting position
-//' @param constraintDirec F matrix (k-by-d matrix where k is the number of
-//' linear constraints)
-//' @param constraintBound g vector (k dimensional)
-//' @param choleskyFactor upper triangular matrix R from cholesky decomposition
-//' of precision or covariance matrix into R^TR
-//' @param unconstrainedMean mean of unconstrained Gaussian
-//' @param precParametrized boolean for whether parametrization is by
-//' precision (true)
-//' or covariance matrix (false)
-//' @return vector of position in standard normal frame
+// ' Whiten a given position into the standard normal frame.
+// '
+// ' @param position starting position
+// ' @param constraintDirec F matrix (k-by-d matrix where k is the number of
+// ' linear constraints)
+// ' @param constraintBound g vector (k dimensional)
+// ' @param choleskyFactor upper triangular matrix R from cholesky decomposition
+// ' of precision or covariance matrix into R^TR
+// ' @param unconstrainedMean mean of unconstrained Gaussian
+// ' @param precParametrized boolean for whether parametrization is by
+// ' precision (true)
+// ' or covariance matrix (false)
+// ' @return vector of position in standard normal frame
 // [[Rcpp::export]]
 Eigen::VectorXd whitenPosition(
     const Eigen::Map<Eigen::VectorXd> position,
@@ -158,16 +158,16 @@ Eigen::VectorXd whitenPosition(
   }
 }
 
-//' Convert a position from standard normal frame back to original frame.
-//'
-//' @param position starting position
-//' @param choleskyFactor upper triangular matrix R from cholesky decomposition
-//' of precision or covariance matrix into R^TR
-//' @param unconstrainedMean mean of unconstrained Gaussian
-//' @param precParametrized boolean for whether parametrization is by
-//' precision (true)
-//' or covariance matrix (false)
-//' @return vector of position in original frame
+// ' Convert a position from standard normal frame back to original frame.
+// '
+// ' @param position starting position
+// ' @param choleskyFactor upper triangular matrix R from cholesky decomposition
+// ' of precision or covariance matrix into R^TR
+// ' @param unconstrainedMean mean of unconstrained Gaussian
+// ' @param precParametrized boolean for whether parametrization is by
+// ' precision (true)
+// ' or covariance matrix (false)
+// ' @return vector of position in original frame
 // [[Rcpp::export]]
 Eigen::VectorXd unwhitenPosition(
     const Eigen::VectorXd position,
@@ -182,18 +182,18 @@ Eigen::VectorXd unwhitenPosition(
   }
 }
 
-//' Simulate bouncing particle in whitened frame.
-//'
-//' @param initialPosition starting position
-//' @param initialMomentum starting momentum
-//' @param constraintDirec F matrix (k-by-d matrix where k is the number of
-//' linear constraints)
-//' @param constraintRowNormSq vector of squared row norms of constraintDirec
-//' @param constraintBound g vector (k dimensional)
-//' @param integrationTime total time the particle will travel for
-//' @param diagnosticMode boolean for whether to return the bounce
-//' distances for each sample
-//' @return vector of position in standard normal frame
+// ' Simulate bouncing particle in whitened frame.
+// '
+// ' @param initialPosition starting position
+// ' @param initialMomentum starting momentum
+// ' @param constraintDirec F matrix (k-by-d matrix where k is the number of
+// ' linear constraints)
+// ' @param constraintRowNormSq vector of squared row norms of constraintDirec
+// ' @param constraintBound g vector (k dimensional)
+// ' @param integrationTime total time the particle will travel for
+// ' @param diagnosticMode boolean for whether to return the bounce
+// ' distances for each sample
+// ' @return vector of position in standard normal frame
 // [[Rcpp::export]]
 Rcpp::List simulateWhitenedDynamics(
     const Eigen::Map<Eigen::VectorXd> initialPosition,

@@ -1,13 +1,12 @@
-#' Title
-#'
-#' @param position a d-dimensional vector of the initial position
-#' @param momentum a d-dimensional vector of the initial momentum
-#' @param nutsFlg todo
-#' @param engine todo
-#' @param t time length to simulate the Markov process
-#'
-#' @return one MCMC sample from the target MTN
-#' @export
+# ' Generate one sample with ZZ-HMC
+# '
+# ' @param position a d-dimensional vector of the initial position
+# ' @param momentum a d-dimensional vector of the initial momentum
+# ' @param nutsFlg logical. `TRUE` for using No-U-Turn algorithm.
+# ' @param engine ZZ-HMC engine.
+# ' @param t time length to simulate the Markov process
+# '
+# ' @return one MCMC sample from the target MTN
 getSample <- function(position,
                        momentum,
                        t,
