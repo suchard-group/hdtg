@@ -31,3 +31,4 @@ LinkingTo:
     RcppEigen,
     RcppParallel,
     RcppXsimd
+SystemRequirements: C++14
