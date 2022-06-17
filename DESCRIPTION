@@ -1,5 +1,5 @@
 Package: hdtg
-Title: Generate samples from multivariate truncated normal distributions
+Title: Generate Samples from Multivariate Truncated Normal Distributions
 Version: 0.1.0
 Authors@R: 
   c(person("Zhenyu", "Zhang", email = "zhangzhenyusa@gmail.com", role = c("aut", "cre")),
