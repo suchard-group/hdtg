@@ -8,11 +8,14 @@
 * There were no ERRORs and WARNINGs.
 * There are 2 NOTEs:
   - New submission
+  - Possibly misspelled words in DESCRIPTION
+  
+  These are names that are correctly spelled.
   - "  Compilation used the following non-portable flag(s):
     '-mavx' '-mavx2' '-mfma' '-msse' '-msse3' '-msse4.1' '-msse4.2'
     '-mssse3'"
 
-    But this is after configure file checks for system availability.
+  But this is after configure file checks for system availability.
 
 ## Downstream dependencies
 There are currently no downstream dependencies.
