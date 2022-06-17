@@ -9,3 +9,5 @@ build
 
 extra
 .idea
+
+cran-comments.md
