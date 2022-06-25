@@ -6,7 +6,7 @@ else
   ARCH_DIR=i386/
 endif
 
-CXX_STD = CXX11
+CXX_STD = CXX14
 
 PKG_CXXFLAGS = -I. -I../inst/include -DUSE_SIMD -DUSE_SSE -msse4.1
 
