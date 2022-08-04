@@ -85,38 +85,37 @@ BEGIN_RCPP
 END_RCPP
 }
 // createEngine
-Rcpp::List createEngine(int dimension, std::vector<double>& lowerBounds, std::vector<double>& upperBounds, long flags, long info, long seed);
-RcppExport SEXP _hdtg_createEngine(SEXP dimensionSEXP, SEXP lowerBoundsSEXP, SEXP upperBoundsSEXP, SEXP flagsSEXP, SEXP infoSEXP, SEXP seedSEXP) {
+Rcpp::List createEngine(int dimension, std::vector<double>& lowerBounds, std::vector<double>& upperBounds, long seed, NumericVector& mean, NumericVector& precision, long flags);
+RcppExport SEXP _hdtg_createEngine(SEXP dimensionSEXP, SEXP lowerBoundsSEXP, SEXP upperBoundsSEXP, SEXP seedSEXP, SEXP meanSEXP, SEXP precisionSEXP, SEXP flagsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type dimension(dimensionSEXP);
     Rcpp::traits::input_parameter< std::vector<double>& >::type lowerBounds(lowerBoundsSEXP);
     Rcpp::traits::input_parameter< std::vector<double>& >::type upperBounds(upperBoundsSEXP);
-    Rcpp::traits::input_parameter< long >::type flags(flagsSEXP);
-    Rcpp::traits::input_parameter< long >::type info(infoSEXP);
     Rcpp::traits::input_parameter< long >::type seed(seedSEXP);
-    rcpp_result_gen = Rcpp::wrap(createEngine(dimension, lowerBounds, upperBounds, flags, info, seed));
+    Rcpp::traits::input_parameter< NumericVector& >::type mean(meanSEXP);
+    Rcpp::traits::input_parameter< NumericVector& >::type precision(precisionSEXP);
+    Rcpp::traits::input_parameter< long >::type flags(flagsSEXP);
+    rcpp_result_gen = Rcpp::wrap(createEngine(dimension, lowerBounds, upperBounds, seed, mean, precision, flags));
     return rcpp_result_gen;
 END_RCPP
 }
 // createNutsEngine
-Rcpp::List createNutsEngine(int dimension, std::vector<double>& lowerBounds, std::vector<double>& upperBounds, long flags, long info, long seed, bool randomFlg, double stepSize, NumericVector& mean, NumericVector& precision);
-RcppExport SEXP _hdtg_createNutsEngine(SEXP dimensionSEXP, SEXP lowerBoundsSEXP, SEXP upperBoundsSEXP, SEXP flagsSEXP, SEXP infoSEXP, SEXP seedSEXP, SEXP randomFlgSEXP, SEXP stepSizeSEXP, SEXP meanSEXP, SEXP precisionSEXP) {
+Rcpp::List createNutsEngine(int dimension, std::vector<double>& lowerBounds, std::vector<double>& upperBounds, long seed, double stepSize, NumericVector& mean, NumericVector& precision, long flags);
+RcppExport SEXP _hdtg_createNutsEngine(SEXP dimensionSEXP, SEXP lowerBoundsSEXP, SEXP upperBoundsSEXP, SEXP seedSEXP, SEXP stepSizeSEXP, SEXP meanSEXP, SEXP precisionSEXP, SEXP flagsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type dimension(dimensionSEXP);
     Rcpp::traits::input_parameter< std::vector<double>& >::type lowerBounds(lowerBoundsSEXP);
     Rcpp::traits::input_parameter< std::vector<double>& >::type upperBounds(upperBoundsSEXP);
-    Rcpp::traits::input_parameter< long >::type flags(flagsSEXP);
-    Rcpp::traits::input_parameter< long >::type info(infoSEXP);
     Rcpp::traits::input_parameter< long >::type seed(seedSEXP);
-    Rcpp::traits::input_parameter< bool >::type randomFlg(randomFlgSEXP);
     Rcpp::traits::input_parameter< double >::type stepSize(stepSizeSEXP);
     Rcpp::traits::input_parameter< NumericVector& >::type mean(meanSEXP);
     Rcpp::traits::input_parameter< NumericVector& >::type precision(precisionSEXP);
-    rcpp_result_gen = Rcpp::wrap(createNutsEngine(dimension, lowerBounds, upperBounds, flags, info, seed, randomFlg, stepSize, mean, precision));
+    Rcpp::traits::input_parameter< long >::type flags(flagsSEXP);
+    rcpp_result_gen = Rcpp::wrap(createNutsEngine(dimension, lowerBounds, upperBounds, seed, stepSize, mean, precision, flags));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -139,17 +138,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< SEXP >::type sexp(sexpSEXP);
     Rcpp::traits::input_parameter< NumericVector& >::type precision(precisionSEXP);
     setPrecision(sexp, precision);
-    return R_NilValue;
-END_RCPP
-}
-// doSomething
-void doSomething(SEXP sexp, std::vector<double>& data);
-RcppExport SEXP _hdtg_doSomething(SEXP sexpSEXP, SEXP dataSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type sexp(sexpSEXP);
-    Rcpp::traits::input_parameter< std::vector<double>& >::type data(dataSEXP);
-    doSomething(sexp, data);
     return R_NilValue;
 END_RCPP
 }
@@ -203,11 +191,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_hdtg_whitenPosition", (DL_FUNC) &_hdtg_whitenPosition, 6},
     {"_hdtg_unwhitenPosition", (DL_FUNC) &_hdtg_unwhitenPosition, 4},
     {"_hdtg_simulateWhitenedDynamics", (DL_FUNC) &_hdtg_simulateWhitenedDynamics, 7},
-    {"_hdtg_createEngine", (DL_FUNC) &_hdtg_createEngine, 6},
-    {"_hdtg_createNutsEngine", (DL_FUNC) &_hdtg_createNutsEngine, 10},
+    {"_hdtg_createEngine", (DL_FUNC) &_hdtg_createEngine, 7},
+    {"_hdtg_createNutsEngine", (DL_FUNC) &_hdtg_createNutsEngine, 8},
     {"_hdtg_setMean", (DL_FUNC) &_hdtg_setMean, 2},
     {"_hdtg_setPrecision", (DL_FUNC) &_hdtg_setPrecision, 2},
-    {"_hdtg_doSomething", (DL_FUNC) &_hdtg_doSomething, 2},
     {"_hdtg_getNextEvent", (DL_FUNC) &_hdtg_getNextEvent, 6},
     {"_hdtg_oneIteration", (DL_FUNC) &_hdtg_oneIteration, 4},
     {"_hdtg_oneNutsIteration", (DL_FUNC) &_hdtg_oneNutsIteration, 3},

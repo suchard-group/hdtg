@@ -26,25 +26,56 @@ simulateWhitenedDynamics <- function(initialPosition, initialMomentum, constrain
     .Call(`_hdtg_simulateWhitenedDynamics`, initialPosition, initialMomentum, constraintDirec, constraintRowNormSq, constraintBound, integrationTime, diagnosticMode)
 }
 
-createEngine <- function(dimension, lowerBounds, upperBounds, flags, info, seed) {
-    .Call(`_hdtg_createEngine`, dimension, lowerBounds, upperBounds, flags, info, seed)
-}
-
+#' Create the C++ object
 #'
-createNutsEngine <- function(dimension, lowerBounds, upperBounds, flags, info, seed, randomFlg, stepSize, mean, precision) {
-    .Call(`_hdtg_createNutsEngine`, dimension, lowerBounds, upperBounds, flags, info, seed, randomFlg, stepSize, mean, precision)
+#' @param the dimension of MTN (d)
+#' @param a d-dimensional vector specifying the lower bounds.
+#' @param a d-dimensional vector specifying the upper bounds.
+#' @param flags 128
+#' @param info 1
+#' @param seed random seed
+#' @return a zigzag engine object.
+#' @export
+createEngine <- function(dimension, lowerBounds, upperBounds, seed, mean, precision, flags = 128L) {
+    .Call(`_hdtg_createEngine`, dimension, lowerBounds, upperBounds, seed, mean, precision, flags)
 }
 
+#' Create ZigZag nuts engine object
+#'
+#' Helper function creates zigZag nuts engine object with given latent dimension, location count and various
+#' implementation details. 
+#'
+#' @param dimension the dimension of MTN (d).
+#' @param lowerBounds the d-dimensional lower bound.
+#' @param upperBounds the d-dimensional upper bound.
+#' @param flags 128.
+#' @param info 1.
+#' @param seed random seed.
+#' @param stepSize step size.
+#' @param mean mean vector.
+#' @param precision precision matrix.
+#' @return a zigzag-nuts engine object.
+#' @export
+createNutsEngine <- function(dimension, lowerBounds, upperBounds, seed, stepSize, mean, precision, flags = 128L) {
+    .Call(`_hdtg_createNutsEngine`, dimension, lowerBounds, upperBounds, seed, stepSize, mean, precision, flags)
+}
+
+#' Set mean for MTN
+#'
+#' @param sexp pointer to zigzag object
+#' @param mean a numeric vector containing the MTN mean
+#' @export
 setMean <- function(sexp, mean) {
     invisible(.Call(`_hdtg_setMean`, sexp, mean))
 }
 
+#' Set the precision matrix for the target MTN
+#'
+#' @param sexp pointer to zigzag object
+#' @param precision the MTN precision matrix
+#' @export
 setPrecision <- function(sexp, precision) {
     invisible(.Call(`_hdtg_setPrecision`, sexp, precision))
-}
-
-.doSomething <- function(sexp, data) {
-    invisible(.Call(`_hdtg_doSomething`, sexp, data))
 }
 
 getNextEvent <- function(sexp, position, velocity, action, logpdfGradient, momentum) {

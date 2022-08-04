@@ -59,14 +59,14 @@ resBeast = c(2.559161,2.644123,2.618147,2.900000,2.787300,2.755389,2.667188,2.71
 
 res = zigzagHMC(
   n = n_iter,
+  burnin = 0,
   mean = mu,
   prec = prec,
   lowerBounds = rep(0, d),
   upperBounds = rep(Inf, d),
-  forcedStep = 0.1,
-  x = p0,
-  momentum = momentum,
-  randomFlg = F,
+  step = 0.1,
+  init = p0,
+  forcedMomentum = momentum,
   nutsFlg = T
 )
 

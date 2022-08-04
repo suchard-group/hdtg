@@ -1,19 +1,23 @@
-# ' Generate one sample with ZZ-HMC
-# '
-# ' @param position a d-dimensional vector of the initial position
-# ' @param momentum a d-dimensional vector of the initial momentum
-# ' @param nutsFlg logical. `TRUE` for using No-U-Turn algorithm.
-# ' @param engine ZZ-HMC engine.
-# ' @param t time length to simulate the Markov process
-# '
-# ' @return one MCMC sample from the target MTN
-getSample <- function(position,
-                       momentum,
-                       t,
-                       nutsFlg,
-                       engine) {
+#' Generate one random sample from the target MTN with Zigzag-HMC or Zigzag-NUTS
+#'
+#' @param position a d-dimensional initial position vector.
+#' @param momentum a d-dimensional initial momentum vector.
+#' @param nutsFlg logical. If `TRUE` the No-U-Turn sampler will be used (Zigzag-NUTS).
+#' @param engine list. Its `engine` element is a pointer to the C++ object that 
+#' implements fast computations for Zigzag-HMC and Zigzag-NUTS. 
+#' or Zigzag-NUTS computing engine.
+#' @param stepZZHMC step size for Zigzag-HMC. If `nutsFlg = TRUE`, `engine` contains
+#' the base step size for Zigzag-NUTS).
+#'
+#' @return one MCMC sample from the target MTN
+#' @export
+getZigzagSample <- function(position,
+                            momentum = NULL,
+                            nutsFlg,
+                            engine,
+                            stepZZHMC = NULL) {
   if(is.null(momentum)){
-    momentum <- drawMomentum(length(position))
+    momentum <- drawLaplaceMomentum(length(position))
   }
   
   if (nutsFlg) {
@@ -28,12 +32,48 @@ getSample <- function(position,
       sexp = engine$engine,
       position = position,
       momentum = momentum,
-      time = t
+      time = stepZZHMC
     )
   }
   return(res$position)
 }
 
-drawMomentum <- function(dim){
+#' Draw a random Laplace momentum 
+#'
+#' @param dim dimension of the momentum.
+#'
+#' @return a d-dimensional Laplace-distributed momentum.
+drawLaplaceMomentum <- function(dim){
   return((2 * (stats::runif(dim) > .5) - 1) * stats::rexp(dim, rate = 1))
+}
+
+
+#' Get an eligible initial value for a MTN with given mean and truncations
+#' 
+#' For a MTN the function returns an initial vector whose elements are one of: 
+#' (1) middle point of the truncation interval if both lower and upper bounds are 
+#' finite (2) lower(upper) bound +0.1(-0.1) if only the lower(upper) bound is finite 
+#' (3) the corresponding mean value if lower and upper bounds are -Inf and Inf.
+#'
+#' @param mean a d-dimensional mean vector
+#' @param lowerBounds a d-dimensional lower bound
+#' @param upperBounds a d-dimensional lower bound
+#'
+#' @return an eligible d-dimensional initial vector
+#' @export
+getInitialPosition <- function(mean, lowerBounds, upperBounds) {
+  
+  bL <- upperBounds - lowerBounds
+  midPoint <- (upperBounds + lowerBounds) / 2
+  
+  x <- mean
+  x[is.finite(bL)] = midPoint[is.finite(bL)]
+  
+  x[is.infinite(bL) &
+      is.finite(lowerBounds)] = lowerBounds[is.infinite(bL) &
+                                              is.finite(lowerBounds)] + 0.1
+  x[is.infinite(bL) &
+      is.finite(upperBounds)] = upperBounds[is.infinite(bL) &
+                                              is.finite(upperBounds)] - 0.1
+  return(x)
 }

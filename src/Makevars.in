@@ -2,8 +2,6 @@ $(info The name of the shared library to be created is: $(SHLIB))
 
 CXX_STD = CXX14
 
-PKG_CXXFLAGS = -I. @SIMD_FLAGS@ @AVX_FLAGS@ @SSE_FLAGS@
-
 PKG_LIBS = @RCPPPAR_LIB@
 
 OBJECTS.zigzag = \

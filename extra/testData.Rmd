@@ -76,14 +76,14 @@ stopifnot("column mean is too different" = max(colMeans(samplesList[[1]]) - colM
 ```
 
 
-n1(d=50)nEXACT, nTN, nHZZ, nNUTS: 1, 1, 2, 3
-n100(d=50)nEXACT, nTN, nHZZ, nNUTS: 140, 100, 220, 270
+<!-- n1(d=50)nEXACT, nTN, nHZZ, nNUTS: 1, 1, 2, 3 -->
+<!-- n100(d=50)nEXACT, nTN, nHZZ, nNUTS: 140, 100, 220, 270 -->
 
 n1(d=100)nEXACT, nTN, nHZZ, nNUTS: 2, 1, 2, 3
 n100(d=100)nEXACT, nTN, nHZZ, nNUTS: 170, 100, 240, 250
 
-n1(d=200)nEXACT, nTN, nHZZ, nNUTS: 1, -, 3, 1
-n100(d=200)nEXACT, nTN, nHZZ, nNUTS: 140, -, 290, 220
+<!-- n1(d=200)nEXACT, nTN, nHZZ, nNUTS: 1, -, 3, 1 -->
+<!-- n100(d=200)nEXACT, nTN, nHZZ, nNUTS: 140, -, 290, 220 -->
 
 n1(d=400)nEXACT, nTN, nHZZ, nNUTS: 2, -, 4, 3
 n100(d=400)nEXACT, nTN, nHZZ, nNUTS: 200, -, 350, 250

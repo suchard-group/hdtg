@@ -85,68 +85,68 @@ NutsSharedPtr &parsePtrNuts(SEXP sexp) {
 }
 
 
-// ' Create ZigZag engine object
-// '
-// ' @param dimension the dimension of MTN (d)
-// ' @param a d-dimensional vector specifying the lower bounds.
-// ' @param a d-dimensional vector specifying the upper bounds.
-// ' @param flags 128
-// ' @param info 1
-// ' @param seed random seed
-// ' @return a zigzag engine object.
-// '
+//' Create the C++ object
+//'
+//' @param the dimension of MTN (d)
+//' @param a d-dimensional vector specifying the lower bounds.
+//' @param a d-dimensional vector specifying the upper bounds.
+//' @param flags 128
+//' @param info 1
+//' @param seed random seed
+//' @return a zigzag engine object.
+//' @export
 // [[Rcpp::export(createEngine)]]
 Rcpp::List createEngine(int dimension,
                         std::vector<double> &lowerBounds,
                         std::vector<double> &upperBounds,
-                        long flags, long info, long seed) {
+                        long seed, 
+                        NumericVector &mean,
+                        NumericVector &precision,
+                        long flags = 128) {
     std::vector<double> mask(dimension, 1);
     auto zigZag = new ZigZagWrapper(
-            zz::dispatch(dimension, mask.data(), lowerBounds.data(), upperBounds.data(),
-                         flags, info, seed));
+      zz::dispatch(dimension, mask.data(), lowerBounds.data(), upperBounds.data(),
+                         flags, 1, seed));
 
     XPtrZigZagWrapper engine(zigZag);
 
-    Rcpp::List list = Rcpp::List::create(
-            Rcpp::Named("engine") = engine,
-            Rcpp::Named("dimension") = dimension,
-            Rcpp::Named("mask") = mask,
-            Rcpp::Named("flags") = flags,
-            Rcpp::Named("info") = info
-    );
+    auto ptr = parsePtrSse(engine);
+    ptr->setMean(zz::DblSpan(mean.begin(), mean.end()));
+    ptr->setPrecision(zz::DblSpan(precision.begin(), precision.end()));
+
+    Rcpp::List list = Rcpp::List::create(Rcpp::Named("engine") = engine);
 
     return list;
 }
 
-// ' Create ZigZag nuts engine object
-// '
-// ' Helper function creates zigZag nuts engine object with given latent dimension, location count and various
-// ' implementation details. 
-// '
-// ' @param dimension the dimension of MTN (d).
-// ' @param lowerBounds the d-dimensional lower bound.
-// ' @param upperBounds the d-dimensional upper bound.
-// ' @param flags 128.
-// ' @param info 1.
-// ' @param seed random seed.
-// ' @param randomFlg set to TRUE.
-// ' @param stepSize step size.
-// ' @param mean mean vector.
-// ' @param precision precision matrix.
-// ' @return a zigzag-nuts engine object.
+//' Create ZigZag nuts engine object
 //'
+//' Helper function creates zigZag nuts engine object with given latent dimension, location count and various
+//' implementation details. 
+//'
+//' @param dimension the dimension of MTN (d).
+//' @param lowerBounds the d-dimensional lower bound.
+//' @param upperBounds the d-dimensional upper bound.
+//' @param flags 128.
+//' @param info 1.
+//' @param seed random seed.
+//' @param stepSize step size.
+//' @param mean mean vector.
+//' @param precision precision matrix.
+//' @return a zigzag-nuts engine object.
+//' @export
 // [[Rcpp::export(createNutsEngine)]]
 Rcpp::List createNutsEngine(int dimension,
                             std::vector<double> &lowerBounds,
                             std::vector<double> &upperBounds,
-                            long flags, long info, long seed,
-                            bool randomFlg,
+                            long seed,
                             double stepSize,
                             NumericVector &mean,
-                            NumericVector &precision) {
+                            NumericVector &precision,
+                            long flags = 128) {
     std::vector<double> mask(dimension, 1); 
     auto zigZag = new ZigZagWrapper(
-            zz::dispatch(dimension, mask.data(), lowerBounds.data(), upperBounds.data(), flags, info, seed));
+            zz::dispatch(dimension, mask.data(), lowerBounds.data(), upperBounds.data(), flags, 1, seed));
     XPtrZigZagWrapper engineZZ(zigZag);
 
     // ptr to a zigzag obj
@@ -155,7 +155,7 @@ Rcpp::List createNutsEngine(int dimension,
     ptr->setPrecision(zz::DblSpan(precision.begin(), precision.end()));
 
     // create a NUTS obj:
-    auto nuts = new NutsWrapper(nuts::dispatchNuts(100, 10, seed, randomFlg, stepSize, ptr));
+    auto nuts = new NutsWrapper(nuts::dispatchNuts(100, 10, seed, TRUE, stepSize, ptr));
     XPtrNutsWrapper engineNuts(nuts);
 
     Rcpp::List list = Rcpp::List::create(Rcpp::Named("engine") = engineNuts);
@@ -163,43 +163,26 @@ Rcpp::List createNutsEngine(int dimension,
     return list;
 }
 
-// ' Set mean for MTN
-// '
-// ' @param sexp pointer to zigzag object
-// ' @param mean a numeric vector containing the MTN mean
+//' Set mean for MTN
+//'
+//' @param sexp pointer to zigzag object
+//' @param mean a numeric vector containing the MTN mean
+//' @export
 // [[Rcpp::export(setMean)]]
 void setMean(SEXP sexp, NumericVector &mean) {
     auto ptr = parsePtr(sexp);
-    try {
-        ptr->setMean(zz::DblSpan(mean.begin(), mean.end()));
-    }
-
-    catch (Rcpp::internal::InterruptedException &e) {
-        Rcout << "Caught an interrupt!" << std::endl;
-    }
+    ptr->setMean(zz::DblSpan(mean.begin(), mean.end()));
 }
 
-// ' Set the precision matrix for the target MTN
-// '
-// ' @param sexp pointer to zigzag object
-// ' @param precision the MTN precision matrix
+//' Set the precision matrix for the target MTN
+//'
+//' @param sexp pointer to zigzag object
+//' @param precision the MTN precision matrix
+//' @export
 // [[Rcpp::export(setPrecision)]]
 void setPrecision(SEXP sexp, NumericVector &precision) {
     auto ptr = parsePtr(sexp);
-    try {
-        ptr->setPrecision(zz::DblSpan(precision.begin(), precision.end()));
-    }
-
-    catch (Rcpp::internal::InterruptedException &e) {
-        Rcout << "Caught an interrupt!" << std::endl;
-    }
-}
-
-// [[Rcpp::export(.doSomething)]]
-void doSomething(SEXP sexp,
-                 std::vector<double> &data) {
-    auto ptr = parsePtr(sexp);
-    //ptr->doSomething(data.data(), data.size());
+    ptr->setPrecision(zz::DblSpan(precision.begin(), precision.end()));
 }
 
 // [[Rcpp::export(getNextEvent)]]

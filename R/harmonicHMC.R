@@ -4,7 +4,7 @@
 #' with constraints Fx+g >= 0 using the Harmonic Hamiltonian Monte Carlo sampler 
 #' (Harmonic-HMC).
 #' @param n number of samples after burn-in.
-#' @param burnin number of burn-in samples.
+#' @param burnin number of burn-in samples (default = 0).
 #' @param mean a d-dimensional mean vector.
 #' @param choleskyFactor upper triangular matrix R from Cholesky decomposition
 #' of precision or covariance matrix into R^TR.
@@ -50,14 +50,14 @@
 #' \insertRef{pakman2014exact}{hdtg}
 
 harmonicHMC <- function(n,
-                        burnin,
+                        burnin = 0,
                         mean,
                         choleskyFactor,
                         constraintDirec,
                         constraintBound,
                         init,
                         integrationTime = c(pi / 8, pi / 2),
-                        precParametrized = TRUE,
+                        precParametrized,
                         diagnosticMode = FALSE) {
   if (length(integrationTime) == 1) {
     integrationTime[2] <- integrationTime[1]
@@ -65,7 +65,7 @@ harmonicHMC <- function(n,
   if (integrationTime[2] < integrationTime[1]) {
     stop("Upper bound for integration time must be greater than lower bound.")
   }
-  if (sum(constraintDirec %*% init + constraintBound) < length(constraintBound)) {
+  if (sum(constraintDirec %*% init + constraintBound > 0) < length(constraintBound)) {
     stop("Initial value x does not satisfy Fx + g >=0")
   }
   samples <- matrix(nrow = n + burnin, ncol = ncol(constraintDirec))
