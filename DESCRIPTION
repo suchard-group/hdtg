@@ -1,6 +1,6 @@
 Package: hdtg
 Title: Generate Samples from Multivariate Truncated Normal Distributions
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: 
   c(person("Zhenyu", "Zhang", email = "zhangzhenyusa@gmail.com", role = c("aut", "cre")),
     person("Andrew", "Chin", email = "achin23@jhu.edu", role = "aut"),
@@ -9,26 +9,15 @@ Authors@R:
     person("John W.", "Ratcliff et al.", role = c("cph", "ctb"),
       comment = "authors and copyright holders of see2neon.h under an MIT license"))
 Maintainer: Zhenyu Zhang <zhangzhenyusa@gmail.com>
-Description: Efficient sampling from high-dimensional truncated Gaussian 
-  distributions (so comes the package name hdtg). Techniques include zigzag Hamiltonian 
-  Monte Carlo as in Akihiko Nishimura, Zhenyu Zhang and Marc A. Suchard (2021) 
-  <arXiv:2104.07694>, and harmonic Hamiltonian Monte Carlo in Ari Pakman and Liam 
-  Paninski (2014) <doi:10.1080/10618600.2013.788448>. 
+Description: Efficient sampling from high-dimensional truncated Gaussian distributions.
+    Techniques include zigzag Hamiltonian Monte Carlo as in Akihiko Nishimura,
+    Zhenyu Zhang and Marc A. Suchard (2021) <arXiv:2104.07694>, and harmonic
+    Monte in Ari Pakman and Liam Paninski (2014) <doi:10.1080/10618600.2013.788448>.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.0
-Imports: 
-    Rcpp,
-    RcppParallel,
-    RcppXsimd,
-    mgcv,
-    stats,
-    Rdpack
+Imports: Rcpp, RcppParallel, RcppXsimd, mgcv, stats, Rdpack
 RdMacros: Rdpack
-LinkingTo: 
-    Rcpp,
-    RcppEigen,
-    RcppParallel,
-    RcppXsimd
+LinkingTo: Rcpp, RcppEigen, RcppParallel, RcppXsimd
 SystemRequirements: C++14
