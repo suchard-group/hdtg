@@ -12,5 +12,5 @@ setMean(sexp, mean)
 \item{mean}{the mean vector.}
 }
 \description{
-Set the mean for the target MTN
+Set the mean vector for a given Zigzag-HMC engine object.
 }

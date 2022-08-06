@@ -2,7 +2,7 @@
 % Please edit documentation in R/zigzagHMC.R
 \name{zigzagHMC}
 \alias{zigzagHMC}
-\title{Sample from a truncated Gaussian distribution with the zigzag HMC}
+\title{Sample from a truncated Gaussian distribution}
 \usage{
 zigzagHMC(
   n,
@@ -42,7 +42,7 @@ zigzagHMC(
 \item{rSeed}{random seed (default = 1).}
 }
 \value{
-(n + burnin) x d matrix of samples. The first \code{burnin} samples are from the user specified warm-up iterations.
+an (n + burnin)*d matrix of samples. The first \code{burnin} samples are from the user specified warm-up iterations.
 }
 \description{
 Generate MCMC samples from a d-dimensional truncated Gaussian distribution with element-wise truncations using the Zigzag Hamiltonian Monte Carlo sampler (Zigzag-HMC).
@@ -53,13 +53,8 @@ d <- 10
 A <- matrix(runif(d^2)*2-1, ncol=d)
 covMat <- t(A) \%*\% A
 initial <- rep(1, d)
-results <- zigzagHMC(
-n = 1000,
-burnin = 1000,
-mean = rep(0, d),
-cov = covMat,
-lowerBounds = rep(0, d),
-upperBounds = rep(Inf, d))
+results <- zigzagHMC(n = 1000, burnin = 1000, mean = rep(0, d), cov = covMat,
+lowerBounds = rep(0, d), upperBounds = rep(Inf, d))
 
 }
 \references{

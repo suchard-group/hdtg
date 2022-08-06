@@ -2,9 +2,7 @@
 % Please edit documentation in R/getSampleFunctions.R
 \name{getZigzagSample}
 \alias{getZigzagSample}
-\title{Simulate one MTN sample
-
-Generate one random sample from the target MTN with Zigzag-HMC or Zigzag-NUTS.}
+\title{Draw one MTN sample with Zigzag-HMC or Zigzag-NUTS}
 \usage{
 getZigzagSample(position, momentum = NULL, nutsFlg, engine, stepZZHMC = NULL)
 }
@@ -26,7 +24,39 @@ the base step size for Zigzag-NUTS).}
 one MCMC sample from the target MTN.
 }
 \description{
-Simulate one MTN sample
+Simulate the Zigzag-HMC or Zigzag-NUTS dynamics on a given MTN.
+}
+\note{
+\code{getZigzagSample} is particularly efficient when the target MTN has a random
+mean and covariance/precision where one can reuse the Zigzag-HMC engine object while
+updating the mean and covariance. The following example demonstrates such a use.
+}
+\examples{
+set.seed(1)
+n <- 1000
+d <- 10
+samples <- array(0, c(n, d))
 
-Generate one random sample from the target MTN with Zigzag-HMC or Zigzag-NUTS.
+# initialize MTN mean and precision
+m <- rnorm(d, 0, 1)
+prec <- rWishart(n = 1, df = d, Sigma = diag(d))[, , 1]
+# call createEngine once
+engine <- createEngine(dimension = d, lowerBounds = rep(0, d),
+ upperBounds = rep(Inf, d), seed = 1, mean = m, precision = prec)
+
+HZZtime <- sqrt(2) / sqrt(min(mgcv::slanczos(
+ A = prec, k = 1,
+ kl = 1
+)[['values']]))
+
+currentSample <- rep(0.1, d)
+for (i in 1:n) {
+  m <- rnorm(d, 0, 1)
+  prec <- rWishart(n = 1, df = d, Sigma = diag(d))[,,1]
+  setMean(sexp = engine$engine, mean = m)
+  setPrecision(sexp = engine$engine, precision = prec)
+  currentSample <- getZigzagSample(position = currentSample, nutsFlg = F,
+      engine = engine, stepZZHMC = HZZtime)
+  samples[i,] <- currentSample
+}
 }

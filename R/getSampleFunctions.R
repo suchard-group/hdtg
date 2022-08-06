@@ -1,6 +1,6 @@
-#' Simulate one MTN sample
-#'  
-#' Generate one random sample from the target MTN with Zigzag-HMC or Zigzag-NUTS.
+#' Draw one MTN sample with Zigzag-HMC or Zigzag-NUTS
+#'
+#' Simulate the Zigzag-HMC or Zigzag-NUTS dynamics on a given MTN.
 #'
 #' @param position a d-dimensional initial position vector.
 #' @param momentum a d-dimensional initial momentum vector.
@@ -13,6 +13,38 @@
 #'
 #' @return one MCMC sample from the target MTN.
 #' @export
+#' @note `getZigzagSample` is particularly efficient when the target MTN has a random
+#' mean and covariance/precision where one can reuse the Zigzag-HMC engine object while
+#' updating the mean and covariance. The following example demonstrates such a use.
+
+#' @examples 
+#' set.seed(1)
+#' n <- 1000
+#' d <- 10
+#' samples <- array(0, c(n, d))
+#' 
+#' # initialize MTN mean and precision
+#' m <- rnorm(d, 0, 1)
+#' prec <- rWishart(n = 1, df = d, Sigma = diag(d))[, , 1]
+#' # call createEngine once
+#'engine <- createEngine(dimension = d, lowerBounds = rep(0, d),
+#'  upperBounds = rep(Inf, d), seed = 1, mean = m, precision = prec)
+#'
+#' HZZtime <- sqrt(2) / sqrt(min(mgcv::slanczos(
+#'  A = prec, k = 1,
+#'  kl = 1
+#' )[['values']]))
+#'
+#' currentSample <- rep(0.1, d)
+#' for (i in 1:n) {
+#'   m <- rnorm(d, 0, 1)
+#'   prec <- rWishart(n = 1, df = d, Sigma = diag(d))[,,1]
+#'   setMean(sexp = engine$engine, mean = m)
+#'   setPrecision(sexp = engine$engine, precision = prec)
+#'   currentSample <- getZigzagSample(position = currentSample, nutsFlg = F,
+#'       engine = engine, stepZZHMC = HZZtime)
+#'   samples[i,] <- currentSample
+#'}
 getZigzagSample <- function(position,
                             momentum = NULL,
                             nutsFlg,
@@ -38,13 +70,13 @@ getZigzagSample <- function(position,
   return(res$position)
 }
 
-#' Draw a random Laplace momentum
-#'
-#' Generate a d-dimensional momentum where the density of each element is proportional to exp(-|pi|).  
-#'
-#' @param d dimension of the momentum.
-#'
-#' @return a d-dimensional Laplace-distributed momentum.
+# ' Draw a random Laplace momentum
+# '
+# ' Generate a d-dimensional momentum where the density of each element is proportional to exp(-|pi|).  
+# ' 
+# ' @param d dimension of the momentum.
+# '
+# ' @return a d-dimensional Laplace-distributed momentum.
 drawLaplaceMomentum <- function(d) {
   return((2 * (stats::runif(d) > .5) - 1) * stats::rexp(d, rate = 1))
 }

@@ -1,4 +1,4 @@
-#' Sample from a truncated Gaussian distribution with the zigzag HMC
+#' Sample from a truncated Gaussian distribution 
 #'
 #' Generate MCMC samples from a d-dimensional truncated Gaussian distribution with element-wise truncations using the Zigzag Hamiltonian Monte Carlo sampler (Zigzag-HMC).
 #'
@@ -14,22 +14,16 @@
 #' @param step step size for Zigzag-HMC or Zigzag-NUTS (if `nutsFlg = TRUE`). Default value is the empirically optimal choice: sqrt(2)(lambda)^(-1/2) for Zigzag-HMC and 0.1(lambda)^(-1/2) for Zigzag-NUTS, where lambda is the minimal eigenvalue of the precision matrix.   
 #' @param rSeed random seed (default = 1).
 #'
-#' @return (n + burnin) x d matrix of samples. The first `burnin` samples are from the user specified warm-up iterations.
+#' @return an (n + burnin)*d matrix of samples. The first `burnin` samples are from the user specified warm-up iterations.
 #' @export
-#' 
 #' @examples
 #' set.seed(1)
 #' d <- 10
 #' A <- matrix(runif(d^2)*2-1, ncol=d)
 #' covMat <- t(A) %*% A
 #' initial <- rep(1, d)
-#' results <- zigzagHMC(
-#' n = 1000,
-#' burnin = 1000,
-#' mean = rep(0, d),
-#' cov = covMat,
-#' lowerBounds = rep(0, d),
-#' upperBounds = rep(Inf, d))
+#' results <- zigzagHMC(n = 1000, burnin = 1000, mean = rep(0, d), cov = covMat,
+#' lowerBounds = rep(0, d), upperBounds = rep(Inf, d))
 #'
 #' @references
 #' \insertRef{nishimura2021hamiltonian}{hdtg}

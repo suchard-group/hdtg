@@ -12,5 +12,5 @@ setPrecision(sexp, precision)
 \item{precision}{the precision matrix.}
 }
 \description{
-Set the precision matrix for the target MTN
+Set the precision matrix for a given Zigzag-HMC engine object.
 }
