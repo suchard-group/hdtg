@@ -6,7 +6,7 @@
 \usage{
 zigzagHMC(
   n,
-  burnin,
+  burnin = 0,
   mean,
   cov,
   prec = NULL,
@@ -21,7 +21,7 @@ zigzagHMC(
 \arguments{
 \item{n}{number of samples after burn-in.}
 
-\item{burnin}{number of burn-in samples.}
+\item{burnin}{number of burn-in samples (default = 0).}
 
 \item{mean}{a d-dimensional mean vector.}
 

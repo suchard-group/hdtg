@@ -2,48 +2,40 @@
 % Please edit documentation in R/RcppExports.R
 \name{createNutsEngine}
 \alias{createNutsEngine}
-\title{Create ZigZag nuts engine object}
+\title{Create a Zigzag-NUTS engine object}
 \usage{
 createNutsEngine(
   dimension,
   lowerBounds,
   upperBounds,
-  flags,
   seed,
   stepSize,
   mean,
-  precision
+  precision,
+  flags = 128L
 )
 }
 \arguments{
-\item{dimension}{the dimension of MTN (d).}
+\item{dimension}{the dimension of MTN.}
 
-\item{lowerBounds}{the d-dimensional lower bound.}
+\item{lowerBounds}{a vector specifying the lower bounds.}
 
-\item{upperBounds}{the d-dimensional upper bound.}
-
-\item{flags}{\enumerate{
-\item 
-}}
+\item{upperBounds}{a vector specifying the upper bounds.}
 
 \item{seed}{random seed.}
 
-\item{stepSize}{step size.}
+\item{stepSize}{the base step size for Zigzag-NUTS.}
 
-\item{mean}{mean vector.}
+\item{mean}{the mean vector.}
 
-\item{precision}{precision matrix.}
+\item{precision}{the precision matrix.}
 
-\item{info}{\enumerate{
-\item 
-}}
-
-\item{randomFlg}{set to TRUE.}
+\item{flags}{which SIMD instruction set to use. 128 = SSE, 256 = AVX.}
 }
 \value{
-a zigzag-nuts engine object.
+a list whose only element is the Zigzag-NUTS engine object.
 }
 \description{
-Helper function creates zigZag nuts engine object with given latent dimension, location count and various
-implementation details.
+Create the C++ object to set up SIMD vectorization for speeding up calculations
+for Zigzag-NUTS ("Zigzag-NUTS engine").
 }

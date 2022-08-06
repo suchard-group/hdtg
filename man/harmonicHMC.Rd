@@ -6,41 +6,39 @@
 \usage{
 harmonicHMC(
   n,
-  burnin,
+  burnin = 0,
   mean,
   choleskyFactor,
-  constraintDirec,
-  constraintBound,
+  F,
+  g,
   init,
-  integrationTime = c(pi/8, pi/2),
-  precParametrized = TRUE,
+  time = c(pi/8, pi/2),
+  precFlg,
   diagnosticMode = FALSE
 )
 }
 \arguments{
 \item{n}{number of samples after burn-in.}
 
-\item{burnin}{number of burn-in samples.}
+\item{burnin}{number of burn-in samples (default = 0).}
 
 \item{mean}{a d-dimensional mean vector.}
 
-\item{choleskyFactor}{upper triangular matrix R from Cholesky decomposition
-of precision or covariance matrix into R^TR.}
+\item{choleskyFactor}{upper triangular matrix R from Cholesky decomposition of
+precision or covariance matrix into R^TR.}
 
-\item{constraintDirec}{F matrix (k-by-d matrix where k is the number of
-linear constraints).}
+\item{F}{F matrix (k-by-d matrix where k is the number of linear constraints).}
 
-\item{constraintBound}{g vector (k-dimensional).}
+\item{g}{g vector (k-dimensional).}
 
-\item{init}{a d-dimensional vector of the initial value. \code{init} must satisfy
-all constraints.}
+\item{init}{a d-dimensional vector of the initial value. \code{init} must satisfy all constraints.}
 
-\item{integrationTime}{HMC integration time for each iteration. Can either be
+\item{time}{HMC integration time for each iteration. Can either be
 a scalar value for a fixed time across all samples, or a length 2 vector of a
 lower and upper bound for uniform distribution from which the time is drawn
 from for each iteration.}
 
-\item{precParametrized}{logical. whether \code{choleskyFactor} is from precision
+\item{precFlg}{logical. whether \code{choleskyFactor} is from precision
 (\code{TRUE}) or covariance matrix (\code{FALSE}).}
 
 \item{diagnosticMode}{logical. \code{TRUE} for also returning the bounce distances
@@ -64,18 +62,11 @@ A <- matrix(runif(d^2)*2-1, ncol=d)
 Sigma <- t(A) \%*\% A
 R <- cholesky(Sigma)
 mu <- rep(0,d)
-constraintDirec <- diag(d)
-constraintBound <- rep(0,d)
+F <- diag(d)
+g <- rep(0,d)
 initial <- rep(1, d)
-results <- harmonicHMC(
-1000,
-1000,
-mu,
-R,
-constraintDirec,
-constraintBound,
-initial,
-precParametrized = FALSE)
+results <- harmonicHMC(1000, 1000, mu, R, F, g,
+ initial, precFlg = FALSE)
 }
 \references{
 \insertRef{pakman2014exact}{hdtg}

@@ -84,16 +84,19 @@ NutsSharedPtr &parsePtrNuts(SEXP sexp) {
     return ptr->get();
 }
 
-
-//' Create the C++ object
+//' Create a Zigzag-HMC engine object
+//' 
+//' Create the C++ object to set up SIMD vectorization for speeding up calculations
+//' for Zigzag-HMC ("Zigzag-HMC engine"). 
 //'
-//' @param the dimension of MTN (d)
-//' @param a d-dimensional vector specifying the lower bounds.
-//' @param a d-dimensional vector specifying the upper bounds.
-//' @param flags 128
-//' @param info 1
-//' @param seed random seed
-//' @return a zigzag engine object.
+//' @param dimension the dimension of MTN.
+//' @param lowerBounds a vector specifying the lower bounds.
+//' @param upperBounds a vector specifying the upper bounds.
+//' @param seed random seed.
+//' @param mean the mean vector.
+//' @param precision the precision matrix.
+//' @param flags which SIMD instruction set to use. 128 = SSE, 256 = AVX.
+//' @return a list whose only element is the Zigzag-HMC engine object.
 //' @export
 // [[Rcpp::export(createEngine)]]
 Rcpp::List createEngine(int dimension,
@@ -119,21 +122,20 @@ Rcpp::List createEngine(int dimension,
     return list;
 }
 
-//' Create ZigZag nuts engine object
+//' Create a Zigzag-NUTS engine object
+//' 
+//' Create the C++ object to set up SIMD vectorization for speeding up calculations
+//' for Zigzag-NUTS ("Zigzag-NUTS engine"). 
 //'
-//' Helper function creates zigZag nuts engine object with given latent dimension, location count and various
-//' implementation details. 
-//'
-//' @param dimension the dimension of MTN (d).
-//' @param lowerBounds the d-dimensional lower bound.
-//' @param upperBounds the d-dimensional upper bound.
-//' @param flags 128.
-//' @param info 1.
+//' @param dimension the dimension of MTN.
+//' @param lowerBounds a vector specifying the lower bounds.
+//' @param upperBounds a vector specifying the upper bounds.
 //' @param seed random seed.
-//' @param stepSize step size.
-//' @param mean mean vector.
-//' @param precision precision matrix.
-//' @return a zigzag-nuts engine object.
+//' @param stepSize the base step size for Zigzag-NUTS.
+//' @param mean the mean vector.
+//' @param precision the precision matrix.
+//' @param flags which SIMD instruction set to use. 128 = SSE, 256 = AVX.
+//' @return a list whose only element is the Zigzag-NUTS engine object.
 //' @export
 // [[Rcpp::export(createNutsEngine)]]
 Rcpp::List createNutsEngine(int dimension,
@@ -163,10 +165,10 @@ Rcpp::List createNutsEngine(int dimension,
     return list;
 }
 
-//' Set mean for MTN
+//' Set the mean for the target MTN
 //'
-//' @param sexp pointer to zigzag object
-//' @param mean a numeric vector containing the MTN mean
+//' @param sexp pointer to a Zigzag-HMC engine object.
+//' @param mean the mean vector.
 //' @export
 // [[Rcpp::export(setMean)]]
 void setMean(SEXP sexp, NumericVector &mean) {
@@ -176,8 +178,8 @@ void setMean(SEXP sexp, NumericVector &mean) {
 
 //' Set the precision matrix for the target MTN
 //'
-//' @param sexp pointer to zigzag object
-//' @param precision the MTN precision matrix
+//' @param sexp pointer to a Zigzag-HMC engine object.
+//' @param precision the precision matrix.
 //' @export
 // [[Rcpp::export(setPrecision)]]
 void setPrecision(SEXP sexp, NumericVector &precision) {

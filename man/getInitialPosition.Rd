@@ -7,18 +7,18 @@
 getInitialPosition(mean, lowerBounds, upperBounds)
 }
 \arguments{
-\item{mean}{a d-dimensional mean vector}
+\item{mean}{a d-dimensional mean vector.}
 
-\item{lowerBounds}{a d-dimensional lower bound}
+\item{lowerBounds}{a d-dimensional vector specifying the lower bounds.}
 
-\item{upperBounds}{a d-dimensional lower bound}
+\item{upperBounds}{a d-dimensional vector specifying the lower bounds.}
 }
 \value{
-an eligible d-dimensional initial vector
+an eligible d-dimensional initial vector.
 }
 \description{
-For a MTN the function returns an initial vector whose elements are one of:
+For a given MTN the function returns an initial vector whose elements are one of:
 (1) middle point of the truncation interval if both lower and upper bounds are
-finite (2) lower(upper) bound +0.1(-0.1) if only the lower(upper) bound is finite
-(3) the corresponding mean value if lower and upper bounds are -Inf and Inf.
+finite (2) lower (upper) bound +0.1 (-0.1) if only the lower (upper) bound is finite
+(3) the corresponding mean value if lower bound = \code{-Inf} are upper bound = \code{Inf}.
 }

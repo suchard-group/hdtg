@@ -4,14 +4,14 @@
 \alias{drawLaplaceMomentum}
 \title{Draw a random Laplace momentum}
 \usage{
-drawLaplaceMomentum(dim)
+drawLaplaceMomentum(d)
 }
 \arguments{
-\item{dim}{dimension of the momentum.}
+\item{d}{dimension of the momentum.}
 }
 \value{
 a d-dimensional Laplace-distributed momentum.
 }
 \description{
-Draw a random Laplace momentum
+Generate a d-dimensional momentum where the density of each element is proportional to exp(-|pi|).
 }

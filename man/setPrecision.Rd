@@ -7,9 +7,9 @@
 setPrecision(sexp, precision)
 }
 \arguments{
-\item{sexp}{pointer to zigzag object}
+\item{sexp}{pointer to a Zigzag-HMC engine object.}
 
-\item{precision}{the MTN precision matrix}
+\item{precision}{the precision matrix.}
 }
 \description{
 Set the precision matrix for the target MTN

@@ -2,24 +2,37 @@
 % Please edit documentation in R/RcppExports.R
 \name{createEngine}
 \alias{createEngine}
-\title{Create the C++ object}
+\title{Create a Zigzag-HMC engine object}
 \usage{
-createEngine(dimension, lowerBounds, upperBounds, flags, seed, mean, precision)
+createEngine(
+  dimension,
+  lowerBounds,
+  upperBounds,
+  seed,
+  mean,
+  precision,
+  flags = 128L
+)
 }
 \arguments{
-\item{flags}{128}
+\item{dimension}{the dimension of MTN.}
 
-\item{seed}{random seed}
+\item{lowerBounds}{a vector specifying the lower bounds.}
 
-\item{the}{dimension of MTN (d)}
+\item{upperBounds}{a vector specifying the upper bounds.}
 
-\item{a}{d-dimensional vector specifying the upper bounds.}
+\item{seed}{random seed.}
 
-\item{info}{1}
+\item{mean}{the mean vector.}
+
+\item{precision}{the precision matrix.}
+
+\item{flags}{which SIMD instruction set to use. 128 = SSE, 256 = AVX.}
 }
 \value{
-a zigzag engine object.
+a list whose only element is the Zigzag-HMC engine object.
 }
 \description{
-Create the C++ object
+Create the C++ object to set up SIMD vectorization for speeding up calculations
+for Zigzag-HMC ("Zigzag-HMC engine").
 }

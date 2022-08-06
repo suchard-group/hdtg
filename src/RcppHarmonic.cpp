@@ -1,10 +1,11 @@
 #include <RcppEigen.h>
 // [[Rcpp::depends(RcppEigen)]]
-
+//' Efficient Cholesky decomposition
+//' 
 //' Compute Cholesky decomposition of a matrix.
 //'
 //' @param A matrix to decompose
-//' @return upper triangular matrix R such that A = R'R.
+//' @return upper triangular matrix R such that A = U'U.
 //' @export
 // [[Rcpp::export]]
 Eigen::MatrixXd cholesky(const Eigen::Map<Eigen::MatrixXd> A) {

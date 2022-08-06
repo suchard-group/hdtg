@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{cholesky}
 \alias{cholesky}
-\title{Compute Cholesky decomposition of a matrix.}
+\title{Efficient Cholesky decomposition}
 \usage{
 cholesky(A)
 }
@@ -10,7 +10,7 @@ cholesky(A)
 \item{A}{matrix to decompose}
 }
 \value{
-upper triangular matrix R such that A = R'R.
+upper triangular matrix R such that A = U'U.
 }
 \description{
 Compute Cholesky decomposition of a matrix.

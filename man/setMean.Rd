@@ -2,15 +2,15 @@
 % Please edit documentation in R/RcppExports.R
 \name{setMean}
 \alias{setMean}
-\title{Set mean for MTN}
+\title{Set the mean for the target MTN}
 \usage{
 setMean(sexp, mean)
 }
 \arguments{
-\item{sexp}{pointer to zigzag object}
+\item{sexp}{pointer to a Zigzag-HMC engine object.}
 
-\item{mean}{a numeric vector containing the MTN mean}
+\item{mean}{the mean vector.}
 }
 \description{
-Set mean for MTN
+Set the mean for the target MTN
 }

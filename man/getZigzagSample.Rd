@@ -2,9 +2,11 @@
 % Please edit documentation in R/getSampleFunctions.R
 \name{getZigzagSample}
 \alias{getZigzagSample}
-\title{Generate one random sample from the target MTN with Zigzag-HMC or Zigzag-NUTS}
+\title{Simulate one MTN sample
+
+Generate one random sample from the target MTN with Zigzag-HMC or Zigzag-NUTS.}
 \usage{
-getZigzagSample(position, momentum, nutsFlg, engine, stepZZHMC = NULL)
+getZigzagSample(position, momentum = NULL, nutsFlg, engine, stepZZHMC = NULL)
 }
 \arguments{
 \item{position}{a d-dimensional initial position vector.}
@@ -13,16 +15,18 @@ getZigzagSample(position, momentum, nutsFlg, engine, stepZZHMC = NULL)
 
 \item{nutsFlg}{logical. If \code{TRUE} the No-U-Turn sampler will be used (Zigzag-NUTS).}
 
-\item{engine}{list. Its \code{engine} element is a pointer to the C++ object that
-implements fast computations for Zigzag-HMC and Zigzag-NUTS.
-or Zigzag-NUTS computing engine.}
+\item{engine}{list. Its \code{engine} element is a pointer to the Zigzag-HMC engine
+(or Zigzag-NUTS engine) C++ object that implements fast computations for
+Zigzag-HMC (or Zigzag-NUTS).}
 
 \item{stepZZHMC}{step size for Zigzag-HMC. If \code{nutsFlg = TRUE}, \code{engine} contains
 the base step size for Zigzag-NUTS).}
 }
 \value{
-one MCMC sample from the target MTN
+one MCMC sample from the target MTN.
 }
 \description{
-Generate one random sample from the target MTN with Zigzag-HMC or Zigzag-NUTS
+Simulate one MTN sample
+
+Generate one random sample from the target MTN with Zigzag-HMC or Zigzag-NUTS.
 }
