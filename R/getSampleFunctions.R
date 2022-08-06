@@ -41,7 +41,7 @@
 #'   prec <- rWishart(n = 1, df = d, Sigma = diag(d))[,,1]
 #'   setMean(sexp = engine$engine, mean = m)
 #'   setPrecision(sexp = engine$engine, precision = prec)
-#'   currentSample <- getZigzagSample(position = currentSample, nutsFlg = F,
+#'   currentSample <- getZigzagSample(position = currentSample, nutsFlg = FALSE,
 #'       engine = engine, stepZZHMC = HZZtime)
 #'   samples[i,] <- currentSample
 #'}

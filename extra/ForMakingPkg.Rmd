@@ -92,7 +92,7 @@ resultsHHMC <- harmonicHMC(1000,
                            constraintDirec,
                            constraintBound,
                            initial,
-                           precParametrized = FALSE)
+                           precFlg = FALSE)
 ```
 
 ```{r test ZZHMC as in doc}
