@@ -4,9 +4,9 @@
 
 #include <vector>
 
-#include "../src/AbstractZigZag.hpp"
-#include "../src/ZigZag.hpp"
-#include "../src/NoUTurn.hpp"
+#include "../src/AbstractZigZag.h"
+#include "../src/ZigZag.h"
+#include "../src/NoUTurn.h"
 #include "../src/UniformGenerator.h"
 using namespace std;
 int main(int argCount, char** args) {

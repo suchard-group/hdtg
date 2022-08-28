@@ -337,25 +337,6 @@ JNIEXPORT jobject JNICALL Java_dr_evomodel_operators_NativeZigZag_getNextEvent
     return env->NewObject(classMTL, cid, firstBounce.time, firstBounce.index, firstBounce.type);
 }
 
-JNIEXPORT jobject JNICALL Java_dr_evomodel_operators_NativeZigZag_getNextEventIrreversible
-        (JNIEnv *env, jobject obj,
-                jint instanceNumber,
-                jdoubleArray jPosition,
-                jdoubleArray jVelocity,
-                jdoubleArray jAction,
-                jdoubleArray jGradient) {
-    (void)obj;
-
-    JniCriticalHandler handler(env, env->GetArrayLength(jPosition), JNI_ABORT,
-            jPosition, jVelocity, jAction, jGradient, nullptr);
-
-    auto firstBounce = implementation[instanceNumber]->getNextBounceIrreversible(
-            handler.getSpan(0), handler.getSpan(1),
-            handler.getSpan(2), handler.getSpan(3));
-
-    return env->NewObject(classMTL, cid, firstBounce.time, firstBounce.index, firstBounce.type);
-}
-
 
 std::unique_ptr<JniCriticalHandler> handler;
 

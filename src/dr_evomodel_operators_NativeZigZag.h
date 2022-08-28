@@ -10,10 +10,10 @@ extern "C" {
 /*
  * Class:     dr_evomodel_operators_NativeZigZag
  * Method:    create
- * Signature: (ILdr/evomodel/operators/NativeZigZagOptions;[D[D)I
+ * Signature: (ILdr/evomodel/operators/NativeZigZagOptions;[D[D[D[D)I
  */
 JNIEXPORT jint JNICALL Java_dr_evomodel_operators_NativeZigZag_create
-  (JNIEnv *, jobject, jint, jobject, jdoubleArray, jdoubleArray, jdoubleArray);
+  (JNIEnv *, jobject, jint, jobject, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray);
 
 /*
  * Class:     dr_evomodel_operators_NativeZigZag
@@ -58,7 +58,7 @@ JNIEXPORT jboolean JNICALL Java_dr_evomodel_operators_NativeZigZag_inCriticalReg
 /*
  * Class:     dr_evomodel_operators_NativeZigZag
  * Method:    getNextEventInCriticalRegion
- * Signature: (I)Ldr/inference/operators/hmc/MinimumTravelInformationBinary;
+ * Signature: (I)Ldr/inference/operators/hmc/MinimumTravelInformation;
  */
 JNIEXPORT jobject JNICALL Java_dr_evomodel_operators_NativeZigZag_getNextEventInCriticalRegion
   (JNIEnv *, jobject, jint);
@@ -86,14 +86,6 @@ JNIEXPORT void JNICALL Java_dr_evomodel_operators_NativeZigZag_innerBounceCritic
  */
 JNIEXPORT void JNICALL Java_dr_evomodel_operators_NativeZigZag_updateDynamics
   (JNIEnv *, jobject, jint, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray, jdouble, jint, jint);
-
-/*
- * Class:     dr_evomodel_operators_NativeZigZag
- * Method:    getNextEventIrreversible
- * Signature: (I[D[D[D[D)Ldr/inference/operators/hmc/MinimumTravelInformationBinary;
- */
-JNIEXPORT jobject JNICALL Java_dr_evomodel_operators_NativeZigZag_getNextEventIrreversible
-  (JNIEnv *, jobject, jint, jdoubleArray, jdoubleArray, jdoubleArray, jdoubleArray);
 
 #ifdef __cplusplus
 }
