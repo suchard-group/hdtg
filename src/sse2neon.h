@@ -1152,8 +1152,9 @@ FORCE_INLINE __m128i _mm_move_epi64(__m128i a)
 // https://software.intel.com/sites/landingpage/IntrinsicsGuide/#text=_mm_undefined_ps
 FORCE_INLINE __m128 _mm_undefined_ps(void)
 {
-    __m128 a;
-    return a;
+    // __m128 a;
+    // return a;
+    return __m128(); // returns a 0, not uninitialized value
 }
 
 /* Logic/Binary operations */
