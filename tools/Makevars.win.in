@@ -1,14 +1,3 @@
-$(info The name of the shared library to be created is: $(SHLIB))
-
-ifeq ("$(WIN)", "64")
-  ARCH_DIR=x64/
-else
-  ARCH_DIR=i386/
-endif
-
-#CXX_STD = CXX14
-
-PKG_CXXFLAGS = -I. -I../inst/include -DUSE_SIMD -DUSE_SSE
 
 # Uncomment the following line for AVX use
 # PKG_CXXFLAGS += -DUSE_AVX -mavx -mavx2 -mfma -mfpmath=both
