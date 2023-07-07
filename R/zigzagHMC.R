@@ -51,10 +51,9 @@ zigzagHMC <- function(n,
   } else {
     stop("must provide precision or covariance matrix")
   }
-  
   stopifnot(
-    "precision / covariance matrix has incompatible dimensions" = (nrow(prec) == ndim &&
-                                                                     ncol(prec) == ndim)
+    "precision/covariance matrix size does not match the mean vector" = 
+      (nrow(prec) == ndim && ncol(prec) == ndim)
   )
   stopifnot(
     "some lower bound is larger than the corresponding upper bound" = sum(lowerBounds < upperBounds) == ndim
