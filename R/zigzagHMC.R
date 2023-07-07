@@ -77,7 +77,7 @@ zigzagHMC <- function(n,
     }
   }
   
-  samples <- array(0, c(n + burnin, ndim))
+  samples <- array(0, c(n, ndim))
   
   if (nutsFlg) {
     if (!is.null(step)) {
@@ -129,7 +129,9 @@ zigzagHMC <- function(n,
       engine = engine,
       stepZZHMC = t
     )
-    samples[i, ] <- position
+    if (i > burnin) {
+      samples[i - burnin, ] <- position
+    }
   }
   return(samples)
 }
