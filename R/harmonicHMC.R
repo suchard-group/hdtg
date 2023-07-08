@@ -59,7 +59,7 @@ harmonicHMC <- function(n,
   if (sum(F %*% init + g > 0) < length(g)) {
     stop("Initial value x does not satisfy Fx + g >=0")
   }
-  samples <- matrix(nrow = n + burnin, ncol = ncol(F))
+  samples <- matrix(nrow = n, ncol = ncol(F))
   randomBounceTime <-
     ifelse(length(time) == 2, TRUE, FALSE)
   bounceDistances <- vector(mode = "list",
@@ -87,10 +87,12 @@ harmonicHMC <- function(n,
       diagnosticMode
     )
     position <- results$position
-    samples[i,] <- unwhitenPosition(position,
-                                    choleskyFactor,
-                                    mean,
-                                    precFlg)
+    if (i > burnin) {
+      samples[i - burnin, ] <- unwhitenPosition(position,
+                                                choleskyFactor,
+                                                mean,
+                                                precFlg)
+    }
     if (diagnosticMode) {
       bounceDistances[[i]] <- results$bounceDistances
     }
