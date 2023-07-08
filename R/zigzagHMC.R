@@ -12,7 +12,7 @@
 #' @param nutsFlg logical. If `TRUE` the No-U-Turn sampler will be used (Zigzag-NUTS).
 #' @param init a d-dimensional vector of the initial value. `init` must satisfy all constraints. If `init = NULL`, a random initial value will be used.
 #' @param step step size for Zigzag-HMC or Zigzag-NUTS (if `nutsFlg = TRUE`). Default value is the empirically optimal choice: sqrt(2)(lambda)^(-1/2) for Zigzag-HMC and 0.1(lambda)^(-1/2) for Zigzag-NUTS, where lambda is the minimal eigenvalue of the precision matrix.   
-#' @param rSeed random seed (default = 1).
+#' @param seed random seed (default = 1).
 #' @param diagnosticMode logical. `TRUE` for also returning diagnostic information such as the stepsize used. 
 #'
 #' @return an (n + burnin)*d matrix of samples. The first `burnin` samples are from the user specified warm-up iterations.
@@ -41,7 +41,7 @@ zigzagHMC <- function(n,
                       init = NULL,
                       step = NULL,
                       nutsFlg = FALSE,
-                      rSeed = 1,
+                      seed = 1,
                       diagnosticMode = FALSE) {
   ndim <- length(mean)
   
@@ -93,7 +93,7 @@ zigzagHMC <- function(n,
       lowerBounds = lowerBounds,
       upperBounds = upperBounds,
       flags = 128,
-      seed = rSeed,
+      seed = seed,
       stepSize = t,
       mean = mean,
       precision = prec
@@ -113,7 +113,7 @@ zigzagHMC <- function(n,
       lowerBounds = lowerBounds,
       upperBounds = upperBounds,
       flags = 128,
-      seed = rSeed,
+      seed = seed,
       mean = mean,
       precision = prec
     )
