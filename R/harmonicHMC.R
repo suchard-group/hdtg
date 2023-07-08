@@ -18,6 +18,7 @@
 #' from for each iteration.
 #' @param precFlg logical. whether `choleskyFactor` is from precision
 #' (`TRUE`) or covariance matrix (`FALSE`).
+#' @param rSeed random seed (default = 1).
 #' @param diagnosticMode logical. `TRUE` for also returning the bounce distances
 #' for each sample.
 #'
@@ -49,6 +50,7 @@ harmonicHMC <- function(n,
                         init,
                         time = c(pi / 8, pi / 2),
                         precFlg,
+                        rSeed = 1,
                         diagnosticMode = FALSE) {
   if (length(time) == 1) {
     time[2] <- time[1]
@@ -75,6 +77,7 @@ harmonicHMC <- function(n,
                              choleskyFactor,
                              mean,
                              precFlg)
+  set.seed(rSeed)
   for (i in 1:(n + burnin)) {
     momentum <- rnorm(ncol(F))
     results <- simulateWhitenedDynamics(
