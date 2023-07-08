@@ -15,7 +15,7 @@
 #' @param seed random seed (default = 1).
 #' @param diagnosticMode logical. `TRUE` for also returning diagnostic information such as the stepsize used. 
 #'
-#' @return an (n + burnin)*d matrix of samples. The first `burnin` samples are from the user specified warm-up iterations.
+#' @return an nSample*d matrix of samples. The first `burnin` samples are from the user specified warm-up iterations.
 #' @export
 #' @examples
 #' set.seed(1)
@@ -23,7 +23,7 @@
 #' A <- matrix(runif(d^2)*2-1, ncol=d)
 #' covMat <- t(A) %*% A
 #' initial <- rep(1, d)
-#' results <- zigzagHMC(n = 1000, burnin = 1000, mean = rep(0, d), cov = covMat,
+#' results <- zigzagHMC(nSample = 1000, burnin = 1000, mean = rep(0, d), cov = covMat,
 #' lowerBounds = rep(0, d), upperBounds = rep(Inf, d))
 #'
 #' @references
@@ -31,7 +31,7 @@
 #'
 #' \insertRef{nishimura2020discontinuous}{hdtg}
 
-zigzagHMC <- function(n,
+zigzagHMC <- function(nSample,
                       burnin = 0,
                       mean,
                       cov,
@@ -78,7 +78,7 @@ zigzagHMC <- function(n,
     }
   }
   
-  samples <- array(0, c(n, ndim))
+  samples <- array(0, c(nSample, ndim))
   
   if (nutsFlg) {
     if (is.null(stepsize)) {
@@ -116,7 +116,7 @@ zigzagHMC <- function(n,
   }
   
   position <- init
-  for (i in 1:(n + burnin)) {
+  for (i in 1:(nSample + burnin)) {
     position <- getZigzagSample(
       position = position,
       momentum = NULL,

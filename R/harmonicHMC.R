@@ -4,7 +4,7 @@
 #' with constraints Fx+g >= 0 using the Harmonic Hamiltonian Monte Carlo sampler 
 #' (Harmonic-HMC).
 #'
-#' @param n number of samples after burn-in.
+#' @param nSample number of samples after burn-in.
 #' @param burnin number of burn-in samples (default = 0).
 #' @param mean a d-dimensional mean vector.
 #' @param choleskyFactor upper triangular matrix R from Cholesky decomposition of 
@@ -23,7 +23,7 @@
 #' for each sample.
 #'
 #' @return List of
-#' `samples`: (n + burnin) x d matrix of samples (including burnin samples) and
+#' `samples`: nSample x d matrix of samples (including burnin samples) and
 #' `bounceDistances`: list of bounces for each sample (only present if
 #' `diagnosticMode` is `TRUE`).
 #' @export
@@ -41,7 +41,7 @@
 #' results <- harmonicHMC(1000, 1000, mu, R, F, g, initial, precFlg = FALSE)
 #' @references
 #' \insertRef{pakman2014exact}{hdtg}
-harmonicHMC <- function(n,
+harmonicHMC <- function(nSample,
                         burnin = 0,
                         mean,
                         choleskyFactor,
@@ -61,11 +61,11 @@ harmonicHMC <- function(n,
   if (sum(F %*% init + g > 0) < length(g)) {
     stop("Initial value x does not satisfy Fx + g >=0")
   }
-  samples <- matrix(nrow = n, ncol = ncol(F))
+  samples <- matrix(nrow = nSample, ncol = ncol(F))
   randomBounceTime <-
     ifelse(length(time) == 2, TRUE, FALSE)
   bounceDistances <- vector(mode = "list",
-                            length = ifelse(diagnosticMode, n + burnin, 0))
+                            length = ifelse(diagnosticMode, nSample + burnin, 0))
   whitenedConstraints <- applyWhitenTransform(F,
                                               g,
                                               choleskyFactor,
@@ -78,7 +78,7 @@ harmonicHMC <- function(n,
                              mean,
                              precFlg)
   set.seed(seed)
-  for (i in 1:(n + burnin)) {
+  for (i in 1:(nSample + burnin)) {
     momentum <- rnorm(ncol(F))
     results <- simulateWhitenedDynamics(
       position,
