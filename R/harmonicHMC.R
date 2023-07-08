@@ -22,10 +22,10 @@
 #' @param diagnosticMode logical. `TRUE` for also returning the bounce distances
 #' for each sample.
 #'
-#' @return List of
-#' `samples`: nSample x d matrix of samples (including burnin samples) and
-#' `bounceDistances`: list of bounces for each sample (only present if
-#' `diagnosticMode` is `TRUE`).
+#' @return 
+#' `samples`: nSample x d matrix of samples 
+#' or, if `diagnosticMode` is `TRUE`, a list of `samples` and
+#' `bounceDistances`: list with vectors of traveled distances in-between bounces for each sample.
 #' @export
 #'
 #' @examples

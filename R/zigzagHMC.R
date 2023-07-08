@@ -2,7 +2,7 @@
 #'
 #' Generate MCMC samples from a d-dimensional truncated Gaussian distribution with element-wise truncations using the Zigzag Hamiltonian Monte Carlo sampler (Zigzag-HMC).
 #'
-#' @param n number of samples after burn-in.
+#' @param nSample number of samples after burn-in.
 #' @param burnin number of burn-in samples (default = 0).
 #' @param mean a d-dimensional mean vector.
 #' @param cov a d-by-d covariance matrix of the Gaussian distribution. At least one of `prec` and `cov` should be provided.
@@ -15,7 +15,7 @@
 #' @param seed random seed (default = 1).
 #' @param diagnosticMode logical. `TRUE` for also returning diagnostic information such as the stepsize used. 
 #'
-#' @return an nSample*d matrix of samples. The first `burnin` samples are from the user specified warm-up iterations.
+#' @return an nSample-by-d matrix of samples. If `diagnosticMode` is `TRUE`, a list with additional diagnostic information is returned. 
 #' @export
 #' @examples
 #' set.seed(1)
