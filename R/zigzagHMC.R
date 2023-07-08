@@ -13,6 +13,7 @@
 #' @param init a d-dimensional vector of the initial value. `init` must satisfy all constraints. If `init = NULL`, a random initial value will be used.
 #' @param step step size for Zigzag-HMC or Zigzag-NUTS (if `nutsFlg = TRUE`). Default value is the empirically optimal choice: sqrt(2)(lambda)^(-1/2) for Zigzag-HMC and 0.1(lambda)^(-1/2) for Zigzag-NUTS, where lambda is the minimal eigenvalue of the precision matrix.   
 #' @param rSeed random seed (default = 1).
+#' @param diagnosticMode logical. `TRUE` for also returning diagnostic information such as the stepsize used. 
 #'
 #' @return an (n + burnin)*d matrix of samples. The first `burnin` samples are from the user specified warm-up iterations.
 #' @export
@@ -40,7 +41,8 @@ zigzagHMC <- function(n,
                       init = NULL,
                       step = NULL,
                       nutsFlg = FALSE,
-                      rSeed = 1) {
+                      rSeed = 1,
+                      diagnosticMode = FALSE) {
   ndim <- length(mean)
   
   if (!is.null(prec)) {
@@ -86,7 +88,6 @@ zigzagHMC <- function(n,
         A = prec, k = 1, kl = 1
       )[['values']]))
     }
-    cat("NUTS base step size is", t, "\n")
     engine <- createNutsEngine(
       dimension = ndim,
       lowerBounds = lowerBounds,
@@ -107,7 +108,6 @@ zigzagHMC <- function(n,
           A = prec, k = 1, kl = 1
         )[['values']], na.rm = T))
     }
-    cat("HZZ step size is", t, "\n")
     engine <- createEngine(
       dimension = ndim,
       lowerBounds = lowerBounds,
@@ -132,5 +132,9 @@ zigzagHMC <- function(n,
       samples[i - burnin, ] <- position
     }
   }
-  return(samples)
+  if (diagnosticMode) {
+    return(list("samples" = samples, "stepsize" = t))
+  } else {
+    return(samples)
+  }
 }

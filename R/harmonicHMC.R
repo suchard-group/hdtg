@@ -103,6 +103,6 @@ harmonicHMC <- function(n,
   if (diagnosticMode) {
     return(list("samples" = samples, "bounceDistances" = bounceDistances))
   } else {
-    return(list("samples" = samples))
+    return(samples)
   }
 }
