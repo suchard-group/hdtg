@@ -11,7 +11,7 @@
 #' @param upperBounds a d-dimensional vector specifying the upper bounds. `Inf` is accepted. 
 #' @param nutsFlg logical. If `TRUE` the No-U-Turn sampler will be used (Zigzag-NUTS).
 #' @param init a d-dimensional vector of the initial value. `init` must satisfy all constraints. If `init = NULL`, a random initial value will be used.
-#' @param step step size for Zigzag-HMC or Zigzag-NUTS (if `nutsFlg = TRUE`). Default value is the empirically optimal choice: sqrt(2)(lambda)^(-1/2) for Zigzag-HMC and 0.1(lambda)^(-1/2) for Zigzag-NUTS, where lambda is the minimal eigenvalue of the precision matrix.   
+#' @param stepsize step size for Zigzag-HMC or Zigzag-NUTS (if `nutsFlg = TRUE`). Default value is the empirically optimal choice: sqrt(2)(lambda)^(-1/2) for Zigzag-HMC and 0.1(lambda)^(-1/2) for Zigzag-NUTS, where lambda is the minimal eigenvalue of the precision matrix.   
 #' @param seed random seed (default = 1).
 #' @param diagnosticMode logical. `TRUE` for also returning diagnostic information such as the stepsize used. 
 #'
@@ -39,7 +39,7 @@ zigzagHMC <- function(n,
                       lowerBounds,
                       upperBounds,
                       init = NULL,
-                      step = NULL,
+                      stepsize = NULL,
                       nutsFlg = FALSE,
                       seed = 1,
                       diagnosticMode = FALSE) {
@@ -81,10 +81,8 @@ zigzagHMC <- function(n,
   samples <- array(0, c(n, ndim))
   
   if (nutsFlg) {
-    if (!is.null(step)) {
-      t <- step
-    } else{
-      t <- 0.1 / sqrt(min(mgcv::slanczos(
+    if (is.null(stepsize)) {
+      stepsize <- 0.1 / sqrt(min(mgcv::slanczos(
         A = prec, k = 1, kl = 1
       )[['values']]))
     }
@@ -94,16 +92,14 @@ zigzagHMC <- function(n,
       upperBounds = upperBounds,
       flags = 128,
       seed = seed,
-      stepSize = t,
+      stepSize = stepsize,
       mean = mean,
       precision = prec
     )
     
   } else {
-    if (!is.null(step)) {
-      t <- step
-    } else{
-      t <-
+    if (is.null(stepsize)) {
+      stepsize <-
         sqrt(2) / sqrt(min(mgcv::slanczos(
           A = prec, k = 1, kl = 1
         )[['values']], na.rm = T))
@@ -126,14 +122,14 @@ zigzagHMC <- function(n,
       momentum = NULL,
       nutsFlg = nutsFlg,
       engine = engine,
-      stepZZHMC = t
+      stepZZHMC = stepsize
     )
     if (i > burnin) {
       samples[i - burnin, ] <- position
     }
   }
   if (diagnosticMode) {
-    return(list("samples" = samples, "stepsize" = t))
+    return(list("samples" = samples, "stepsize" = stepsize))
   } else {
     return(samples)
   }
