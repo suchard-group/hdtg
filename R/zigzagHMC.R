@@ -9,6 +9,7 @@
 #' @param lowerBounds a d-dimensional vector specifying the lower bounds. `-Inf` is accepted.  
 #' @param upperBounds a d-dimensional vector specifying the upper bounds. `Inf` is accepted. 
 #' @param nutsFlg logical. If `TRUE` the No-U-Turn sampler will be used (Zigzag-NUTS).
+#' @param precondition logical. If `TRUE`, the precision matrix will be preconditioned so that its diagonals (i.e. conditional variances) are all 1.
 #' @param init a d-dimensional vector of the initial value. `init` must satisfy all constraints. If `init = NULL`, a random initial value will be used.
 #' @param stepsize step size for Zigzag-HMC or Zigzag-NUTS (if `nutsFlg = TRUE`). Default value is the empirically optimal choice: sqrt(2)(lambda)^(-1/2) for Zigzag-HMC and 0.1(lambda)^(-1/2) for Zigzag-NUTS, where lambda is the minimal eigenvalue of the precision matrix.   
 #' @param seed random seed (default = 1).
@@ -39,6 +40,7 @@ zigzagHMC <- function(nSample,
                       init = NULL,
                       stepsize = NULL,
                       nutsFlg = FALSE,
+                      precondition = FALSE,
                       seed = NULL,
                       diagnosticMode = FALSE) {
   
@@ -51,6 +53,14 @@ zigzagHMC <- function(nSample,
     set.seed(seed)
   }
   cpp_seed <- sample.int(.Machine$integer.max, size = 1)
+  
+  if (precondition) {
+    precondScaleFactor <- sqrt(diag(prec))
+    init <- precondScaleFactor * init
+    mean <- precondScaleFactor * mean
+    prec <- stats::cov2cor(prec)
+  }
+  
   ndim <- length(mean)
   samples <- array(0, c(nSample, ndim))
   
@@ -94,7 +104,11 @@ zigzagHMC <- function(nSample,
       stepZZHMC = stepsize
     )
     if (i > burnin) {
-      samples[i - burnin, ] <- position
+      if (precondition) {
+        samples[i - burnin, ] <- position / precondScaleFactor
+      } else {
+        samples[i - burnin, ] <- position
+      }
     }
   }
   if (diagnosticMode) {
