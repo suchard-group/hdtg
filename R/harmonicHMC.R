@@ -65,7 +65,7 @@ harmonicHMC <- function(nSample,
   randomBounceTime <-
     ifelse(length(time) == 2, TRUE, FALSE)
   bounceDistances <- vector(mode = "list",
-                            length = ifelse(diagnosticMode, nSample + burnin, 0))
+                            length = ifelse(diagnosticMode, nSample, 0))
   whitenedConstraints <- applyWhitenTransform(F,
                                               g,
                                               choleskyFactor,
@@ -95,9 +95,9 @@ harmonicHMC <- function(nSample,
                                                 choleskyFactor,
                                                 mean,
                                                 precFlg)
-    }
-    if (diagnosticMode) {
-      bounceDistances[[i]] <- results$bounceDistances
+      if (diagnosticMode) {
+        bounceDistances[[i - burnin]] <- results$bounceDistances
+      }
     }
   }
   if (diagnosticMode) {
