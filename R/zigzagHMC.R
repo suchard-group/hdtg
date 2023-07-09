@@ -78,6 +78,7 @@ zigzagHMC <- function(nSample,
     }
   }
   
+  set.seed(seed)
   samples <- array(0, c(nSample, ndim))
   
   if (nutsFlg) {
