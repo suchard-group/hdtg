@@ -23,7 +23,7 @@
 #' for each sample.
 #'
 #' @return 
-#' `samples`: nSample x d matrix of samples 
+#' `samples`: nSample-by-d matrix of samples 
 #' or, if `diagnosticMode` is `TRUE`, a list of `samples` and
 #' `bounceDistances`: list with vectors of traveled distances in-between bounces for each sample.
 #' @export

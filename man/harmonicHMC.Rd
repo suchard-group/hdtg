@@ -48,7 +48,7 @@ from for each iteration.}
 for each sample.}
 }
 \value{
-\code{samples}: nSample x d matrix of samples
+\code{samples}: nSample-by-d matrix of samples
 or, if \code{diagnosticMode} is \code{TRUE}, a list of \code{samples} and
 \code{bounceDistances}: list with vectors of traveled distances in-between bounces for each sample.
 }
