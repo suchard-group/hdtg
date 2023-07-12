@@ -4,7 +4,7 @@
 #' with constraints Fx+g >= 0 using the Harmonic Hamiltonian Monte Carlo sampler 
 #' (Harmonic-HMC).
 #'
-#' @param n number of samples after burn-in.
+#' @param nSample number of samples after burn-in.
 #' @param burnin number of burn-in samples (default = 0).
 #' @param mean a d-dimensional mean vector.
 #' @param choleskyFactor upper triangular matrix R from Cholesky decomposition of 
@@ -18,13 +18,14 @@
 #' from for each iteration.
 #' @param precFlg logical. whether `choleskyFactor` is from precision
 #' (`TRUE`) or covariance matrix (`FALSE`).
+#' @param seed random seed (default = 1).
 #' @param diagnosticMode logical. `TRUE` for also returning the bounce distances
 #' for each sample.
 #'
-#' @return List of
-#' `samples`: (n + burnin) x d matrix of samples (including burnin samples) and
-#' `bounceDistances`: list of bounces for each sample (only present if
-#' `diagnosticMode` is `TRUE`).
+#' @return 
+#' `samples`: nSample-by-d matrix of samples 
+#' or, if `diagnosticMode` is `TRUE`, a list of `samples` and
+#' `bounceDistances`: list with vectors of traveled distances in-between bounces for each sample.
 #' @export
 #'
 #' @examples
@@ -40,7 +41,7 @@
 #' results <- harmonicHMC(1000, 1000, mu, R, F, g, initial, precFlg = FALSE)
 #' @references
 #' \insertRef{pakman2014exact}{hdtg}
-harmonicHMC <- function(n,
+harmonicHMC <- function(nSample,
                         burnin = 0,
                         mean,
                         choleskyFactor,
@@ -49,6 +50,7 @@ harmonicHMC <- function(n,
                         init,
                         time = c(pi / 8, pi / 2),
                         precFlg,
+                        seed = 1,
                         diagnosticMode = FALSE) {
   if (length(time) == 1) {
     time[2] <- time[1]
@@ -59,11 +61,11 @@ harmonicHMC <- function(n,
   if (sum(F %*% init + g > 0) < length(g)) {
     stop("Initial value x does not satisfy Fx + g >=0")
   }
-  samples <- matrix(nrow = n, ncol = ncol(F))
+  samples <- matrix(nrow = nSample, ncol = ncol(F))
   randomBounceTime <-
     ifelse(length(time) == 2, TRUE, FALSE)
   bounceDistances <- vector(mode = "list",
-                            length = ifelse(diagnosticMode, n + burnin, 0))
+                            length = ifelse(diagnosticMode, nSample, 0))
   whitenedConstraints <- applyWhitenTransform(F,
                                               g,
                                               choleskyFactor,
@@ -75,7 +77,8 @@ harmonicHMC <- function(n,
                              choleskyFactor,
                              mean,
                              precFlg)
-  for (i in 1:(n + burnin)) {
+  set.seed(seed)
+  for (i in 1:(nSample + burnin)) {
     momentum <- rnorm(ncol(F))
     results <- simulateWhitenedDynamics(
       position,
@@ -92,14 +95,14 @@ harmonicHMC <- function(n,
                                                 choleskyFactor,
                                                 mean,
                                                 precFlg)
-    }
-    if (diagnosticMode) {
-      bounceDistances[[i]] <- results$bounceDistances
+      if (diagnosticMode) {
+        bounceDistances[[i - burnin]] <- results$bounceDistances
+      }
     }
   }
   if (diagnosticMode) {
     return(list("samples" = samples, "bounceDistances" = bounceDistances))
   } else {
-    return(list("samples" = samples))
+    return(samples)
   }
 }

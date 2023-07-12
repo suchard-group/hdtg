@@ -5,7 +5,7 @@
 \title{Sample from a truncated Gaussian distribution with the harmonic HMC}
 \usage{
 harmonicHMC(
-  n,
+  nSample,
   burnin = 0,
   mean,
   choleskyFactor,
@@ -14,11 +14,12 @@ harmonicHMC(
   init,
   time = c(pi/8, pi/2),
   precFlg,
+  seed = 1,
   diagnosticMode = FALSE
 )
 }
 \arguments{
-\item{n}{number of samples after burn-in.}
+\item{nSample}{number of samples after burn-in.}
 
 \item{burnin}{number of burn-in samples (default = 0).}
 
@@ -41,14 +42,15 @@ from for each iteration.}
 \item{precFlg}{logical. whether \code{choleskyFactor} is from precision
 (\code{TRUE}) or covariance matrix (\code{FALSE}).}
 
+\item{seed}{random seed (default = 1).}
+
 \item{diagnosticMode}{logical. \code{TRUE} for also returning the bounce distances
 for each sample.}
 }
 \value{
-List of
-\code{samples}: (n + burnin) x d matrix of samples (including burnin samples) and
-\code{bounceDistances}: list of bounces for each sample (only present if
-\code{diagnosticMode} is \code{TRUE}).
+\code{samples}: nSample-by-d matrix of samples
+or, if \code{diagnosticMode} is \code{TRUE}, a list of \code{samples} and
+\code{bounceDistances}: list with vectors of traveled distances in-between bounces for each sample.
 }
 \description{
 Generate MCMC samples from a d-dimensional truncated Gaussian distribution
