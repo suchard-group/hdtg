@@ -227,7 +227,6 @@ Rcpp::List simulateWhitenedDynamics(
           bounceDistances.conservativeResize(2 * numBounces);
         }
         bounceDistances(numBounces) = bouncedDistance;
-        numBounces++;
         position = newPosition;
       } else {
         std::tie(position, momentum) =
@@ -235,14 +234,19 @@ Rcpp::List simulateWhitenedDynamics(
       }
       momentum = reflectMomentum(momentum, constraintDirec, constraintRowNormSq,
                                  bounceConstraint);
+      numBounces++;
       travelledTime += bounceTime;
     } else {
       bounceTime = integrationTime - travelledTime;
       std::tie(position, momentum) =
           advanceWhitenedDynamics(position, momentum, bounceTime);
+      if (diagnosticMode) {
+        bounceDistances = bounceDistances.head(numBounces);
+      }
       return Rcpp::List::create(
           Rcpp::Named("position") = position,
-          Rcpp::Named("bounceDistances") = bounceDistances.head(numBounces));
+          Rcpp::Named("numBounces") = numBounces,
+          Rcpp::Named("bounceDistances") = bounceDistances);
     }
   }
 }

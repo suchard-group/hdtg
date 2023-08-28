@@ -19,13 +19,13 @@
 #' @param precFlg logical. whether `choleskyFactor` is from precision
 #' (`TRUE`) or covariance matrix (`FALSE`).
 #' @param seed random seed (default = 1).
-#' @param diagnosticMode logical. `TRUE` for also returning the bounce distances
-#' for each sample.
+#' @param extraOutput vector of strings. "numBounces" and/or "bounceDistances" 
+#' can be requested, with the latter containing the distances in-between bounces
+#' for each sample and hence incurring significant computational and memory costs.
 #'
 #' @return 
 #' `samples`: nSample-by-d matrix of samples 
-#' or, if `diagnosticMode` is `TRUE`, a list of `samples` and
-#' `bounceDistances`: list with vectors of traveled distances in-between bounces for each sample.
+#' or, if `extraOutput` is non-empty, a list of `samples` and the extra outputs.
 #' @export
 #'
 #' @examples
@@ -51,7 +51,7 @@ harmonicHMC <- function(nSample,
                         time = c(pi / 8, pi / 2),
                         precFlg,
                         seed = 1,
-                        diagnosticMode = FALSE) {
+                        extraOutputs = c()) {
   if (length(time) == 1) {
     time[2] <- time[1]
   }
@@ -64,6 +64,8 @@ harmonicHMC <- function(nSample,
   samples <- matrix(nrow = nSample, ncol = ncol(F))
   randomBounceTime <-
     ifelse(length(time) == 2, TRUE, FALSE)
+  numBounces <- vector(mode = "integer", length = nSample)
+  diagnosticMode <- "bounceDistances" %in% extraOutputs
   bounceDistances <- vector(mode = "list",
                             length = ifelse(diagnosticMode, nSample, 0))
   whitenedConstraints <- applyWhitenTransform(F,
@@ -95,14 +97,19 @@ harmonicHMC <- function(nSample,
                                                 choleskyFactor,
                                                 mean,
                                                 precFlg)
-      if (diagnosticMode) {
+      numBounces[i - burnin] <- results$numBounces
+      if ("bounceDistances" %in% extraOutputs) {
         bounceDistances[[i - burnin]] <- results$bounceDistances
       }
     }
   }
-  if (diagnosticMode) {
-    return(list("samples" = samples, "bounceDistances" = bounceDistances))
-  } else {
+  if (length(extraOutputs) == 0) {
     return(samples)
+  } else {
+    output <- list("samples" = samples)
+    for (quantity in extraOutputs) {
+      output[[quantity]] <- get(quantity)
+    }
+    return(output)
   }
 }
