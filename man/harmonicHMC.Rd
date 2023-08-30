@@ -15,7 +15,7 @@ harmonicHMC(
   time = c(pi/8, pi/2),
   precFlg,
   seed = 1,
-  diagnosticMode = FALSE
+  extraOutputs = c()
 )
 }
 \arguments{
@@ -44,13 +44,13 @@ from for each iteration.}
 
 \item{seed}{random seed (default = 1).}
 
-\item{diagnosticMode}{logical. \code{TRUE} for also returning the bounce distances
-for each sample.}
+\item{extraOutput}{vector of strings. "numBounces" and/or "bounceDistances"
+can be requested, with the latter containing the distances in-between bounces
+for each sample and hence incurring significant computational and memory costs.}
 }
 \value{
 \code{samples}: nSample-by-d matrix of samples
-or, if \code{diagnosticMode} is \code{TRUE}, a list of \code{samples} and
-\code{bounceDistances}: list with vectors of traveled distances in-between bounces for each sample.
+or, if \code{extraOutput} is non-empty, a list of \code{samples} and the extra outputs.
 }
 \description{
 Generate MCMC samples from a d-dimensional truncated Gaussian distribution
