@@ -309,6 +309,44 @@ namespace zz {
 //                                     upperBounds));
 //        }
 
+        template<typename R>
+        MinTravelInfo getNextBounce(const Dynamics<R> &dynamics) {
+
+#ifdef TIMING
+            auto start = zz::chrono::steady_clock::now();
+#endif
+            auto task = [&](const size_t begin, const size_t end) -> MinTravelInfo {
+
+                const auto length = end - begin;
+                const auto vectorCount = length - length % SimdSize;
+
+                MinTravelInfo travel = vectorized_transform<SimdType, SimdSize>(begin, begin + vectorCount, dynamics,
+                                                                                InfoType());
+
+                if (vectorCount < length) { // Edge-case
+                    travel = vectorized_transform<RealType, 1>(begin + vectorCount, end, dynamics, travel);
+                }
+
+                return travel;
+            };
+
+            MinTravelInfo travel = (nThreads <= 1) ?
+                                   task(size_t(0), dimension) :
+                                   parallel_task_reduce(
+                                           size_t(0), dimension, MinTravelInfo(),
+                                           task,
+                                           [](MinTravelInfo lhs, MinTravelInfo rhs) {
+                                               return (lhs.time < rhs.time) ? lhs : rhs;
+                                           });
+
+#ifdef TIMING
+            auto end = zz::chrono::steady_clock::now();
+            duration["getNextBounce"] += zz::chrono::duration_cast<chrono::TimingUnits>(end - start).count();
+#endif
+
+            return travel;
+        }
+
 //        template<typename R>
 //        MinTravelInfo getNextBounceIrreversible(const Dynamics<R> &dynamics) {
 //
@@ -351,44 +389,6 @@ namespace zz {
 //
 //            return travel;
 //        }
-
-        template<typename R>
-        MinTravelInfo getNextBounce(const Dynamics<R> &dynamics) {
-
-#ifdef TIMING
-            auto start = zz::chrono::steady_clock::now();
-#endif
-            auto task = [&](const size_t begin, const size_t end) -> MinTravelInfo {
-
-                const auto length = end - begin;
-                const auto vectorCount = length - length % SimdSize;
-
-                MinTravelInfo travel = vectorized_transform<SimdType, SimdSize>(begin, begin + vectorCount, dynamics,
-                                                                                InfoType());
-
-                if (vectorCount < length) { // Edge-case
-                    travel = vectorized_transform<RealType, 1>(begin + vectorCount, end, dynamics, travel);
-                }
-
-                return travel;
-            };
-
-            MinTravelInfo travel = (nThreads <= 1) ?
-                                   task(size_t(0), dimension) :
-                                   parallel_task_reduce(
-                                           size_t(0), dimension, MinTravelInfo(),
-                                           task,
-                                           [](MinTravelInfo lhs, MinTravelInfo rhs) {
-                                               return (lhs.time < rhs.time) ? lhs : rhs;
-                                           });
-
-#ifdef TIMING
-            auto end = zz::chrono::steady_clock::now();
-            duration["getNextBounce"] += zz::chrono::duration_cast<chrono::TimingUnits>(end - start).count();
-#endif
-
-            return travel;
-        }
 
         template<typename T, typename F, typename G>
         inline T parallel_task_reduce(size_t begin, const size_t end, T sum, F transform, G reduce) {
