@@ -294,27 +294,9 @@ namespace zz {
                                     DblSpan action,
                                     DblSpan gradient,
                                     DblSpan momentum) {
-
-#if 0
-            std::vector<double> b;
-
-            auto buffer = [&b](DblSpan& in, mm::MemoryManager<double>& out) {
-                mm::bufferedCopy(std::begin(in), std::end(in), std::begin(out), b);
-            };
-
-            buffer(position, mmPosition);
-            buffer(velocity, mmVelocity);
-            buffer(action, mmAction);
-            buffer(gradient, mmGradient);
-            buffer(momentum, mmMomentum);
-
-            return getNextBounce(
-                    Dynamics<double>(mmPosition, mmVelocity, mmAction, mmGradient, mmMomentum, dimension));
-#else
             return getNextBounce(
                     Dynamics<double>(position, velocity, action, gradient, momentum, lowerBounds,
                                      upperBounds));
-#endif
         }
 
 //        MinTravelInfo getNextBounceIrreversible(DblSpan position,
