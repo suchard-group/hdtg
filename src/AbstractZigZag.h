@@ -89,6 +89,13 @@ namespace zz {
                                     DblSpan column,
                                     double time, int index) = 0;
     };
+    
+    template<typename T>
+    static inline T firstPositiveTime(const T intercept, const T slope) {
+        auto time = select(intercept > T(0.0), T(0.0), - intercept / slope);
+        time = select(time >= T(0.0), time, infinity<T>());
+        return time;
+    }
 
     template<typename T, typename... Args>
     std::unique_ptr<T> make_unique(Args&&... args) {
