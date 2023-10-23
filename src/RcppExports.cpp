@@ -171,6 +171,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// oneIrreversibleIteration
+Rcpp::List oneIrreversibleIteration(SEXP sexp, NumericVector& position, NumericVector& velocity, double time);
+RcppExport SEXP _hdtg_oneIrreversibleIteration(SEXP sexpSEXP, SEXP positionSEXP, SEXP velocitySEXP, SEXP timeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type sexp(sexpSEXP);
+    Rcpp::traits::input_parameter< NumericVector& >::type position(positionSEXP);
+    Rcpp::traits::input_parameter< NumericVector& >::type velocity(velocitySEXP);
+    Rcpp::traits::input_parameter< double >::type time(timeSEXP);
+    rcpp_result_gen = Rcpp::wrap(oneIrreversibleIteration(sexp, position, velocity, time));
+    return rcpp_result_gen;
+END_RCPP
+}
 // oneNutsIteration
 Rcpp::List oneNutsIteration(SEXP sexp, NumericVector& position, NumericVector& momentum);
 RcppExport SEXP _hdtg_oneNutsIteration(SEXP sexpSEXP, SEXP positionSEXP, SEXP momentumSEXP) {
@@ -197,6 +211,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_hdtg_setPrecision", (DL_FUNC) &_hdtg_setPrecision, 2},
     {"_hdtg_getNextEvent", (DL_FUNC) &_hdtg_getNextEvent, 6},
     {"_hdtg_oneIteration", (DL_FUNC) &_hdtg_oneIteration, 4},
+    {"_hdtg_oneIrreversibleIteration", (DL_FUNC) &_hdtg_oneIrreversibleIteration, 4},
     {"_hdtg_oneNutsIteration", (DL_FUNC) &_hdtg_oneNutsIteration, 3},
     {NULL, NULL, 0}
 };

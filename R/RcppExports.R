@@ -95,6 +95,10 @@ getNextEvent <- function(sexp, position, velocity, action, logpdfGradient, momen
     .Call(`_hdtg_oneIteration`, sexp, position, momentum, time)
 }
 
+.oneIrreversibleIteration <- function(sexp, position, velocity, time) {
+    .Call(`_hdtg_oneIrreversibleIteration`, sexp, position, velocity, time)
+}
+
 .oneNutsIteration <- function(sexp, position, momentum) {
     .Call(`_hdtg_oneNutsIteration`, sexp, position, momentum)
 }
