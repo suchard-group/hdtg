@@ -549,6 +549,7 @@ namespace zz {
                 );
                 reduce_min(result, boundaryTimeUpper, i,
                            BounceType::BOUNDARY_UPPER);
+                // TODO: Change this part to match the algorithm for Markovian (and not Hamiltonian) zigzag
                 const auto gradientTime = minimumPositiveRoot(
                         -SimdHelper<S, R>::get(action + i) / 2,
                         SimdHelper<S, R>::get(gradient + i),
