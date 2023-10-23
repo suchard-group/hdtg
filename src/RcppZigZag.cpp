@@ -306,3 +306,8 @@ Rcpp::List oneNutsIteration(SEXP sexp,
     Rcpp::List list = Rcpp::List::create(Rcpp::Named("position") = returnValue);
     return list;
 }
+
+// [[Rcpp::export]]
+double firstPositiveTime(const double intercept, const double slope) {
+    return zz::firstPositiveTime(intercept, slope);
+}
