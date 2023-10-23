@@ -208,6 +208,18 @@ namespace zz {
                                       upperBounds);
             return operateImpl(dynamics, time);
         }
+        
+        double operateIrreversible(DblSpan position, 
+                                   DblSpan velocity, 
+                                   double time) {
+            std::unique_ptr<Eigen::VectorXd> aPtr = getAction(velocity);
+            DblSpan action(*aPtr);
+            std::unique_ptr<Eigen::VectorXd> gPtr = getLogdGradient(position);
+            DblSpan gradient(*gPtr);
+            Dynamics<double> dynamics(position, velocity, action, gradient, nullptr, lowerBounds,
+                                      upperBounds);
+            return operateIrreversibleImpl(dynamics, time);
+        }
 
         void setMean(DblSpan mean) {
             meanV = Eigen::Map<Eigen::VectorXd>(mean.data(), dimension);
@@ -288,6 +300,27 @@ namespace zz {
 
             return 0.0;
         }
+        
+        template<typename T>
+        double operateIrreversibleImpl(Dynamics<T> &dynamics, double time) {
+
+#ifdef TIMING
+            auto start = zz::chrono::steady_clock::now();
+#endif
+
+            BounceState bounceState(BounceType::NONE, -1, time);
+            while (bounceState.isTimeRemaining()) {
+                const auto firstBounce = getNextBounceIrreversible(dynamics);
+                bounceState = doBounce(bounceState, firstBounce, dynamics);
+            }
+
+#ifdef TIMING
+            auto end = zz::chrono::steady_clock::now();
+            duration["operateIrreversibleImpl"] += zz::chrono::duration_cast<chrono::TimingUnits>(end - start).count();
+#endif
+
+            return 0.0;
+        }
 
         MinTravelInfo getNextBounce(DblSpan position,
                                     DblSpan velocity,
@@ -298,16 +331,6 @@ namespace zz {
                     Dynamics<double>(position, velocity, action, gradient, momentum, lowerBounds,
                                      upperBounds));
         }
-
-//        MinTravelInfo getNextBounceIrreversible(DblSpan position,
-//                                                DblSpan velocity,
-//                                                DblSpan action,
-//                                                DblSpan gradient) {
-//
-//            return getNextBounceIrreversible(
-//                    Dynamics<double>(position, velocity, action, gradient, nullptr, lowerBounds,
-//                                     upperBounds));
-//        }
 
         template<typename R>
         MinTravelInfo getNextBounce(const Dynamics<R> &dynamics) {
@@ -347,48 +370,43 @@ namespace zz {
             return travel;
         }
 
-//        template<typename R>
-//        MinTravelInfo getNextBounceIrreversible(const Dynamics<R> &dynamics) {
-//
-//#ifdef TIMING
-//            auto start = zz::chrono::steady_clock::now();
-//#endif
-//
-//            auto task = [&](const size_t begin, const size_t end) -> MinTravelInfo {
-//
-//                const auto length = end - begin;
-//                const auto vectorCount = length - length % SimdSize;
-//
-//                MinTravelInfo travel = vectorized_transform<SimdType, SimdSize>(begin, begin + vectorCount, dynamics,
-//                                                                                InfoType());
-//
-//                if (vectorCount < length) { // Edge-case
-//                    travel = vectorized_transform<RealType, 1>(begin + vectorCount, end, dynamics, travel);
-//                }
-//
-//                return travel;
-//            };
-//
-////            MinTravelInfo travel = (nThreads <= 1) ?
-////                                   task(size_t(0), dimension) :
-////                                   parallel_task_reduce(
-////                                           size_t(0), dimension, MinTravelInfo(),
-////                                           task,
-////                                           [](MinTravelInfo lhs, MinTravelInfo rhs) {
-////                                               return (lhs.time < rhs.time) ? lhs : rhs;
-////                                           });
-//
-//            MinTravelInfo travel;
-//            travel.time = 42.0;
-//            travel.index = static_cast<int>(seed);
-//
-//#ifdef TIMING
-//            auto end = zz::chrono::steady_clock::now();
-//            duration["getNextBounceIrr"] += zz::chrono::duration_cast<chrono::TimingUnits>(end - start).count();
-//#endif
-//
-//            return travel;
-//        }
+        template<typename R>
+        MinTravelInfo getNextBounceIrreversible(const Dynamics<R> &dynamics) {
+
+#ifdef TIMING
+            auto start = zz::chrono::steady_clock::now();
+#endif
+            auto task = [&](const size_t begin, const size_t end) -> MinTravelInfo {
+
+                const auto length = end - begin;
+                const auto vectorCount = length - length % SimdSize;
+
+                MinTravelInfo travel = vectorized_transform_irreversible<SimdType, SimdSize>(begin, begin + vectorCount, dynamics,
+                                                                                InfoType());
+
+                if (vectorCount < length) { // Edge-case
+                    travel = vectorized_transform_irreversible<RealType, 1>(begin + vectorCount, end, dynamics, travel);
+                }
+
+                return travel;
+            };
+
+            MinTravelInfo travel = (nThreads <= 1) ?
+                                   task(size_t(0), dimension) :
+                                   parallel_task_reduce(
+                                           size_t(0), dimension, MinTravelInfo(),
+                                           task,
+                                           [](MinTravelInfo lhs, MinTravelInfo rhs) {
+                                               return (lhs.time < rhs.time) ? lhs : rhs;
+                                           });
+
+#ifdef TIMING
+            auto end = zz::chrono::steady_clock::now();
+            duration["getNextBounce"] += zz::chrono::duration_cast<chrono::TimingUnits>(end - start).count();
+#endif
+
+            return travel;
+        }
 
         template<typename T, typename F, typename G>
         inline T parallel_task_reduce(size_t begin, const size_t end, T sum, F transform, G reduce) {
@@ -491,6 +509,46 @@ namespace zz {
                 );
                 reduce_min(result, boundaryTimeUpper, i,
                            BounceType::BOUNDARY_UPPER); // TODO Try: result = reduce_min(result, ...)
+                const auto gradientTime = minimumPositiveRoot(
+                        -SimdHelper<S, R>::get(action + i) / 2,
+                        SimdHelper<S, R>::get(gradient + i),
+                        SimdHelper<S, R>::get(momentum + i)
+                );
+
+                reduce_min(result, gradientTime, i, BounceType::GRADIENT);
+            }
+
+            return horizontal_min(result);
+        };
+        
+        template<typename S, int SimdSize, typename R, typename I, typename Int>
+        MinTravelInfo vectorized_transform_irreversible(
+            Int i, const Int end, const Dynamics<R> &dynamics, I result) {
+
+            const auto *position = dynamics.position;
+            const auto *velocity = dynamics.velocity;
+            const auto *action = dynamics.action;
+            const auto *gradient = dynamics.gradient;
+            const auto *lowerBounds = dynamics.lowerBounds;
+            const auto *upperBounds = dynamics.upperBounds;
+
+            for (; i < end; i += SimdSize) {
+
+                const auto boundaryTimeLower = findBoundaryTime(
+                        SimdHelper<S, R>::get(position + i),
+                        SimdHelper<S, R>::get(velocity + i),
+                        SimdHelper<S, R>::get(lowerBounds + i),
+                        -1
+                );
+                reduce_min(result, boundaryTimeLower, i, BounceType::BOUNDARY_LOWER);
+                const auto boundaryTimeUpper = findBoundaryTime(
+                        SimdHelper<S, R>::get(position + i),
+                        SimdHelper<S, R>::get(velocity + i),
+                        SimdHelper<S, R>::get(upperBounds + i),
+                        1
+                );
+                reduce_min(result, boundaryTimeUpper, i,
+                           BounceType::BOUNDARY_UPPER);
                 const auto gradientTime = minimumPositiveRoot(
                         -SimdHelper<S, R>::get(action + i) / 2,
                         SimdHelper<S, R>::get(gradient + i),

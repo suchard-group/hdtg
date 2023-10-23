@@ -50,10 +50,14 @@ namespace zz {
                                DblSpan initialGradient,
                                DblSpan initialMomentum,
                                double time) = 0;
-
+        
         virtual double operate(DblSpan initialPosition,
                                DblSpan initialMomentum,
                                double time) = 0;
+        
+        virtual double operateIrreversible(DblSpan initialPosition,
+                                           DblSpan initialVelocity,
+                                           double time) = 0;
 
         virtual void setMean(DblSpan meanVec) = 0;
 
