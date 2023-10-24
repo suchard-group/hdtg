@@ -379,6 +379,7 @@ namespace zz {
 #ifdef TIMING
             auto start = zz::chrono::steady_clock::now();
 #endif
+            
             auto task = [&](const size_t begin, const size_t end) -> MinTravelInfo {
 
                 const auto length = end - begin;
@@ -552,10 +553,19 @@ namespace zz {
                 );
                 reduce_min(result, boundaryTimeUpper, i,
                            BounceType::BOUNDARY_UPPER);
-                // TODO: Change this part to match the algorithm for Markovian (and not Hamiltonian) zigzag
-                const auto gradientTime = firstPositiveTime(
+                
+                const auto firstPosTime = firstPositiveTime(
+                        - SimdHelper<S, R>::get(velocity + i) * SimdHelper<S, R>::get(gradient + i),
+                        SimdHelper<S, R>::get(velocity + i) * SimdHelper<S, R>::get(action + i)
+                );
+                const auto c = 
+                    - SimdHelper<S, R>::get(velocity + i) * log(uniGenerator.getUniform()) 
+                    - firstPosTime * SimdHelper<S, R>::get(gradient + i)
+                    + firstPosTime * firstPosTime * SimdHelper<S, R>::get(action + i) / 2;
+                const auto gradientTime = minimumPositiveRootWithConstraint(
+                        -SimdHelper<S, R>::get(action + i) / 2,
                         SimdHelper<S, R>::get(gradient + i),
-                        SimdHelper<S, R>::get(action + i)
+                        c, firstPosTime
                 );
 
                 reduce_min(result, gradientTime, i, BounceType::GRADIENT);
