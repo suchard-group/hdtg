@@ -534,7 +534,7 @@ namespace zz {
             const auto *gradient = dynamics.gradient;
             const auto *lowerBounds = dynamics.lowerBounds;
             const auto *upperBounds = dynamics.upperBounds;
-
+            
             for (; i < end; i += SimdSize) {
 
                 const auto boundaryTimeLower = findBoundaryTime(
@@ -959,6 +959,28 @@ namespace zz {
             root1 = select(root1 > T(0.0), root1, infinity<T>());
             root2 = select(root2 > T(0.0), root2, infinity<T>());
 
+            const auto root = select(root1 < root2, root1, root2);
+            return select(discriminant < T(0.0), infinity<T>(), root);
+        }
+        
+        template<typename T>
+        static inline T firstPositiveTime(const T intercept, const T slope) {
+            auto time = select(intercept > T(0.0), T(0.0), - intercept / slope);
+            time = select(time >= T(0.0), time, infinity<T>());
+            return time;
+        }
+    
+        template<typename T>
+        static inline T minimumPositiveRootWithConstraint(const T a, const T b, const T c, const T lowerBd) {
+            const auto discriminant = b * b - 4 * a * c;
+            const auto sqrtDiscriminant = select(c == T(0.0), b, sqrt(fabs(discriminant)));
+    
+            auto root1 = (-b - sqrtDiscriminant) / (2 * a);
+            auto root2 = (-b + sqrtDiscriminant) / (2 * a);
+    
+            root1 = select(root1 > lowerBd, root1, infinity<T>());
+            root2 = select(root2 > lowerBd, root2, infinity<T>());
+    
             const auto root = select(root1 < root2, root1, root2);
             return select(discriminant < T(0.0), infinity<T>(), root);
         }
