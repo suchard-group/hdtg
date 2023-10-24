@@ -96,6 +96,21 @@ namespace zz {
         time = select(time >= T(0.0), time, infinity<T>());
         return time;
     }
+    
+    template<typename T>
+    static inline T minimumPositiveRootWithConstraint(const T a, const T b, const T c, const T lowerBd) {
+        const auto discriminant = b * b - 4 * a * c;
+        const auto sqrtDiscriminant = select(c == T(0.0), b, sqrt(fabs(discriminant)));
+
+        auto root1 = (-b - sqrtDiscriminant) / (2 * a);
+        auto root2 = (-b + sqrtDiscriminant) / (2 * a);
+
+        root1 = select(root1 > lowerBd, root1, infinity<T>());
+        root2 = select(root2 > lowerBd, root2, infinity<T>());
+
+        const auto root = select(root1 < root2, root1, root2);
+        return select(discriminant < T(0.0), infinity<T>(), root);
+    }
 
     template<typename T, typename... Args>
     std::unique_ptr<T> make_unique(Args&&... args) {

@@ -311,3 +311,10 @@ Rcpp::List oneNutsIteration(SEXP sexp,
 double firstPositiveTime(const double intercept, const double slope) {
     return zz::firstPositiveTime(intercept, slope);
 }
+
+// [[Rcpp::export]]
+double minimumPositiveRootWithConstraint(
+    const double a, const double b, const double c, const double lowerBd
+) {
+    return zz::minimumPositiveRootWithConstraint(a, b, c, lowerBd);
+}
