@@ -103,11 +103,3 @@ getNextEvent <- function(sexp, position, velocity, action, logpdfGradient, momen
     .Call(`_hdtg_oneNutsIteration`, sexp, position, momentum)
 }
 
-firstPositiveTime <- function(intercept, slope) {
-    .Call(`_hdtg_firstPositiveTime`, intercept, slope)
-}
-
-minimumPositiveRootWithConstraint <- function(a, b, c, lowerBd) {
-    .Call(`_hdtg_minimumPositiveRootWithConstraint`, a, b, c, lowerBd)
-}
-

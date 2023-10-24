@@ -198,32 +198,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// firstPositiveTime
-double firstPositiveTime(const double intercept, const double slope);
-RcppExport SEXP _hdtg_firstPositiveTime(SEXP interceptSEXP, SEXP slopeSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const double >::type intercept(interceptSEXP);
-    Rcpp::traits::input_parameter< const double >::type slope(slopeSEXP);
-    rcpp_result_gen = Rcpp::wrap(firstPositiveTime(intercept, slope));
-    return rcpp_result_gen;
-END_RCPP
-}
-// minimumPositiveRootWithConstraint
-double minimumPositiveRootWithConstraint(const double a, const double b, const double c, const double lowerBd);
-RcppExport SEXP _hdtg_minimumPositiveRootWithConstraint(SEXP aSEXP, SEXP bSEXP, SEXP cSEXP, SEXP lowerBdSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const double >::type a(aSEXP);
-    Rcpp::traits::input_parameter< const double >::type b(bSEXP);
-    Rcpp::traits::input_parameter< const double >::type c(cSEXP);
-    Rcpp::traits::input_parameter< const double >::type lowerBd(lowerBdSEXP);
-    rcpp_result_gen = Rcpp::wrap(minimumPositiveRootWithConstraint(a, b, c, lowerBd));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_hdtg_cholesky", (DL_FUNC) &_hdtg_cholesky, 1},
@@ -239,8 +213,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_hdtg_oneIteration", (DL_FUNC) &_hdtg_oneIteration, 4},
     {"_hdtg_oneIrreversibleIteration", (DL_FUNC) &_hdtg_oneIrreversibleIteration, 4},
     {"_hdtg_oneNutsIteration", (DL_FUNC) &_hdtg_oneNutsIteration, 3},
-    {"_hdtg_firstPositiveTime", (DL_FUNC) &_hdtg_firstPositiveTime, 2},
-    {"_hdtg_minimumPositiveRootWithConstraint", (DL_FUNC) &_hdtg_minimumPositiveRootWithConstraint, 4},
     {NULL, NULL, 0}
 };
 
