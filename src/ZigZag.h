@@ -33,6 +33,7 @@
 #include "MemoryManagement.h"
 #include "Simd.h"
 #include "AbstractZigZag.h"
+#include "UniformGenerator.h"
 
 #include <Eigen/Dense>
 
@@ -48,6 +49,7 @@ namespace zz {
         static const int SimdSize = TypeInfo::SimdSize;
 
         using MaskType = double;
+        UniformGenerator uniGenerator;
 
         ZigZag(size_t dimension,
                double *rawMask,
@@ -71,6 +73,7 @@ namespace zz {
                             precisionSetFlg(false),
                             flags(flags),
                             nThreads(nThreads),
+                            uniGenerator(UniformGenerator(seed, true)), // TODO: replace with better rng
                             seed(seed){
 //            std::cerr << "ZigZag constructed" << std::endl;
 //            std::cout << '\n';

@@ -1,6 +1,7 @@
 //
 // Created by Zhenyu Zhang on 2/1/22.
 //
+#include <random>
 
 #ifndef NOUTURN_HPP_UNIFORMGENERATOR_H
 #define NOUTURN_HPP_UNIFORMGENERATOR_H
