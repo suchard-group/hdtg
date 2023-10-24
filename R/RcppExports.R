@@ -107,3 +107,7 @@ firstPositiveTime <- function(intercept, slope) {
     .Call(`_hdtg_firstPositiveTime`, intercept, slope)
 }
 
+minimumPositiveRootWithConstraint <- function(a, b, c, lowerBd) {
+    .Call(`_hdtg_minimumPositiveRootWithConstraint`, a, b, c, lowerBd)
+}
+
