@@ -314,7 +314,7 @@ namespace zz {
             BounceState bounceState(BounceType::NONE, -1, time);
             while (bounceState.isTimeRemaining()) {
                 const auto firstBounce = getNextBounceIrreversible(dynamics);
-                bounceState = doBounce(bounceState, firstBounce, dynamics);
+                bounceState = doBounceIrreversible(bounceState, firstBounce, dynamics);
             }
 
 #ifdef TIMING
@@ -659,6 +659,45 @@ namespace zz {
         
         template<typename R>
         BounceState doBounce(BounceState initialBounceState, MinTravelInfo firstBounce, Dynamics<R> &dynamics) {
+
+            double remainingTime = initialBounceState.time;
+            double eventTime = firstBounce.time;
+
+            BounceState finalBounceState;
+            if (remainingTime < eventTime) { // No event during remaining time
+                updatePosition<SimdType, SimdSize>(dynamics, remainingTime);
+                updateMomentum<SimdType, SimdSize>(dynamics, remainingTime);
+                finalBounceState = BounceState(BounceType::NONE, -1, 0.0);
+
+            } else {
+
+                updatePosition<SimdType, SimdSize>(dynamics, eventTime);
+                updateMomentum<SimdType, SimdSize>(dynamics, eventTime);
+
+                const int eventType = firstBounce.type;
+                const int eventIndex = firstBounce.index;
+
+                DblSpan precisionColumn = DblSpan(&precisionMat(0, eventIndex), dimension);
+                if (eventType == BounceType::BOUNDARY_LOWER || eventType == BounceType::BOUNDARY_UPPER) {
+                    // std::cerr << lowerBounds[1] << std::endl;
+                    reflectMomentum(dynamics, eventIndex);
+                    setBoundaryPosition(dynamics, eventIndex, eventType);
+                } else {
+                    setZeroMomentum(dynamics, eventIndex);
+                }
+
+                reflectVelocity(dynamics, eventIndex);
+                updateGradient(dynamics, eventTime);
+                updateAction(dynamics, eventIndex, precisionColumn);
+
+                finalBounceState = BounceState(eventType, eventIndex, remainingTime - eventTime);
+            }
+
+            return finalBounceState;
+        }
+        
+        template<typename R>
+        BounceState doBounceIrreversible(BounceState initialBounceState, MinTravelInfo firstBounce, Dynamics<R> &dynamics) {
 
             double remainingTime = initialBounceState.time;
             double eventTime = firstBounce.time;
