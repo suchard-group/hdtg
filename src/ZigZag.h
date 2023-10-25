@@ -379,6 +379,10 @@ namespace zz {
 #ifdef TIMING
             auto start = zz::chrono::steady_clock::now();
 #endif
+            double *unifRv = new double[dimension]; 
+            for (int i = 0; i < dimension; ++i) {
+                unifRv[i] = uniGenerator.getUniform();
+            }
             
             auto task = [&](const size_t begin, const size_t end) -> MinTravelInfo {
 
@@ -386,10 +390,10 @@ namespace zz {
                 const auto vectorCount = length - length % SimdSize;
 
                 MinTravelInfo travel = vectorized_transform_irreversible<SimdType, SimdSize>(begin, begin + vectorCount, dynamics,
-                                                                                InfoType());
+                                                                                InfoType(), unifRv);
 
                 if (vectorCount < length) { // Edge-case
-                    travel = vectorized_transform_irreversible<RealType, 1>(begin + vectorCount, end, dynamics, travel);
+                    travel = vectorized_transform_irreversible<RealType, 1>(begin + vectorCount, end, dynamics, travel, unifRv);
                 }
 
                 return travel;
@@ -527,7 +531,7 @@ namespace zz {
         
         template<typename S, int SimdSize, typename R, typename I, typename Int>
         MinTravelInfo vectorized_transform_irreversible(
-            Int i, const Int end, const Dynamics<R> &dynamics, I result) {
+            Int i, const Int end, const Dynamics<R> &dynamics, I result, double* unifRv) {
 
             const auto *position = dynamics.position;
             const auto *velocity = dynamics.velocity;
@@ -553,13 +557,12 @@ namespace zz {
                 );
                 reduce_min(result, boundaryTimeUpper, i,
                            BounceType::BOUNDARY_UPPER);
-                
                 const auto firstPosTime = firstPositiveTime(
                         - SimdHelper<S, R>::get(velocity + i) * SimdHelper<S, R>::get(gradient + i),
                         SimdHelper<S, R>::get(velocity + i) * SimdHelper<S, R>::get(action + i)
                 );
                 const auto c = 
-                    - SimdHelper<S, R>::get(velocity + i) * log(uniGenerator.getUniform()) 
+                    - SimdHelper<S, R>::get(velocity + i) * log(SimdHelper<S, R>::get(unifRv + i)) 
                     - firstPosTime * SimdHelper<S, R>::get(gradient + i)
                     + firstPosTime * firstPosTime * SimdHelper<S, R>::get(action + i) / 2;
                 const auto gradientTime = minimumPositiveRootWithConstraint(
