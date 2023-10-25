@@ -705,24 +705,18 @@ namespace zz {
             BounceState finalBounceState;
             if (remainingTime < eventTime) { // No event during remaining time
                 updatePosition<SimdType, SimdSize>(dynamics, remainingTime);
-                updateMomentum<SimdType, SimdSize>(dynamics, remainingTime);
                 finalBounceState = BounceState(BounceType::NONE, -1, 0.0);
 
             } else {
 
                 updatePosition<SimdType, SimdSize>(dynamics, eventTime);
-                updateMomentum<SimdType, SimdSize>(dynamics, eventTime);
 
                 const int eventType = firstBounce.type;
                 const int eventIndex = firstBounce.index;
 
                 DblSpan precisionColumn = DblSpan(&precisionMat(0, eventIndex), dimension);
                 if (eventType == BounceType::BOUNDARY_LOWER || eventType == BounceType::BOUNDARY_UPPER) {
-                    // std::cerr << lowerBounds[1] << std::endl;
-                    reflectMomentum(dynamics, eventIndex);
                     setBoundaryPosition(dynamics, eventIndex, eventType);
-                } else {
-                    setZeroMomentum(dynamics, eventIndex);
                 }
 
                 reflectVelocity(dynamics, eventIndex);
