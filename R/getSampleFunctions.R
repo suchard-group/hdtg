@@ -70,6 +70,24 @@ getZigzagSample <- function(position,
   return(res$position)
 }
 
+#' @export
+getMarkovianZigzagSample <- function(position,
+                                     velocity = NULL,
+                                     engine,
+                                     travelTime) {
+  if (is.null(velocity)) {
+    velocity <- 2 * stats::rbinom(ndim, 1, .5) - 1
+  }
+  
+  res <- .oneIrreversibleIteration(
+    sexp = engine$engine,
+    position = position,
+    velocity = velocity,
+    time = travelTime
+  )
+  return(list(position=res$position, velocity=res$velocity))
+}
+
 # ' Draw a random Laplace momentum
 # '
 # ' Generate a d-dimensional momentum where the density of each element is proportional to exp(-|pi|).  

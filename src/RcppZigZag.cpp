@@ -290,7 +290,8 @@ Rcpp::List oneIrreversibleIteration(SEXP sexp,
     );
     Rcpp::List list = Rcpp::List::create(
             Rcpp::Named("returnValue") = returnValue,
-            Rcpp::Named("position") = position);
+            Rcpp::Named("position") = position,
+            Rcpp::Named("velocity") = velocity);
 
     return list;
 }
