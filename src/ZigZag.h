@@ -655,11 +655,8 @@ namespace zz {
                                       simd_for_each<Size>(begin, end, simd, scalar);
                                   });
             }
-
-
         }
-
-
+        
         template<typename R>
         BounceState doBounce(BounceState initialBounceState, MinTravelInfo firstBounce, Dynamics<R> &dynamics) {
 
