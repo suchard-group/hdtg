@@ -102,6 +102,59 @@ zigzagHMC <- function(nSample,
   }
 }
 
+markovianZigzag <- function(nSample,
+                            burnin = 0,
+                            mean,
+                            prec,
+                            lowerBounds,
+                            upperBounds,
+                            init = NULL,
+                            stepsize = NULL,
+                            seed = 1,
+                            diagnosticMode = FALSE) {
+  
+  validateInput(mean, prec, lowerBounds, upperBounds, init)
+  if (is.null(init)) {
+    init <- getInitialPosition(mean, lowerBounds, upperBounds)
+  }
+  
+  set.seed(seed)
+  ndim <- length(mean)
+  samples <- array(0, c(nSample, ndim))
+  
+  if (is.null(stepsize)) {
+    stepsize <- sqrt(2) / sqrt(computeExtremeEigenval(Prec))
+  }
+  engine <- createEngine(
+    dimension = ndim,
+    lowerBounds = lowerBounds,
+    upperBounds = upperBounds,
+    flags = 128,
+    seed = seed,
+    mean = mean,
+    precision = prec
+  )
+  
+  velocity <- 2 * stats::rbinom(ndim, 1, .5) - 1
+  state <- list(position = init, velocity = velocity)
+  for (i in 1:(nSample + burnin)) {
+    state <- getMarkovianZigzagSample(
+      position = state$position,
+      velocity = state$velocity,
+      engine = engine,
+      travelTime = stepsize
+    )
+    if (i > burnin) {
+      samples[i - burnin, ] <- state$position
+    }
+  }
+  if (diagnosticMode) {
+    return(list("samples" = samples, "stepsize" = stepsize))
+  } else {
+    return(samples)
+  }
+}
+
 computeExtremeEigenval <- function(symMatrix, smallest = TRUE, tol = .Machine$double.eps^.5) {
   if (smallest) {
     nLargest <- 0
