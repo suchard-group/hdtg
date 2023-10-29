@@ -73,6 +73,7 @@ namespace zz {
                             precisionSetFlg(false),
                             flags(flags),
                             nThreads(nThreads),
+                            unifRv(new double[dimension]),
                             uniGenerator(UniformGenerator(seed, true)), // TODO: replace with better rng
                             seed(seed){
 //            std::cerr << "ZigZag constructed" << std::endl;
@@ -94,6 +95,7 @@ namespace zz {
         }
 
         virtual ~ZigZag() {
+            delete[] unifRv;
 #ifdef TIMING
 //            std::cerr << std::endl;
 //            for (auto &d: duration) {
@@ -379,7 +381,6 @@ namespace zz {
 #ifdef TIMING
             auto start = zz::chrono::steady_clock::now();
 #endif
-            double *unifRv = new double[dimension]; 
             for (int i = 0; i < dimension; ++i) {
                 unifRv[i] = uniGenerator.getUniform();
             }
@@ -1055,6 +1056,7 @@ namespace zz {
         mm::MemoryManager<double> mmAction;
         mm::MemoryManager<double> mmGradient;
         mm::MemoryManager<double> mmMomentum;
+        double* unifRv;
 
         Eigen::VectorXd meanV;
         Eigen::MatrixXd precisionMat;
