@@ -70,14 +70,6 @@ zigzagHMC <- function(nSample,
     init <- getInitialPosition(mean, lowerBounds, upperBounds)
   }
   
-  energyGrad <- function (x) {
-    if (length(x) == 1) {
-      return(prec[, x])
-    } else {
-      return(drop(prec %*% x))
-    }
-  }
-  
   set.seed(seed)
   samples <- array(0, c(nSample, ndim))
   
