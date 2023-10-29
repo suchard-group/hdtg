@@ -49,7 +49,6 @@ namespace zz {
         static const int SimdSize = TypeInfo::SimdSize;
 
         using MaskType = double;
-        UniformGenerator uniGenerator;
 
         ZigZag(size_t dimension,
                double *rawMask,
@@ -74,7 +73,6 @@ namespace zz {
                             flags(flags),
                             nThreads(nThreads),
                             unifRv(new double[dimension]),
-                            uniGenerator(UniformGenerator(seed, true)), // TODO: replace with better rng
                             seed(seed){
 //            std::cerr << "ZigZag constructed" << std::endl;
 //            std::cout << '\n';
@@ -92,6 +90,8 @@ namespace zz {
             for (int i = 0; i < nThreads; ++i) {
                 rng[i].seed(static_cast<std::uint64_t>(seed + i));
             }
+            generator = std::mt19937(seed);
+            distribution = std::uniform_real_distribution<double>(0, 1);
         }
 
         virtual ~ZigZag() {
@@ -382,7 +382,7 @@ namespace zz {
             auto start = zz::chrono::steady_clock::now();
 #endif
             for (int i = 0; i < dimension; ++i) {
-                unifRv[i] = uniGenerator.getUniform();
+                unifRv[i] = distribution(generator);
             }
             
             auto task = [&](const size_t begin, const size_t end) -> MinTravelInfo {
@@ -1074,6 +1074,8 @@ namespace zz {
         std::shared_ptr<tbb::global_control> control;
 
         std::vector<sitmo::threefry_20_64> rng;
+        std::mt19937 generator;
+        std::uniform_real_distribution<double> distribution;
 
 #ifdef TIMING
         std::map<std::string, long long> duration;
