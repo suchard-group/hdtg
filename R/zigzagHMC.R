@@ -54,9 +54,7 @@ zigzagHMC <- function(nSample,
   
   if (nutsFlg) {
     if (is.null(stepsize)) {
-      stepsize <- 0.1 / sqrt(min(mgcv::slanczos(
-        A = prec, k = 1, kl = 1
-      )[['values']]))
+      stepsize <- 0.1 / sqrt(computeExtremeEigenval(Prec))
     }
     engine <- createNutsEngine(
       dimension = ndim,
@@ -71,10 +69,7 @@ zigzagHMC <- function(nSample,
     
   } else {
     if (is.null(stepsize)) {
-      stepsize <-
-        sqrt(2) / sqrt(min(mgcv::slanczos(
-          A = prec, k = 1, kl = 1
-        )[['values']], na.rm = T))
+      stepsize <- sqrt(2) / sqrt(computeExtremeEigenval(Prec))
     }
     engine <- createEngine(
       dimension = ndim,
@@ -105,6 +100,19 @@ zigzagHMC <- function(nSample,
   } else {
     return(samples)
   }
+}
+
+computeExtremeEigenval <- function(symMatrix, smallest = TRUE, tol = .Machine$double.eps^.5) {
+  if (smallest) {
+    nLargest <- 0
+    nSmallest <- 1
+  } else {
+    nLargest <- 1
+    nSmallest <- 0
+  }
+  return(
+    mgcv::slanczos(A = symMatrix, k = nLargest, kl = nSmallest, tol = tol)[['values']]
+  )
 }
 
 validateInput <- function(mean, prec, lowerBounds, upperBounds, init) {
