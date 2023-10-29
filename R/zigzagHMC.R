@@ -42,26 +42,14 @@ zigzagHMC <- function(nSample,
                       nutsFlg = FALSE,
                       seed = 1,
                       diagnosticMode = FALSE) {
-  ndim <- length(mean)
   
-  stopifnot(
-    "precision/covariance matrix size does not match the mean vector" = 
-      (nrow(prec) == ndim && ncol(prec) == ndim)
-  )
-  stopifnot(
-    "some lower bound is larger than the corresponding upper bound" = sum(lowerBounds < upperBounds) == ndim
-  )
-  
-  if (!is.null(init)) {
-    stopifnot(
-      "initial position is not compatiable with the truncation bounds" = (sum(lowerBounds < init) == ndim) &&
-        (sum(init < upperBounds) == ndim)
-    )
-  } else {
+  validateInput(mean, prec, lowerBounds, upperBounds, init)
+  if (is.null(init)) {
     init <- getInitialPosition(mean, lowerBounds, upperBounds)
   }
   
   set.seed(seed)
+  ndim <- length(mean)
   samples <- array(0, c(nSample, ndim))
   
   if (nutsFlg) {
@@ -116,5 +104,22 @@ zigzagHMC <- function(nSample,
     return(list("samples" = samples, "stepsize" = stepsize))
   } else {
     return(samples)
+  }
+}
+
+validateInput <- function(mean, prec, lowerBounds, upperBounds, init) {
+  ndim <- length(mean)
+  stopifnot(
+    "precision/covariance matrix size does not match the mean vector" = 
+      (nrow(prec) == ndim && ncol(prec) == ndim)
+  )
+  stopifnot(
+    "some lower bound is larger than the corresponding upper bound" = sum(lowerBounds < upperBounds) == ndim
+  )
+  if (!is.null(init)) {
+    stopifnot(
+      "initial position is not compatiable with the truncation bounds" = (sum(lowerBounds < init) == ndim) &&
+        (sum(init < upperBounds) == ndim)
+    )
   }
 }
