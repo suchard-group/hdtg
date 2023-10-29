@@ -34,8 +34,7 @@
 zigzagHMC <- function(nSample,
                       burnin = 0,
                       mean,
-                      cov,
-                      prec = NULL,
+                      prec,
                       lowerBounds,
                       upperBounds,
                       init = NULL,
@@ -45,14 +44,6 @@ zigzagHMC <- function(nSample,
                       diagnosticMode = FALSE) {
   ndim <- length(mean)
   
-  if (!is.null(prec)) {
-    stopifnot("precision matrix contains NaN" = !any(is.na(prec)))
-  } else if (!is.null(cov)) {
-    stopifnot("covariance matrix contains NaN" = !any(is.na(cov)))
-    prec <- solve(cov)
-  } else {
-    stop("must provide precision or covariance matrix")
-  }
   stopifnot(
     "precision/covariance matrix size does not match the mean vector" = 
       (nrow(prec) == ndim && ncol(prec) == ndim)
