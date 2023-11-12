@@ -72,7 +72,7 @@ namespace zz {
                             precisionSetFlg(false),
                             flags(flags),
                             nThreads(nThreads),
-                            unifRv(new double[dimension]),
+                            unifRv(dimension),
                             seed(seed){
 //            std::cerr << "ZigZag constructed" << std::endl;
 //            std::cout << '\n';
@@ -95,7 +95,6 @@ namespace zz {
         }
 
         virtual ~ZigZag() {
-            delete[] unifRv;
 #ifdef TIMING
 //            std::cerr << std::endl;
 //            for (auto &d: duration) {
@@ -532,7 +531,7 @@ namespace zz {
         
         template<typename S, int SimdSize, typename R, typename I, typename Int>
         MinTravelInfo vectorized_transform_irreversible(
-            Int i, const Int end, const Dynamics<R> &dynamics, I result, double* unifRv) {
+            Int i, const Int end, const Dynamics<R> &dynamics, I result, std::vector<double> &unifRv) {
 
             const auto *position = dynamics.position;
             const auto *velocity = dynamics.velocity;
@@ -1056,7 +1055,7 @@ namespace zz {
         mm::MemoryManager<double> mmAction;
         mm::MemoryManager<double> mmGradient;
         mm::MemoryManager<double> mmMomentum;
-        double* unifRv;
+        std::vector<double> unifRv;
 
         Eigen::VectorXd meanV;
         Eigen::MatrixXd precisionMat;
