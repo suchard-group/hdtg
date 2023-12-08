@@ -92,9 +92,9 @@ Eigen::VectorXd reflectMomentum(
     const Eigen::Map<Eigen::MatrixXd> constraintDirec,
     const Eigen::Map<Eigen::VectorXd> constraintRowNormSq,
     const int bounceIdx) {
-  return momentum - 2 * momentum.dot(constraintDirec.row(bounceIdx - 1)) /
-                        constraintRowNormSq(bounceIdx - 1) *
-                        constraintDirec.row(bounceIdx - 1).transpose();
+  return momentum - 2 * momentum.dot(constraintDirec.row(bounceIdx)) /
+                        constraintRowNormSq(bounceIdx) *
+                        constraintDirec.row(bounceIdx).transpose();
 }
 
 //  ' Compute when the next bounce occurs and which constraint it occurs on.
@@ -117,17 +117,17 @@ std::pair<double, int> computeNextBounce(
   Eigen::ArrayXd phi =
       -fa.binaryExpr(fb, [](double a, double b) { return std::atan2(a, b); });
   double minTime = std::numeric_limits<double>::infinity();
-  int constraintIdx = -1;
+  int bounceIdx = -1;
   for (int i = 0; i < constraintBound.size(); ++i) {
     if (U[i] > abs(constraintBound[i])) {
       double bounceTime = -phi[i] + std::acos(-constraintBound[i] / U[i]);
       if (bounceTime < minTime) {
         minTime = bounceTime;
-        constraintIdx = i + 1;
+        bounceIdx = i;
       }
     }
   }
-  return std::make_pair(minTime, constraintIdx);
+  return std::make_pair(minTime, bounceIdx);
 }
 
 // ' Whiten a given position into the standard normal frame.
@@ -203,7 +203,7 @@ Rcpp::List simulateWhitenedDynamics(
     const Eigen::Map<Eigen::VectorXd> constraintRowNormSq,
     const Eigen::Map<Eigen::VectorXd> constraintBound, double integrationTime,
     bool diagnosticMode) {
-  int bounceConstraint;
+  int bounceIdx;
   double bounceTime;
   double bouncedDistance;
   Eigen::VectorXd newPosition;
@@ -216,7 +216,7 @@ Rcpp::List simulateWhitenedDynamics(
   int numBounces = 0;
   double travelledTime = 0;
   while (true) {
-    std::tie(bounceTime, bounceConstraint) =
+    std::tie(bounceTime, bounceIdx) =
         computeNextBounce(position, momentum, constraintDirec, constraintBound);
     if (bounceTime < integrationTime - travelledTime) {
       if (diagnosticMode) {
@@ -233,7 +233,7 @@ Rcpp::List simulateWhitenedDynamics(
             advanceWhitenedDynamics(position, momentum, bounceTime);
       }
       momentum = reflectMomentum(momentum, constraintDirec, constraintRowNormSq,
-                                 bounceConstraint);
+                                 bounceIdx);
       numBounces++;
       travelledTime += bounceTime;
     } else {
