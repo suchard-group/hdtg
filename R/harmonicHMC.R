@@ -50,7 +50,7 @@ harmonicHMC <- function(nSample,
                         init,
                         time = c(pi / 8, pi / 2),
                         precFlg,
-                        seed = 1,
+                        seed = NULL,
                         extraOutputs = c()) {
   if (length(time) == 1) {
     time[2] <- time[1]
@@ -79,7 +79,9 @@ harmonicHMC <- function(nSample,
                              choleskyFactor,
                              mean,
                              precFlg)
-  set.seed(seed)
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }
   for (i in 1:(nSample + burnin)) {
     momentum <- rnorm(ncol(F))
     results <- simulateWhitenedDynamics(

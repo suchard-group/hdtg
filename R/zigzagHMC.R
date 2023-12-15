@@ -39,7 +39,7 @@ zigzagHMC <- function(nSample,
                       init = NULL,
                       stepsize = NULL,
                       nutsFlg = FALSE,
-                      seed = 1,
+                      seed = NULL,
                       diagnosticMode = FALSE) {
   
   validateInput(mean, prec, lowerBounds, upperBounds, init)
@@ -47,7 +47,9 @@ zigzagHMC <- function(nSample,
     init <- getInitialPosition(mean, lowerBounds, upperBounds)
   }
   
-  set.seed(seed)
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }
   cpp_seed <- sample.int(.Machine$integer.max, size = 1)
   ndim <- length(mean)
   samples <- array(0, c(nSample, ndim))
@@ -120,7 +122,9 @@ markovianZigzag <- function(nSample,
   }
   nIterPerUpdate <- ceiling((nSample + burnin) / nStatusUpdate)
   
-  set.seed(seed)
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }
   cpp_seed <- sample.int(.Machine$integer.max, size = 1)
   ndim <- length(mean)
   samples <- array(0, c(nSample, ndim))
