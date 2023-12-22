@@ -8,8 +8,7 @@ zigzagHMC(
   nSample,
   burnin = 0,
   mean,
-  cov,
-  prec = NULL,
+  prec,
   lowerBounds,
   upperBounds,
   init = NULL,
@@ -25,8 +24,6 @@ zigzagHMC(
 \item{burnin}{number of burn-in samples (default = 0).}
 
 \item{mean}{a d-dimensional mean vector.}
-
-\item{cov}{a d-by-d covariance matrix of the Gaussian distribution. At least one of \code{prec} and \code{cov} should be provided.}
 
 \item{prec}{a d-by-d precision matrix of the Gaussian distribution.}
 
