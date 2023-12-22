@@ -5,7 +5,6 @@
 #' @param nSample number of samples after burn-in.
 #' @param burnin number of burn-in samples (default = 0).
 #' @param mean a d-dimensional mean vector.
-#' @param cov a d-by-d covariance matrix of the Gaussian distribution. At least one of `prec` and `cov` should be provided.
 #' @param prec a d-by-d precision matrix of the Gaussian distribution. 
 #' @param lowerBounds a d-dimensional vector specifying the lower bounds. `-Inf` is accepted.  
 #' @param upperBounds a d-dimensional vector specifying the upper bounds. `Inf` is accepted. 
