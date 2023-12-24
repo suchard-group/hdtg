@@ -70,7 +70,7 @@ namespace nuts {
 
             TreeState *newState = new TreeState(initialPosition, initialMomentum, gradient, 1, true,
                                                 0, 0, uniGenerator);
-            SharedPtrTreeState trajectoryTree = zz::make_unique<TreeState>(*newState);
+            SharedPtrTreeState trajectoryTree = std::shared_ptr<TreeState>(newState);
 
             int height = 0;
 
@@ -171,7 +171,7 @@ namespace nuts {
             TreeState *newState = new TreeState(position, momentum, gradient, numNodes,
                                                 flagContinue, acceptProb,
                                                 numAcceptProbStates, uniGenerator);
-            return zz::make_unique<TreeState>(*newState);
+            return UniPtrTreeState(newState);
         }
 
 
