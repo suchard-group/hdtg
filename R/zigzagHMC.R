@@ -110,12 +110,14 @@ markovianZigzag <- function(nSample,
                             init = NULL,
                             stepsize = NULL,
                             seed = 1,
-                            diagnosticMode = FALSE) {
+                            diagnosticMode = FALSE,
+                            nStatusUpdate = 0L) {
   
   validateInput(mean, prec, lowerBounds, upperBounds, init)
   if (is.null(init)) {
     init <- getInitialPosition(mean, lowerBounds, upperBounds)
   }
+  nIterPerUpdate <- ceiling((nSample + burnin) / nStatusUpdate)
   
   set.seed(seed)
   ndim <- length(mean)
@@ -145,6 +147,9 @@ markovianZigzag <- function(nSample,
     )
     if (i > burnin) {
       samples[i - burnin, ] <- state$position
+    }
+    if (i %% nIterPerUpdate == 0) {
+      print(sprintf("%s iterations completed.", as.integer(i)))
     }
   }
   if (diagnosticMode) {
