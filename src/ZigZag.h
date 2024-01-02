@@ -95,6 +95,8 @@ namespace zz {
         }
 
         virtual ~ZigZag() {
+          delete[] unifRv;
+          unifRv = nullptr;
 #ifdef TIMING
 //            std::cerr << std::endl;
 //            for (auto &d: duration) {
