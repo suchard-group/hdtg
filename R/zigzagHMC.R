@@ -48,6 +48,7 @@ zigzagHMC <- function(nSample,
   }
   
   set.seed(seed)
+  cpp_seed <- sample.int(.Machine$integer.max, size = 1)
   ndim <- length(mean)
   samples <- array(0, c(nSample, ndim))
   
@@ -60,7 +61,7 @@ zigzagHMC <- function(nSample,
       lowerBounds = lowerBounds,
       upperBounds = upperBounds,
       flags = 128,
-      seed = seed,
+      seed = cpp_seed,
       stepSize = stepsize,
       mean = mean,
       precision = prec
@@ -75,7 +76,7 @@ zigzagHMC <- function(nSample,
       lowerBounds = lowerBounds,
       upperBounds = upperBounds,
       flags = 128,
-      seed = seed,
+      seed = cpp_seed,
       mean = mean,
       precision = prec
     )
@@ -120,6 +121,7 @@ markovianZigzag <- function(nSample,
   nIterPerUpdate <- ceiling((nSample + burnin) / nStatusUpdate)
   
   set.seed(seed)
+  cpp_seed <- sample.int(.Machine$integer.max, size = 1)
   ndim <- length(mean)
   samples <- array(0, c(nSample, ndim))
   
@@ -131,7 +133,7 @@ markovianZigzag <- function(nSample,
     lowerBounds = lowerBounds,
     upperBounds = upperBounds,
     flags = 128,
-    seed = seed,
+    seed = cpp_seed,
     mean = mean,
     precision = prec
   )
