@@ -53,7 +53,7 @@ zigzagHMC <- function(nSample,
   
   if (nutsFlg) {
     if (is.null(stepsize)) {
-      stepsize <- 0.1 / sqrt(computeExtremeEigenval(Prec))
+      stepsize <- 0.1 / sqrt(computeExtremeEigenval(prec))
     }
     engine <- createNutsEngine(
       dimension = ndim,
@@ -68,7 +68,7 @@ zigzagHMC <- function(nSample,
     
   } else {
     if (is.null(stepsize)) {
-      stepsize <- sqrt(2) / sqrt(computeExtremeEigenval(Prec))
+      stepsize <- sqrt(2) / sqrt(computeExtremeEigenval(prec))
     }
     engine <- createEngine(
       dimension = ndim,
@@ -124,7 +124,7 @@ markovianZigzag <- function(nSample,
   samples <- array(0, c(nSample, ndim))
   
   if (is.null(stepsize)) {
-    stepsize <- sqrt(2) / sqrt(computeExtremeEigenval(Prec))
+    stepsize <- sqrt(2) / sqrt(computeExtremeEigenval(prec))
   }
   engine <- createEngine(
     dimension = ndim,
