@@ -87,14 +87,15 @@ namespace nuts {
         }
 
         void updateTrajectoryTree(SharedPtrTreeState trajectoryTree,
-                                     int depth,
+                                     int height,
                                      double logSliceU,
                                      double initialJointDensity) {
             int direction = (uniGenerator.getUniform() < 0.5) ? -1 : 1;
             UniPtrTreeState nextTrajectoryTree = buildTree(
-                    trajectoryTree->getPosition(direction), trajectoryTree->getMomentum(direction),
+                    trajectoryTree->getPosition(direction), 
+                    trajectoryTree->getMomentum(direction),
                     trajectoryTree->getGradient(direction),
-                    direction, logSliceU, depth, stepSize, initialJointDensity);
+                    direction, logSliceU, height, stepSize, initialJointDensity);
 
             if ((*nextTrajectoryTree).flagContinue) {
                 bool swapSampling = true;

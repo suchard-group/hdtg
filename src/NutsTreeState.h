@@ -33,15 +33,16 @@ namespace nuts {
     public:
 
         TreeState(DblSpan position, DblSpan momentum, DblSpan gradient,
-                  int numNodes, bool flagContinue,
-                  double cumAcceptProb, int numAcceptProbStates, UniformGenerator &generator) :
+                  int numAcceptableStates, bool flagContinue,
+                  double cumAcceptProb, int numStates, UniformGenerator &generator) :
                                                         dim(position.size()),
                                                         positionTri(position.size() * 3, 0),
                                                         momentumTri(position.size() * 3, 0),
-                                                        gradientTri(position.size() * 3, 0), numNodes(numNodes),
+                                                        gradientTri(position.size() * 3, 0), 
+                                                        numAcceptableStates(numAcceptableStates),
                                                         flagContinue(flagContinue),
                                                         cumAcceptProb(cumAcceptProb),
-                                                        numAcceptProbStates(numAcceptProbStates),
+                                                        numStates(numStates),
                                                         uniGenerator(generator) {
             for (int i = 0; i < 3; ++i) {
                 for (int j = 0; j < dim; ++j) {
@@ -123,20 +124,20 @@ namespace nuts {
 
             updateSample(nextTree, swapSampling);
 
-            numNodes += nextTree.numNodes;
+            numAcceptableStates += nextTree.numAcceptableStates;
             flagContinue = nextTree.flagContinue && computeStopCriterion();
 
             cumAcceptProb += nextTree.cumAcceptProb;
-            numAcceptProbStates += nextTree.numAcceptProbStates;
+            numStates += nextTree.numStates;
         }
 
         void updateSample(TreeState nextTree, bool swapSampling) {
             double samplingWeightOnNext;
             if (swapSampling) {
-              samplingWeightOnNext = (double) nextTree.numNodes / (double) numNodes;
+              samplingWeightOnNext = (double) nextTree.numAcceptableStates / (double) numAcceptableStates;
             } else {
               samplingWeightOnNext = 
-                (double) nextTree.numNodes / (double) (numNodes + nextTree.numNodes);
+                (double) nextTree.numAcceptableStates / (double) (numAcceptableStates + nextTree.numAcceptableStates);
             }
             if (uniGenerator.getUniform() < samplingWeightOnNext) {
                 setSample(nextTree.getSample());
@@ -148,11 +149,11 @@ namespace nuts {
         std::vector<double> momentumTri;
         std::vector<double> gradientTri;
 
-        int numNodes;
+        int numAcceptableStates;
         bool flagContinue;
 
         double cumAcceptProb;
-        int numAcceptProbStates;
+        int numStates;
         UniformGenerator &uniGenerator;
     };
 }
