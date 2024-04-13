@@ -116,13 +116,13 @@ namespace nuts {
             return (sumPlus > 0) && (sumMinus > 0);
         }
 
-        void mergeNextTree(TreeState nextTree, int direction) {
+        void mergeNextTree(TreeState nextTree, int direction, bool swapSampling) {
 
             setPosition(direction, nextTree.getPosition(direction));
             setMomentum(direction, nextTree.getMomentum(direction));
             setGradient(direction, nextTree.getGradient(direction));
 
-            updateSample(nextTree);
+            updateSample(nextTree, swapSampling);
 
             numNodes += nextTree.numNodes;
             flagContinue = nextTree.flagContinue && computeStopCriterion();
@@ -131,9 +131,15 @@ namespace nuts {
             numAcceptProbStates += nextTree.numAcceptProbStates;
         }
 
-        void updateSample(TreeState nextTree) {
-            if (nextTree.numNodes > 0
-                && uniGenerator.getUniform() < ((double) nextTree.numNodes / (double) (numNodes + nextTree.numNodes))) {
+        void updateSample(TreeState nextTree, bool swapSampling) {
+            double samplingWeightOnNext;
+            if (swapSampling) {
+              samplingWeightOnNext = (double) nextTree.numNodes / (double) numNodes;
+            } else {
+              samplingWeightOnNext = 
+                (double) nextTree.numNodes / (double) (numNodes + nextTree.numNodes);
+            }
+            if (uniGenerator.getUniform() < samplingWeightOnNext) {
                 setSample(nextTree.getSample());
             }
         }
