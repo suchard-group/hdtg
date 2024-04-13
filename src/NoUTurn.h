@@ -141,7 +141,6 @@ namespace nuts {
             const double acceptProb = std::min(1.0, exp(logJointProbAfter - initialJointDensity));
             const int numAcceptProbStates = 1;
 
-            //hmcProvider.setParameter(inPosition);
             TreeState *newState = new TreeState(position, momentum, gradient, numNodes,
                                                 flagContinue, acceptProb,
                                                 numAcceptProbStates, uniGenerator);

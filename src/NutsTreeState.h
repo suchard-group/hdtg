@@ -18,7 +18,6 @@
 #endif // TIMING
 
 #include "threefry.h"
-//#include "dr_evomodel_operators_NativeZigZag.h"
 #include "MemoryManagement.h"
 #include "Simd.h"
 #include "ZigZag.h"
