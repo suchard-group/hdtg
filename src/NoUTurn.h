@@ -61,7 +61,7 @@ namespace nuts {
 
         std::vector<double> takeOneStep(DblSpan initialPosition, DblSpan initialMomentum) {
 
-            std::vector<double> endPosition(initialPosition.size(), 0);
+            std::vector<double> endPosition;
             const double initialJointDensity = zzEngine.getLogPDFnoDet(initialPosition, initialMomentum);
             double logSliceU = log(uniGenerator.getUniform()) + initialJointDensity;
 
@@ -76,13 +76,7 @@ namespace nuts {
 
             while (trajectoryTree->flagContinue) {
                 //std::cerr << "***************appear once" << std::endl;
-                DblSpan tmp = updateTrajectoryTree(trajectoryTree, height, logSliceU, initialJointDensity);
-                if (!tmp.empty()) {
-                    for (int i = 0; i < endPosition.size(); ++i) {
-                        endPosition[i] = tmp[i];
-                    }
-                }
-
+                endPosition = updateTrajectoryTree(trajectoryTree, height, logSliceU, initialJointDensity);
                 height++;
 
                 if (height > maxHeight) {
@@ -92,11 +86,12 @@ namespace nuts {
             return endPosition;
         }
 
-        DblSpan updateTrajectoryTree(SharedPtrTreeState trajectoryTree,
+        std::vector<double> updateTrajectoryTree(SharedPtrTreeState trajectoryTree,
                                      int depth,
                                      double logSliceU,
                                      double initialJointDensity) {
-            DblSpan endPosition;
+            DblSpan sampleSpan = trajectoryTree->getSample();
+            std::vector<double> sample(sampleSpan.begin(), sampleSpan.end());
             int direction = (uniGenerator.getUniform() < 0.5) ? -1 : 1;
             UniPtrTreeState nextTrajectoryTree = buildTree(
                     trajectoryTree->getPosition(direction), trajectoryTree->getMomentum(direction),
@@ -107,13 +102,14 @@ namespace nuts {
 
                 const double acceptProb = (double) (*nextTrajectoryTree).numNodes / (double) trajectoryTree->numNodes;
                 if (uniGenerator.getUniform() < acceptProb) {
-                    endPosition = (*nextTrajectoryTree).getSample();
+                    sampleSpan = (*nextTrajectoryTree).getSample();
+                    sample.assign(sampleSpan.begin(), sampleSpan.end());
                 }
+                
             }
-
             trajectoryTree->mergeNextTree((*nextTrajectoryTree), direction);
 
-            return endPosition;
+            return sample;
         }
 
         UniPtrTreeState buildTree(DblSpan position, DblSpan momentum, DblSpan gradient, int direction,
