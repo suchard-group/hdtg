@@ -74,14 +74,10 @@ namespace zz {
                             nThreads(nThreads),
                             unifRv(new double[dimension]),
                             seed(seed){
-//            std::cerr << "ZigZag constructed" << std::endl;
-//            std::cout << '\n';
             if (flags & zz::Flags::TBB) {
                 if (nThreads <= 0) {
                     nThreads = tbb::this_task_arena::max_concurrency();
                 }
-
-//                std::cout << "Using " << nThreads << " threads" << std::endl;
 
                 control = std::make_shared<tbb::global_control>(tbb::global_control::max_allowed_parallelism, nThreads);
             }
@@ -170,7 +166,6 @@ namespace zz {
                        DblSpan gradient,
                        DblSpan momentum,
                        double time) {
-//            if (!meanSetFlg || !precisionSetFlg) std::cerr << "mean or precision is not set!" << std::endl;
             Dynamics<double> dynamics(position, velocity, action, gradient, momentum, lowerBounds,
                                       upperBounds);
             return operateImpl(dynamics, time);
@@ -199,8 +194,6 @@ namespace zz {
         double operate(DblSpan position,
                        DblSpan momentum,
                        double time) {
-
-//            if (!meanSetFlg || !precisionSetFlg) std::cerr << "mean or precision is not set!" << std::endl;
 
             std::vector<double> v = getVelocity(momentum);
             DblSpan velocity = zz::DblSpan(v);
@@ -287,13 +280,8 @@ namespace zz {
             BounceState bounceState(BounceType::NONE, -1, time);
 
             while (bounceState.isTimeRemaining()) {
-//                std::cerr << "start " << dynamics.position[0] << " " << dynamics.position[1] << " "
-//                          << dynamics.position[2] << " " << dynamics.position[3] << "\n";
-
                 const auto firstBounce = getNextBounce(dynamics);
                 bounceState = doBounce(bounceState, firstBounce, dynamics);
-//                std::cerr << "end " << dynamics.position[0] << " " << dynamics.position[1] << " "
-//                          << dynamics.position[2] << " " << dynamics.position[3] << "\n";
 
             }
 
@@ -679,7 +667,6 @@ namespace zz {
 
                 DblSpan precisionColumn = DblSpan(&precisionMat(0, eventIndex), dimension);
                 if (eventType == BounceType::BOUNDARY_LOWER || eventType == BounceType::BOUNDARY_UPPER) {
-                    // std::cerr << lowerBounds[1] << std::endl;
                     reflectMomentum(dynamics, eventIndex);
                     setBoundaryPosition(dynamics, eventIndex, eventType);
                 } else {
@@ -864,10 +851,6 @@ namespace zz {
             } else if (eventType == BounceType::BOUNDARY_UPPER) {
                 position[index] = R(upperBounds[index]);
             }
-//            else {
-//                std::cerr << "trying to set boundary position at non-boundary event" << std::endl;
-//                exit(-1);
-//            }
         }
 
         template<typename R>

@@ -48,15 +48,15 @@ namespace nuts {
                                                                              zzEngine(*zigzag),
                                                                              uniGenerator(UniformGenerator(seed,
                                                                                                            randomFlg)) {
-//            std::cerr << "nuts constructed" << '\n' << std::endl;
         }
 
         ~NoUTurn() = default;
 
-//        template<typename T>
-//        void printDblSpan(T &span) {
-//            for (auto e: span) std::cout << e << ' ';
-//        }
+        // Utility function for debugging purpose
+        template<typename T>
+        void printDblSpan(T &span) {
+           for (auto e: span) std::cout << e << ' ';
+        }
 
 
         std::vector<double> takeOneStep(DblSpan initialPosition, DblSpan initialMomentum) {
@@ -75,7 +75,6 @@ namespace nuts {
             int height = 0;
 
             while (trajectoryTree->flagContinue) {
-                //std::cerr << "***************appear once" << std::endl;
                 updateTrajectoryTree(trajectoryTree, height, logSliceU, initialJointDensity);
                 height++;
                 if (height > maxHeight) {
@@ -107,7 +106,6 @@ namespace nuts {
 
         UniPtrTreeState buildTree(DblSpan position, DblSpan momentum, DblSpan gradient, int direction,
                                   double logSliceU, int height, double stepSize, double initialJointDensity) {
-            //std::cerr << "height is" << height << std::endl;
             if (height == 0) {
                 return buildBaseCase(position, momentum, gradient, direction, logSliceU, stepSize, initialJointDensity);
             } else {
@@ -131,21 +129,8 @@ namespace nuts {
             DblSpan momentum{momentumVec};
             DblSpan gradient{gradientVec};
 
-            // "one reversibleHMC integral
-//            std::cout << "before position is:";
-//            printDblSpan(position);
-//            std::cout << "before momentum is:";
-//            printDblSpan(momentum);
-//            std::cout << "\n";
-
             zzEngine.reversiblePositionMomentumUpdate(position, momentum, gradient, direction, stepSize);
-
-//            std::cout << "after position is:";
-//            printDblSpan(position);
-//            std::cout << "after momentum is:";
-//            printDblSpan(momentum);
-//            std::cout << "\n";
-//            std::cout << "\n";
+            
             double logJointProbAfter = zzEngine.getLogPDFnoDet(position, momentum);
 
             const int numNodes = (logSliceU <= logJointProbAfter ? 1 : 0);
@@ -203,7 +188,6 @@ namespace nuts {
             bool randomFlg,
             double stepSize,
             std::shared_ptr<zz::ZigZag<zz::DoubleSseTypeInfo>> ptr) {
-//        std::cerr << "Factory: SSE" << std::endl;
         return zz::make_unique<nuts::NoUTurn>(logProbErrorTol, maxHeight, seed, randomFlg, stepSize, ptr);
     }
 }

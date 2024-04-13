@@ -47,14 +47,9 @@ int main(int argCount, char** args) {
 
     for (int n = 0; n < 1; ++n) {
         auto res = shared -> operate(zz::DblSpan(position), zz::DblSpan(momentum), 1.414214);
-//        auto res = nuts->takeOneStep(zz::DblSpan(position), zz::DblSpan(momentum));
-//        cerr << " iteration " << n << " position after:";
         for (int i = 0; i < position.size(); ++i) {
             cerr << position[i] << " ";
         }
-//        for (int i = 0; i < res.size(); ++i) {
-//            cerr << res[i] << " ";
-//        }
         cerr << "\n";
     }
     return 0;
