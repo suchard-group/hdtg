@@ -179,8 +179,12 @@ namespace nuts {
                                                         logSliceU, height - 1, stepSize,
                                                         initialJointDensity);
 
-                bool swapSampling = false;
-                (*subtree).mergeNextTree((*nextSubtree), direction, swapSampling);
+                if ((*nextSubtree).flagContinue) {
+                    bool swapSampling = false;
+                    (*subtree).mergeNextTree((*nextSubtree), direction, swapSampling);
+                } else {
+                    (*subtree).flagContinue = false;
+                }
             }
             return subtree;
         }
