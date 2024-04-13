@@ -98,22 +98,22 @@ namespace nuts {
             return direction + 1;
         }
 
-        bool computeStopCriterion() {
-            DblSpan positionPlus = getPosition(1);
-            DblSpan positionMinus = getPosition(-1);
-            DblSpan momentumPlus = getMomentum(1);
-            DblSpan momentumMinus = getMomentum(-1);
+        bool checkNoUturn() {
+            DblSpan positionFront = getPosition(1);
+            DblSpan positionRear = getPosition(-1);
+            DblSpan momentumFront = getMomentum(1);
+            DblSpan momentumRear = getMomentum(-1);
 
-            double sumPlus = 0;
-            double sumMinus = 0;
-            double positionDiffI;
-            for (int i = 0; i < positionPlus.size(); ++i) {
-                positionDiffI = positionPlus[i] - positionMinus[i];
-                sumPlus += positionDiffI * momentumPlus[i];
-                sumMinus += positionDiffI * momentumMinus[i];
+            // Derivatives of 0.5 * \| positionFront - positionRear \|^2, which are
+            // inner products with the position difference and front/rear momenta.
+            double distDerivFront = 0; 
+            double distDerivRear = 0;
+            for (int i = 0; i < positionFront.size(); ++i) {
+                distDerivFront += (positionFront[i] - positionRear[i]) * momentumFront[i];
+                distDerivRear += (positionFront[i] - positionRear[i]) * momentumRear[i];
             }
 
-            return (sumPlus > 0) && (sumMinus > 0);
+            return (distDerivFront > 0) && (distDerivRear > 0);
         }
 
         void mergeNextTree(TreeState nextTree, int direction, bool swapSampling) {
@@ -125,7 +125,7 @@ namespace nuts {
             updateSample(nextTree, swapSampling);
 
             numAcceptableStates += nextTree.numAcceptableStates;
-            flagContinue = nextTree.flagContinue && computeStopCriterion();
+            flagContinue = nextTree.flagContinue && checkNoUturn();
 
             cumAcceptProb += nextTree.cumAcceptProb;
             numStates += nextTree.numStates;
