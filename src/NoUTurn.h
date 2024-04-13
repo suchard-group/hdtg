@@ -106,10 +106,31 @@ namespace nuts {
                                   double logSliceU, int height, double stepSize, double initialJointDensity) {
             if (height == 0) {
                 return buildNextSingletonTree(position, momentum, gradient, direction, logSliceU, stepSize, initialJointDensity);
-            } else {
-                return buildNextTreeRecursiveCase(position, momentum, gradient, direction, logSliceU, height, stepSize,
-                                          initialJointDensity);
+            } 
+            
+            UniPtrTreeState subtree = buildNextTree(
+                position, momentum, gradient, direction, logSliceU, height - 1, 
+                stepSize, initialJointDensity
+            );
+            
+            if ((*subtree).flagContinue) {
+
+                UniPtrTreeState nextSubtree = buildNextTree(
+                    (*subtree).getPosition(direction), 
+                    (*subtree).getMomentum(direction), 
+                    (*subtree).getGradient(direction), 
+                    direction, logSliceU, height - 1, 
+                    stepSize, initialJointDensity
+                );
+                if ((*nextSubtree).flagContinue) {
+                    bool swapSampling = false;
+                    (*subtree).mergeNextTree((*nextSubtree), direction, swapSampling);
+                } else {
+                    (*subtree).flagContinue = false;
+                }
+                
             }
+            return subtree;
         }
 
         UniPtrTreeState buildNextSingletonTree(DblSpan inPosition, DblSpan inMomentum, DblSpan inGradient, int direction,
@@ -146,30 +167,6 @@ namespace nuts {
         }
 
 
-        UniPtrTreeState buildNextTreeRecursiveCase(DblSpan inPosition, DblSpan inMomentum, DblSpan gradient, int direction,
-                                           double logSliceU, int height, double stepSize, double initialJointDensity) {
-
-            UniPtrTreeState subtree = buildNextTree(inPosition, inMomentum, gradient, direction, logSliceU,
-                                                height - 1, // Recursion
-                                                stepSize, initialJointDensity);
-
-            if ((*subtree).flagContinue) {
-
-                UniPtrTreeState nextSubtree = buildNextTree((*subtree).getPosition(direction),
-                                                        (*subtree).getMomentum(direction),
-                                                        (*subtree).getGradient(direction), direction,
-                                                        logSliceU, height - 1, stepSize,
-                                                        initialJointDensity);
-
-                if ((*nextSubtree).flagContinue) {
-                    bool swapSampling = false;
-                    (*subtree).mergeNextTree((*nextSubtree), direction, swapSampling);
-                } else {
-                    (*subtree).flagContinue = false;
-                }
-            }
-            return subtree;
-        }
 
         double logProbErrorTol = 100.0;
         const int maxHeight = 10;
