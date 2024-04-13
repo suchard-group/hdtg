@@ -302,7 +302,7 @@ Rcpp::List oneNutsIteration(SEXP sexp,
                             NumericVector &momentum) {
     auto ptrNuts = parsePtrNuts(sexp);
 
-    auto returnValue = ptrNuts->takeOneStep(zz::DblSpan(position.begin(), position.end()),
+    auto returnValue = ptrNuts->generateNextState(zz::DblSpan(position.begin(), position.end()),
                                             zz::DblSpan(momentum.begin(), momentum.end()));
     Rcpp::List list = Rcpp::List::create(Rcpp::Named("position") = returnValue);
     return list;

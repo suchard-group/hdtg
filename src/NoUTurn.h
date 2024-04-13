@@ -59,7 +59,7 @@ namespace nuts {
         }
 
 
-        std::vector<double> takeOneStep(DblSpan initialPosition, DblSpan initialMomentum) {
+        std::vector<double> generateNextState(DblSpan initialPosition, DblSpan initialMomentum) {
 
             
             const double initialJointDensity = zzEngine.getLogPDFnoDet(initialPosition, initialMomentum);
@@ -68,30 +68,27 @@ namespace nuts {
             std::unique_ptr<Eigen::VectorXd> gPtr = zzEngine.getLogdGradient(initialPosition);
             DblSpan gradient(*gPtr);
 
-            TreeState *newState = new TreeState(initialPosition, initialMomentum, gradient, 1, true,
-                                                0, 0, uniGenerator);
+            TreeState *newState = new TreeState(
+                initialPosition, initialMomentum, gradient, 1, true, 0, 0, uniGenerator
+            );
             SharedPtrTreeState trajectoryTree = std::shared_ptr<TreeState>(newState);
 
             int height = 0;
-
-            while (trajectoryTree->flagContinue) {
-                updateTrajectoryTree(trajectoryTree, height, logSliceU, initialJointDensity);
+            while (trajectoryTree->flagContinue && height <= maxHeight) {
+                doubleTrajectoryTree(trajectoryTree, height, logSliceU, initialJointDensity);
                 height++;
-                if (height > maxHeight) {
-                    trajectoryTree->flagContinue = false;
-                }
             }
             DblSpan sampleSpan = trajectoryTree->getSample();
             std::vector<double> sample(sampleSpan.begin(), sampleSpan.end());
             return sample;
         }
 
-        void updateTrajectoryTree(SharedPtrTreeState trajectoryTree,
+        void doubleTrajectoryTree(SharedPtrTreeState trajectoryTree,
                                      int height,
                                      double logSliceU,
                                      double initialJointDensity) {
             int direction = (uniGenerator.getUniform() < 0.5) ? -1 : 1;
-            UniPtrTreeState nextTrajectoryTree = buildTree(
+            UniPtrTreeState nextTrajectoryTree = buildNextTree(
                     trajectoryTree->getPosition(direction), 
                     trajectoryTree->getMomentum(direction),
                     trajectoryTree->getGradient(direction),
@@ -105,17 +102,17 @@ namespace nuts {
             }
         }
 
-        UniPtrTreeState buildTree(DblSpan position, DblSpan momentum, DblSpan gradient, int direction,
+        UniPtrTreeState buildNextTree(DblSpan position, DblSpan momentum, DblSpan gradient, int direction,
                                   double logSliceU, int height, double stepSize, double initialJointDensity) {
             if (height == 0) {
-                return buildBaseCase(position, momentum, gradient, direction, logSliceU, stepSize, initialJointDensity);
+                return buildNextSingletonTree(position, momentum, gradient, direction, logSliceU, stepSize, initialJointDensity);
             } else {
-                return buildRecursiveCase(position, momentum, gradient, direction, logSliceU, height, stepSize,
+                return buildNextTreeRecursiveCase(position, momentum, gradient, direction, logSliceU, height, stepSize,
                                           initialJointDensity);
             }
         }
 
-        UniPtrTreeState buildBaseCase(DblSpan inPosition, DblSpan inMomentum, DblSpan inGradient, int direction,
+        UniPtrTreeState buildNextSingletonTree(DblSpan inPosition, DblSpan inMomentum, DblSpan inGradient, int direction,
                                       double logSliceU, double stepSize, double initialJointDensity) {
             // Make deep copy of position and momentum
             std::vector<double> positionVec;
@@ -149,16 +146,16 @@ namespace nuts {
         }
 
 
-        UniPtrTreeState buildRecursiveCase(DblSpan inPosition, DblSpan inMomentum, DblSpan gradient, int direction,
+        UniPtrTreeState buildNextTreeRecursiveCase(DblSpan inPosition, DblSpan inMomentum, DblSpan gradient, int direction,
                                            double logSliceU, int height, double stepSize, double initialJointDensity) {
 
-            UniPtrTreeState subtree = buildTree(inPosition, inMomentum, gradient, direction, logSliceU,
+            UniPtrTreeState subtree = buildNextTree(inPosition, inMomentum, gradient, direction, logSliceU,
                                                 height - 1, // Recursion
                                                 stepSize, initialJointDensity);
 
             if ((*subtree).flagContinue) {
 
-                UniPtrTreeState nextSubtree = buildTree((*subtree).getPosition(direction),
+                UniPtrTreeState nextSubtree = buildNextTree((*subtree).getPosition(direction),
                                                         (*subtree).getMomentum(direction),
                                                         (*subtree).getGradient(direction), direction,
                                                         logSliceU, height - 1, stepSize,
