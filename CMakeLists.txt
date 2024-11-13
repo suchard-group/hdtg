@@ -46,6 +46,8 @@ endif()
 message(STATUS "xsimd directory: ${xsimd_INCLUDE_DIRS}")
 include_directories(${xsimd_INCLUDE_DIRS})
 
+find_package (Eigen3 3.3 REQUIRED NO_MODULE)
+message(STATUS, "Eigen 3 directory: ${}")
 
 add_library (zig_zag SHARED
         src/NativeZigZag.cpp
@@ -59,6 +61,8 @@ target_include_directories(zig_zag PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${JNI_INCLUDE_DIRS}
 )
+
+target_link_libraries(zig_zag Eigen3::Eigen)
 
 add_executable(main
         extra/main.cpp)
