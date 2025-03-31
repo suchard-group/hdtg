@@ -19,13 +19,13 @@
 #' @param precFlg logical. whether `choleskyFactor` is from precision
 #' (`TRUE`) or covariance matrix (`FALSE`).
 #' @param seed random seed (default = 1).
-#' @param extraOutput vector of strings. "numBounces" and/or "bounceDistances" 
+#' @param extraOutputs vector of strings. "numBounces" and/or "bounceDistances" 
 #' can be requested, with the latter containing the distances in-between bounces
 #' for each sample and hence incurring significant computational and memory costs.
 #'
 #' @return 
 #' `samples`: nSample-by-d matrix of samples 
-#' or, if `extraOutput` is non-empty, a list of `samples` and the extra outputs.
+#' or, if `extraOutputs` is non-empty, a list of `samples` and the extra outputs.
 #' @export
 #'
 #' @examples

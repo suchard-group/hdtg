@@ -14,7 +14,8 @@ zigzagHMC(
   init = NULL,
   stepsize = NULL,
   nutsFlg = FALSE,
-  seed = 1,
+  precondition = FALSE,
+  seed = NULL,
   diagnosticMode = FALSE
 )
 }
@@ -37,6 +38,8 @@ zigzagHMC(
 
 \item{nutsFlg}{logical. If \code{TRUE} the No-U-Turn sampler will be used (Zigzag-NUTS).}
 
+\item{precondition}{logical. If \code{TRUE}, the precision matrix will be preconditioned so that its diagonals (i.e. conditional variances) are all 1.}
+
 \item{seed}{random seed (default = 1).}
 
 \item{diagnosticMode}{logical. \code{TRUE} for also returning diagnostic information such as the stepsize used.}
@@ -52,8 +55,9 @@ set.seed(1)
 d <- 10
 A <- matrix(runif(d^2)*2-1, ncol=d)
 covMat <- t(A) \%*\% A
+precMat <- solve(covMat)
 initial <- rep(1, d)
-results <- zigzagHMC(nSample = 1000, burnin = 1000, mean = rep(0, d), cov = covMat,
+results <- zigzagHMC(nSample = 1000, burnin = 1000, mean = rep(0, d), prec = precMat,
 lowerBounds = rep(0, d), upperBounds = rep(Inf, d))
 
 }
