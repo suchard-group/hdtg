@@ -70,8 +70,8 @@ namespace zz {
                             meanSetFlg(false),
                             precisionSetFlg(false),
                             flags(flags),
-                            nThreads(nThreads),
                             unifRv(new double[dimension]),
+                            nThreads(nThreads),
                             seed(seed){
             if (flags & zz::Flags::TBB) {
                 if (nThreads <= 0) {
