@@ -9,8 +9,8 @@ harmonicHMC(
   burnin = 0,
   mean,
   choleskyFactor,
-  F,
-  g,
+  constrainDirec,
+  constrainBound,
   init,
   time = c(pi/8, pi/2),
   precFlg,
@@ -28,9 +28,9 @@ harmonicHMC(
 \item{choleskyFactor}{upper triangular matrix R from Cholesky decomposition of
 precision or covariance matrix into R^TR.}
 
-\item{F}{F matrix (k-by-d matrix where k is the number of linear constraints).}
+\item{constrainDirec}{the k-by-d F matrix (k is the number of linear constraints).}
 
-\item{g}{g vector (k-dimensional).}
+\item{constrainBound}{the k-dimensional g vector.}
 
 \item{init}{a d-dimensional vector of the initial value. \code{init} must satisfy all constraints.}
 
@@ -64,10 +64,10 @@ A <- matrix(runif(d^2)*2 - 1, ncol=d)
 Sigma <- t(A) \%*\% A
 R <- cholesky(Sigma)
 mu <- rep(0, d)
-F <- diag(d)
-g <- rep(0,d)
+constrainDirec <- diag(d)
+constrainBound <- rep(0,d)
 initial <- rep(1, d)
-results <- harmonicHMC(1000, 1000, mu, R, F, g, initial, precFlg = FALSE)
+results <- harmonicHMC(1000, 1000, mu, R, constrainDirec, constrainBound, initial, precFlg = FALSE)
 }
 \references{
 \insertRef{pakman2014exact}{hdtg}
