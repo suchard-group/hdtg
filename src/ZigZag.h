@@ -69,8 +69,8 @@ namespace zz {
                             precisionMat(dimension, dimension),
                             meanSetFlg(false),
                             precisionSetFlg(false),
-                            flags(flags),
                             unifRv(new double[dimension]),
+                            flags(flags),
                             nThreads(nThreads),
                             seed(seed){
             if (flags & zz::Flags::TBB) {
