@@ -65,14 +65,14 @@ namespace zz {
                             mmAction(dimension),
                             mmGradient(dimension),
                             mmMomentum(dimension),
+                            unifRv(new double[dimension]),
                             meanV(dimension),
                             precisionMat(dimension, dimension),
                             meanSetFlg(false),
                             precisionSetFlg(false),
-                            unifRv(new double[dimension]),
                             flags(flags),
                             nThreads(nThreads),
-                            seed(seed){
+                            seed(seed) {
             if (flags & zz::Flags::TBB) {
                 if (nThreads <= 0) {
                     nThreads = tbb::this_task_arena::max_concurrency();
