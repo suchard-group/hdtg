@@ -28,7 +28,7 @@
 #' lowerBounds = rep(0, d), upperBounds = rep(Inf, d))
 #'
 #' @references
-#' \insertRef{nishimura2021hamiltonian}{hdtg}
+#' \insertRef{nishimura2024zigzag}{hdtg}
 #'
 #' \insertRef{nishimura2020discontinuous}{hdtg}
 
