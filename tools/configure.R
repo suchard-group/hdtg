@@ -19,15 +19,10 @@ if (getRversion() < "4.2") {
 #    }
 }
 
-
-# Detect CRAN's Debian system (linux-gnu + x86_64)
-platform <- R.version$platform
-on_cran_debian <- grepl("linux-gnu", platform) && grepl("x86_64", platform)
-
+on_cran <- nzchar(Sys.getenv("_R_CHECK_PACKAGE_NAME_", "1"))  # force as if on CRAN
 
 flags <- "PKG_CXXFLAGS = -I."
-
-if (!on_cran_debian) {
+if (!on_cran) {
   message("SIMD optimizations (AVX/SSE) ENABLED during compilation.")
   if (RcppXsimd::supportsSSE()) {
   	flags <- paste(flags, "-DUSE_SSE", RcppXsimd::getSSEFlags())
