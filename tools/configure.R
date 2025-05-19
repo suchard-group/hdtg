@@ -19,13 +19,25 @@ if (getRversion() < "4.2") {
 #    }
 }
 
-flags <- "PKG_CXXFLAGS = -I."
-if (RcppXsimd::supportsSSE()) {
-	flags <- paste(flags, "-DUSE_SSE", RcppXsimd::getSSEFlags())
-}
 
-if (RcppXsimd::supportsAVX()) {
-	flags <- paste(flags, "-DUSE_AVX -mfma", RcppXsimd::getAVXFlags())
+# Detect CRAN's Debian system (linux-gnu + x86_64)
+platform <- R.version$platform
+on_cran_debian <- grepl("linux-gnu", platform) && grepl("x86_64", platform)
+
+
+flags <- "PKG_CXXFLAGS = -I."
+
+if (!on_cran_debian) {
+  message("SIMD optimizations (AVX/SSE) ENABLED during compilation.")
+  if (RcppXsimd::supportsSSE()) {
+  	flags <- paste(flags, "-DUSE_SSE", RcppXsimd::getSSEFlags())
+  }
+  
+  if (RcppXsimd::supportsAVX()) {
+  	flags <- paste(flags, "-DUSE_AVX -mfma", RcppXsimd::getAVXFlags())
+  }
+} else {
+  message("SIMD optimizations DISABLED for Debian/CRAN.")
 }
 
 flags_win <- "PKG_CXXFLAGS = -I. -I../inst/include -DUSE_SIMD -DUSE_SSE"
