@@ -19,7 +19,7 @@ if (getRversion() < "4.2") {
 #    }
 }
 
-on_cran <- nzchar(Sys.getenv("_R_CHECK_PACKAGE_NAME_", "1"))  # force as if on CRAN
+on_cran <- nzchar(Sys.getenv("_R_CHECK_PACKAGE_NAME_"))
 
 flags <- "PKG_CXXFLAGS = -I."
 if (!on_cran) {
@@ -27,7 +27,6 @@ if (!on_cran) {
   if (RcppXsimd::supportsSSE()) {
   	flags <- paste(flags, "-DUSE_SSE", RcppXsimd::getSSEFlags())
   }
-  
   if (RcppXsimd::supportsAVX()) {
   	flags <- paste(flags, "-DUSE_AVX -mfma", RcppXsimd::getAVXFlags())
   }
