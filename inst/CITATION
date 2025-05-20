@@ -1,29 +1,28 @@
-citHeader("To cite hdtg in publications use:")
+citHeader("To cite the hdtg package in publications, please use:")
 
-citEntry(
-  entry    = "Article",
-  title    = "Zigzag path connects two Monte Carlo samplers: Hamiltonian counterpart to a piecewise deterministic Markov process",
-  author   = personList(as.person("Akihiko Nishimura"),
-                                   as.person("Zhenyu Zhang"),
-                                   as.person("Marc A. Suchard")),
-  journal  = "Journal of the American Statistical Association",
-  year     = "2024",
-  textVersion = paste("Akihiko Nishimura, Zhenyu Zhang, and Marc A. Suchard (2024)",
-                              "Zigzag path connects two Monte Carlo samplers: Hamiltonian counterpart to a piecewise deterministic Markov process,",
-                              "Journal of the American Statistical Association,",
-                              "<doi:10.1080/01621459.2024.2395587>."))
-                              
-citEntry(
-  entry    = "Article",
-  title    = "Exact Hamiltonian Monte Carlo for Truncated 
-                              Multivariate Gaussians",
-  author   = personList(as.person("Ari Pakman"),
-                                   as.person("Liam Paninski")),
-  journal  = "Journal of Computational and Graphical Statistics",
-  year     = "2014",
-  textVersion = paste("Ari Pakman and Liam Paninski (2014)",
-                              "Exact Hamiltonian Monte Carlo for Truncated 
-                              Multivariate Gaussians,",
-                              "Journal of Computational and Graphical Statistics,",
-                              "<doi:10.1080/10618600.2013.788448>."))
+c(
+  bibentry(
+    bibtype = "Article",
+    title = "Zigzag path connects two Monte Carlo samplers: Hamiltonian counterpart to a piecewise deterministic Markov process",
+    author = c(
+      person("Akihiko", "Nishimura"),
+      person("Zhenyu", "Zhang"),
+      person("Marc A.", "Suchard")
+    ),
+    journal = "Journal of the American Statistical Association",
+    year = 2024,
+    doi = "10.1080/01621459.2024.2395587"
+  ),
   
+  bibentry(
+    bibtype = "Article",
+    title = "Exact Hamiltonian Monte Carlo for Truncated Multivariate Gaussians",
+    author = c(
+      person("Ari", "Pakman"),
+      person("Liam", "Paninski")
+    ),
+    journal = "Journal of Computational and Graphical Statistics",
+    year = 2014,
+    doi = "10.1080/10618600.2013.788448"
+  )
+)

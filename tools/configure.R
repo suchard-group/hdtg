@@ -19,30 +19,32 @@ if (getRversion() < "4.2") {
 #    }
 }
 
-on_cran <- nzchar(Sys.getenv("_R_CHECK_PACKAGE_NAME_"))
+platform <- R.version$platform
+on_cran_debian <- grepl("linux-gnu", platform) && grepl("x86_64", platform)
 
 flags <- "PKG_CXXFLAGS = -I."
-if (!on_cran) {
+if (!on_cran_debian) {
   message("SIMD optimizations (AVX/SSE) ENABLED during compilation.")
   if (RcppXsimd::supportsSSE()) {
   	flags <- paste(flags, "-DUSE_SSE", RcppXsimd::getSSEFlags())
+  	message("SSE")
   }
   if (RcppXsimd::supportsAVX()) {
   	flags <- paste(flags, "-DUSE_AVX -mfma", RcppXsimd::getAVXFlags())
+  	message("AVX")
   }
 } else {
   message("SIMD optimizations DISABLED for Debian/CRAN.")
 }
 
-flags_win <- "PKG_CXXFLAGS = -I. -I../inst/include -DUSE_SIMD -DUSE_SSE"
-
+# Always write Makevars
 txt <- c(flags, txt)
-#txt_win <- c(flags_win, txt_win)
+cat(txt, file = makevars_out, sep = "\n")
 
-
-if (.Platform$OS.type == "unix") {
-	cat(txt, file = makevars_out, sep = "\n")
-} else {
-#	cat(txt_win, file = makevars_win_out, sep = "\n")
-}
+# 
+# if (.Platform$OS.type == "unix") {
+# 	cat(txt, file = makevars_out, sep = "\n")
+# } else {
+# #	cat(txt_win, file = makevars_win_out, sep = "\n")
+# }
 

@@ -12,4 +12,5 @@ extra
 .idea
 
 cran-comments.md
+^src/Makevars$
 

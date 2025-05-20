@@ -24,3 +24,6 @@ LinkingTo: Rcpp, RcppEigen, RcppParallel, RcppXsimd
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+SystemRequirements: 
+  RcppXsimd (>= 1.0.0),
+  CPU with AVX/SSE4.2 (optional for better performance)

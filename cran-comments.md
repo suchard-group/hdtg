@@ -1,25 +1,16 @@
+## Resubmission of archived package
+
+This is a resubmission of the `hdtg` package, which was archived on CRAN on 2023-05-01 due to unresolved issues. 
+All issues have now been addressed.
+
 ## Initial submission of patch
 * fixed undefined behavior (uninitialized value) in 'see2neon.h' that
   caused a WARNING on MacOS
 
 ## R CMD check results
-* There were no ERRORs and WARNINGs.
-* There are (occasionally) 2 NOTEs: 
-  - "  Compilation used the following non-portable flag(s):
-    '-mavx' '-mavx2' '-mfma' '-msse' '-msse3' '-msse4.1' '-msse4.2'
-    '-mssse3'"
-
-  But this is after configure file checks for system availability.
-  
-  - checking installed package size ... NOTE
-    installed size is 10.3Mb
-    sub-directories of 1Mb or more:
-      libs 10.2Mb
-
-  This occurs on systems (like 'r-devel-linux-x86_64-fedora-clang') that include debug
-  symbols in their compilation; 'hdtg' performance is heavily dependent on many template
-  instantiations that generate a large library when including debug symbols.  Future
-  availability of C++17 'if (constexpr ...)' should decrease library size substantially.  
+* No ERRORs or WARNINGs.
+* One NOTE remains, expected for resubmission of an archived package:
+  - "New submission: Package was archived on CRAN"
   
 ## Test environments
 * local OS X install, R 4.1.2
