@@ -32,13 +32,13 @@
 #' set.seed(1)
 #' d <- 10
 #' A <- matrix(runif(d^2)*2 - 1, ncol=d)
-#' Sigma <- t(A) %*% A
-#' R <- cholesky(Sigma)
+#' precMat <- t(A) %*% A
+#' R <- cholesky(precMat)
 #' mu <- rep(0, d)
 #' constrainDirec <- diag(d)
 #' constrainBound <- rep(0,d)
 #' initial <- rep(1, d)
-#' results <- harmonicHMC(1000, 1000, mu, R, constrainDirec, constrainBound, initial, precFlg = FALSE)
+#' results <- harmonicHMC(1000, 1000, mu, R, constrainDirec, constrainBound, initial, precFlg = TRUE)
 #' @references
 #' \insertRef{pakman2014exact}{hdtg}
 harmonicHMC <- function(nSample,
