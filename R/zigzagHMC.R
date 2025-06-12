@@ -21,8 +21,7 @@
 #' set.seed(1)
 #' d <- 10
 #' A <- matrix(runif(d^2)*2-1, ncol=d)
-#' covMat <- t(A) %*% A
-#' precMat <- solve(covMat)
+#' precMat <- t(A) %*% A
 #' initial <- rep(1, d)
 #' results <- zigzagHMC(nSample = 1000, burnin = 1000, mean = rep(0, d), prec = precMat,
 #' lowerBounds = rep(0, d), upperBounds = rep(Inf, d))
