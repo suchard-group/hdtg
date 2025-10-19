@@ -22,7 +22,7 @@ if (getRversion() < "4.2") {
 platform <- R.version$platform
 on_cran_debian <- grepl("linux-gnu", platform) && grepl("x86_64", platform)
 
-flags <- "PKG_CXXFLAGS = -I."
+flags <- "PKG_CXXFLAGS = -I. -I./xsimd"
 if (!on_cran_debian) {
   message("SIMD optimizations (AVX/SSE) ENABLED during compilation.")
   if (RcppXsimd::supportsSSE()) {
