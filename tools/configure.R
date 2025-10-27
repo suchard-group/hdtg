@@ -23,19 +23,19 @@ platform <- R.version$platform
 on_cran_debian <- grepl("linux-gnu", platform) && grepl("x86_64", platform)
 
 flags <- "PKG_CXXFLAGS = -I. -I./xsimd"
-if (!on_cran_debian) {
-  message("SIMD optimizations (AVX/SSE) ENABLED during compilation.")
-  if (RcppXsimd::supportsSSE()) {
-  	flags <- paste(flags, "-DUSE_SSE", RcppXsimd::getSSEFlags())
-  	message("SSE")
-  }
-  if (RcppXsimd::supportsAVX()) {
-  	flags <- paste(flags, "-DUSE_AVX -mfma", RcppXsimd::getAVXFlags())
-  	message("AVX")
-  }
-} else {
-  message("SIMD optimizations DISABLED for Debian/CRAN.")
-}
+# if (!on_cran_debian) {
+#   message("SIMD optimizations (AVX/SSE) ENABLED during compilation.")
+#   if (RcppXsimd::supportsSSE()) {
+#   	flags <- paste(flags, "-DUSE_SSE", RcppXsimd::getSSEFlags())
+#   	message("SSE")
+#   }
+#   if (RcppXsimd::supportsAVX()) {
+#   	flags <- paste(flags, "-DUSE_AVX -mfma", RcppXsimd::getAVXFlags())
+#   	message("AVX")
+#   }
+# } else {
+#   message("SIMD optimizations DISABLED for Debian/CRAN.")
+# }
 
 # Always write Makevars
 txt <- c(flags, txt)

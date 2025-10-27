@@ -1,6 +1,6 @@
 Package: hdtg
 Title: Generate Samples from Multivariate Truncated Normal Distributions
-Version: 0.2.1
+Version: 0.2.2
 Authors@R: 
   c(person("Zhenyu", "Zhang", email = "zhangzhenyusa@gmail.com", role = c("aut", "cre")),
     person("Andrew", "Chin", email = "achin23@jhu.edu", role = "aut"),
@@ -25,5 +25,4 @@ Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 SystemRequirements: 
-  RcppXsimd (>= 1.0.0),
   CPU with AVX/SSE4.2 (optional for better performance)
