@@ -1,6 +1,6 @@
 Package: hdtg
 Title: Generate Samples from Multivariate Truncated Normal Distributions
-Version: 0.2.2
+Version: 0.2.3
 Authors@R: 
   c(person("Zhenyu", "Zhang", email = "zhangzhenyusa@gmail.com", role = c("aut", "cre")),
     person("Andrew", "Chin", email = "achin23@jhu.edu", role = "aut"),
