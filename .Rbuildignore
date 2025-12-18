@@ -14,3 +14,5 @@ extra
 cran-comments.md
 ^src/Makevars$
 
+^src/dr_evomodel_operators_NativeZigZag\.h$
+^src/NativeZigZag\.h$
