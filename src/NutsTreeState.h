@@ -17,7 +17,6 @@
 
 #endif // TIMING
 
-#include "threefry.h"
 #include "MemoryManagement.h"
 #include "Simd.h"
 #include "ZigZag.h"

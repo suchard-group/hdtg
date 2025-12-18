@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <cmath>
+#include <random>
 
 #define TBB_PREVIEW_GLOBAL_CONTROL 1
 
@@ -32,7 +33,6 @@
 #include "MemoryManagement.h"
 #include "Simd.h"
 #include "AbstractZigZag.h"
-#include "UniformGenerator.h"
 
 #include <Eigen/Dense>
 
