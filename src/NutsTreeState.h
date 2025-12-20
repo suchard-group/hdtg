@@ -4,15 +4,12 @@
 #include <vector>
 #include <cmath>
 
-#define TBB_PREVIEW_GLOBAL_CONTROL 1
-
 #define TIMING
 
 #ifdef TIMING
 
 #include <map>
 #include <iomanip>
-#include <random>
 #include "Timing.h"
 
 #endif // TIMING

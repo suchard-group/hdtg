@@ -1,39 +1,25 @@
-//
-// Created by Zhenyu Zhang on 2/1/22.
-//
 #include <random>
 
 #ifndef NOUTURN_HPP_UNIFORMGENERATOR_H
 #define NOUTURN_HPP_UNIFORMGENERATOR_H
 
+// Uniform random number generator used for NUTS tree construction.
+// This is a wrapper around std::mt19937 and always produces
+// genuine uniform random variable in (0, 1).
 
 class UniformGenerator {
 public:
-    UniformGenerator(int seed, bool randomFlg) : randomFlg(randomFlg) {
-        count = 1;
-        generator = std::mt19937(seed);
-        distribution = std::uniform_real_distribution<double>(0, 1);
-    }
-
-    double getUniform() {
-        double tmp;
-        if (randomFlg) {
-            tmp = distribution(generator);
-        } else {
-            if (count % 10 == 0) {
-                ++count;
-            }
-            tmp = count % 10 / 10.;
-            ++count;
-        }
-        return tmp;
-    }
-
-    std::mt19937 generator;
-    std::uniform_real_distribution<double> distribution;
-    bool randomFlg;
-    int count;
+  explicit UniformGenerator(int seed)
+    : generator(seed),
+      distribution(0.0, 1.0) {}
+  
+  inline double getUniform() {
+    return distribution(generator);
+  }
+  
+private:
+  std::mt19937 generator;
+  std::uniform_real_distribution<double> distribution;
 };
 
-
-#endif //NOUTURN_HPP_UNIFORMGENERATOR_H
+#endif // NOUTURN_HPP_UNIFORMGENERATOR_H

@@ -157,7 +157,7 @@ Rcpp::List createNutsEngine(int dimension,
     ptr->setPrecision(zz::DblSpan(precision.begin(), precision.end()));
 
     // create a NUTS obj:
-    auto nuts = new NutsWrapper(nuts::dispatchNuts(100, 10, seed, TRUE, stepSize, ptr));
+    auto nuts = new NutsWrapper(nuts::dispatchNuts(100, 10, seed, stepSize, ptr));
     XPtrNutsWrapper engineNuts(nuts);
 
     Rcpp::List list = Rcpp::List::create(Rcpp::Named("engine") = engineNuts);

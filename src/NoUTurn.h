@@ -39,14 +39,12 @@ namespace nuts {
         NoUTurn(double logProbErrorTol,
                 int maxHeight,
                 int seed,
-                bool randomFlg,
                 double stepSize,
                 std::shared_ptr<zz::ZigZag<zz::DoubleSseTypeInfo>> zigzag) : logProbErrorTol(logProbErrorTol),
                                                                              maxHeight(maxHeight),
                                                                              stepSize(stepSize),
                                                                              zzEngine(*zigzag),
-                                                                             uniGenerator(UniformGenerator(seed,
-                                                                                                           randomFlg)) {
+                                                                             uniGenerator(UniformGenerator(seed)) {
         }
 
         ~NoUTurn() = default;
@@ -178,10 +176,9 @@ namespace nuts {
             double logProbErrorTol,
             int maxHeight,
             int seed,
-            bool randomFlg,
             double stepSize,
             std::shared_ptr<zz::ZigZag<zz::DoubleSseTypeInfo>> ptr) {
-        return zz::make_unique<nuts::NoUTurn>(logProbErrorTol, maxHeight, seed, randomFlg, stepSize, ptr);
+        return zz::make_unique<nuts::NoUTurn>(logProbErrorTol, maxHeight, seed, stepSize, ptr);
     }
 }
 
