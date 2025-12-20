@@ -29,7 +29,6 @@
 
 #endif // TIMING
 
-#include "threefry.h"
 #include "MemoryManagement.h"
 #include "Simd.h"
 #include "AbstractZigZag.h"
@@ -81,10 +80,6 @@ namespace zz {
                 control = std::make_shared<tbb::global_control>(tbb::global_control::max_allowed_parallelism, nThreads);
             }
 
-            rng.resize(static_cast<std::size_t>(nThreads));
-            for (int i = 0; i < nThreads; ++i) {
-                rng[i].seed(static_cast<std::uint64_t>(seed + i));
-            }
             generator = std::mt19937(seed);
             distribution = std::uniform_real_distribution<double>(0, 1);
         }
@@ -1054,7 +1049,6 @@ namespace zz {
 
         std::shared_ptr<tbb::global_control> control;
 
-        std::vector<sitmo::threefry_20_64> rng;
         std::mt19937 generator;
         std::uniform_real_distribution<double> distribution;
 
