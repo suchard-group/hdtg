@@ -119,7 +119,7 @@ drawLaplaceMomentum <- function(d) {
 #'
 #' @param mean a d-dimensional mean vector.
 #' @param lowerBounds a d-dimensional vector specifying the lower bounds.
-#' @param upperBounds a d-dimensional vector specifying the lower bounds.
+#' @param upperBounds a d-dimensional vector specifying the upper bounds.
 #'
 #' @return an eligible d-dimensional initial vector.
 #' @export
