@@ -100,7 +100,7 @@ zigzagHMC <- function(nSample,
       position = position,
       momentum = NULL,
       nutsFlg = nutsFlg,
-      engine = engine,
+      sexp = engine$ptr,
       stepZZHMC = stepsize
     )
     if (i > burnin) {

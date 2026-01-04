@@ -17,7 +17,7 @@ Description: Efficient sampling from high-dimensional truncated Gaussian
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2.9000
+RoxygenNote: 7.3.3
 Imports: Rcpp, RcppParallel, mgcv, stats, Rdpack
 RdMacros: Rdpack
 LinkingTo: Rcpp, RcppEigen, RcppParallel

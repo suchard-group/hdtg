@@ -4,7 +4,7 @@
 \alias{getZigzagSample}
 \title{Draw one MTN sample with Zigzag-HMC or Zigzag-NUTS}
 \usage{
-getZigzagSample(position, momentum = NULL, nutsFlg, engine, stepZZHMC = NULL)
+getZigzagSample(position, momentum = NULL, nutsFlg, sexp, stepZZHMC = NULL)
 }
 \arguments{
 \item{position}{a d-dimensional initial position vector.}
@@ -13,9 +13,7 @@ getZigzagSample(position, momentum = NULL, nutsFlg, engine, stepZZHMC = NULL)
 
 \item{nutsFlg}{logical. If \code{TRUE} the No-U-Turn sampler will be used (Zigzag-NUTS).}
 
-\item{engine}{list. Its \code{engine} element is a pointer to the Zigzag-HMC engine
-(or Zigzag-NUTS engine) C++ object that implements fast computations for
-Zigzag-HMC (or Zigzag-NUTS).}
+\item{sexp}{pointer to the Zigzag-HMC engine C++ object. Use \code{engine$ptr} from \code{createEngine()}.}
 
 \item{stepZZHMC}{step size for Zigzag-HMC. If \code{nutsFlg = TRUE}, \code{engine} contains
 the base step size for Zigzag-NUTS).}
@@ -53,10 +51,10 @@ currentSample <- rep(0.1, d)
 for (i in 1:n) {
   m <- rnorm(d, 0, 1)
   prec <- rWishart(n = 1, df = d, Sigma = diag(d))[,,1]
-  setMean(sexp = engine$engine, mean = m)
-  setPrecision(sexp = engine$engine, precision = prec)
+  setMean(sexp = engine$ptr, mean = m)
+  setPrecision(sexp = engine$ptr, precision = prec)
   currentSample <- getZigzagSample(position = currentSample, nutsFlg = FALSE,
-      engine = engine, stepZZHMC = HZZtime)
+      sexp = engine$ptr, stepZZHMC = HZZtime)
   samples[i,] <- currentSample
 }
 }

@@ -117,7 +117,7 @@ Rcpp::List createEngine(int dimension,
     ptr->setMean(zz::DblSpan(mean.begin(), mean.end()));
     ptr->setPrecision(zz::DblSpan(precision.begin(), precision.end()));
 
-    Rcpp::List list = Rcpp::List::create(Rcpp::Named("engine") = engine);
+    Rcpp::List list = Rcpp::List::create(Rcpp::Named("ptr") = engine);
 
     return list;
 }
@@ -160,7 +160,7 @@ Rcpp::List createNutsEngine(int dimension,
     auto nuts = new NutsWrapper(nuts::dispatchNuts(100, 10, seed, stepSize, ptr));
     XPtrNutsWrapper engineNuts(nuts);
 
-    Rcpp::List list = Rcpp::List::create(Rcpp::Named("engine") = engineNuts);
+    Rcpp::List list = Rcpp::List::create(Rcpp::Named("ptr") = engineNuts);
 
     return list;
 }

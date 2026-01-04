@@ -11,7 +11,7 @@ getInitialPosition(mean, lowerBounds, upperBounds)
 
 \item{lowerBounds}{a d-dimensional vector specifying the lower bounds.}
 
-\item{upperBounds}{a d-dimensional vector specifying the lower bounds.}
+\item{upperBounds}{a d-dimensional vector specifying the upper bounds.}
 }
 \value{
 an eligible d-dimensional initial vector.

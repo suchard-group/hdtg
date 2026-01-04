@@ -5,9 +5,7 @@
 #' @param position a d-dimensional initial position vector.
 #' @param momentum a d-dimensional initial momentum vector.
 #' @param nutsFlg logical. If `TRUE` the No-U-Turn sampler will be used (Zigzag-NUTS).
-#' @param engine list. Its `engine` element is a pointer to the Zigzag-HMC engine
-#' (or Zigzag-NUTS engine) C++ object that implements fast computations for
-#' Zigzag-HMC (or Zigzag-NUTS).
+#' @param sexp pointer to the Zigzag-HMC engine C++ object. Use `engine$ptr` from `createEngine()`.
 #' @param stepZZHMC step size for Zigzag-HMC. If `nutsFlg = TRUE`, `engine` contains
 #' the base step size for Zigzag-NUTS).
 #'
@@ -39,29 +37,29 @@
 #' for (i in 1:n) {
 #'   m <- rnorm(d, 0, 1)
 #'   prec <- rWishart(n = 1, df = d, Sigma = diag(d))[,,1]
-#'   setMean(sexp = engine$engine, mean = m)
-#'   setPrecision(sexp = engine$engine, precision = prec)
+#'   setMean(sexp = engine$ptr, mean = m)
+#'   setPrecision(sexp = engine$ptr, precision = prec)
 #'   currentSample <- getZigzagSample(position = currentSample, nutsFlg = FALSE,
-#'       engine = engine, stepZZHMC = HZZtime)
+#'       sexp = engine$ptr, stepZZHMC = HZZtime)
 #'   samples[i,] <- currentSample
 #'}
 getZigzagSample <- function(position,
                             momentum = NULL,
                             nutsFlg,
-                            engine,
+                            sexp,
                             stepZZHMC = NULL) {
   if (is.null(momentum)) {
     momentum <- drawLaplaceMomentum(length(position))
   }
   
   if (nutsFlg) {
-    res <- .oneNutsIteration(sexp = engine$engine,
+    res <- .oneNutsIteration(sexp = sexp,
                              position = position,
                              momentum = momentum)
     
   } else {
     res <- .oneIteration(
-      sexp = engine$engine,
+      sexp = sexp,
       position = position,
       momentum = momentum,
       time = stepZZHMC
@@ -90,7 +88,7 @@ getMarkovianZigzagSample <- function(position,
   }
   
   res <- .oneIrreversibleIteration(
-    sexp = engine$engine,
+    sexp = engine$ptr,
     position = position,
     velocity = velocity,
     time = travelTime
