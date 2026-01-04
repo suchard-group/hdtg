@@ -6,7 +6,7 @@
 #' @param momentum a d-dimensional initial momentum vector.
 #' @param nutsFlg logical. If `TRUE` the No-U-Turn sampler will be used (Zigzag-NUTS).
 #' @param sexp pointer to the Zigzag-HMC engine C++ object. Use `engine$ptr` from `createEngine()`.
-#' @param stepZZHMC step size for Zigzag-HMC. If `nutsFlg = TRUE`, `engine` contains
+#' @param stepSize step size for Zigzag-HMC. If `nutsFlg = TRUE`, `engine` contains
 #' the base step size for Zigzag-NUTS).
 #'
 #' @return one MCMC sample from the target MTN.
@@ -40,14 +40,14 @@
 #'   setMean(sexp = engine$ptr, mean = m)
 #'   setPrecision(sexp = engine$ptr, precision = prec)
 #'   currentSample <- getZigzagSample(position = currentSample, nutsFlg = FALSE,
-#'       sexp = engine$ptr, stepZZHMC = HZZtime)
+#'       sexp = engine$ptr, stepSize = HZZtime)
 #'   samples[i,] <- currentSample
 #'}
 getZigzagSample <- function(position,
                             momentum = NULL,
                             nutsFlg,
                             sexp,
-                            stepZZHMC = NULL) {
+                            stepSize = NULL) {
   if (is.null(momentum)) {
     momentum <- drawLaplaceMomentum(length(position))
   }
@@ -62,7 +62,7 @@ getZigzagSample <- function(position,
       sexp = sexp,
       position = position,
       momentum = momentum,
-      time = stepZZHMC
+      time = stepSize
     )
   }
   return(res$position)

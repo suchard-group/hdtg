@@ -4,7 +4,7 @@
 \alias{getZigzagSample}
 \title{Draw one MTN sample with Zigzag-HMC or Zigzag-NUTS}
 \usage{
-getZigzagSample(position, momentum = NULL, nutsFlg, sexp, stepZZHMC = NULL)
+getZigzagSample(position, momentum = NULL, nutsFlg, sexp, stepSize = NULL)
 }
 \arguments{
 \item{position}{a d-dimensional initial position vector.}
@@ -15,7 +15,7 @@ getZigzagSample(position, momentum = NULL, nutsFlg, sexp, stepZZHMC = NULL)
 
 \item{sexp}{pointer to the Zigzag-HMC engine C++ object. Use \code{engine$ptr} from \code{createEngine()}.}
 
-\item{stepZZHMC}{step size for Zigzag-HMC. If \code{nutsFlg = TRUE}, \code{engine} contains
+\item{stepSize}{step size for Zigzag-HMC. If \code{nutsFlg = TRUE}, \code{engine} contains
 the base step size for Zigzag-NUTS).}
 }
 \value{
@@ -54,7 +54,7 @@ for (i in 1:n) {
   setMean(sexp = engine$ptr, mean = m)
   setPrecision(sexp = engine$ptr, precision = prec)
   currentSample <- getZigzagSample(position = currentSample, nutsFlg = FALSE,
-      sexp = engine$ptr, stepZZHMC = HZZtime)
+      sexp = engine$ptr, stepSize = HZZtime)
   samples[i,] <- currentSample
 }
 }

@@ -11,7 +11,7 @@
 #' @param nutsFlg logical. If `TRUE` the No-U-Turn sampler will be used (Zigzag-NUTS).
 #' @param precondition logical. If `TRUE`, the precision matrix will be preconditioned so that its diagonals (i.e. conditional variances) are all 1.
 #' @param init a d-dimensional vector of the initial value. `init` must satisfy all constraints. If `init = NULL`, a random initial value will be used.
-#' @param stepsize step size for Zigzag-HMC or Zigzag-NUTS (if `nutsFlg = TRUE`). Default value is the empirically optimal choice: sqrt(2)(lambda)^(-1/2) for Zigzag-HMC and 0.1(lambda)^(-1/2) for Zigzag-NUTS, where lambda is the minimal eigenvalue of the precision matrix.   
+#' @param stepSize step size for Zigzag-HMC or Zigzag-NUTS (if `nutsFlg = TRUE`). Default value is the empirically optimal choice: sqrt(2)(lambda)^(-1/2) for Zigzag-HMC and 0.1(lambda)^(-1/2) for Zigzag-NUTS, where lambda is the minimal eigenvalue of the precision matrix.   
 #' @param seed random seed (default = 1).
 #' @param diagnosticMode logical. `TRUE` for also returning diagnostic information such as the stepsize used. 
 #'
@@ -38,7 +38,7 @@ zigzagHMC <- function(nSample,
                       lowerBounds,
                       upperBounds,
                       init = NULL,
-                      stepsize = NULL,
+                      stepSize = NULL,
                       nutsFlg = FALSE,
                       precondition = FALSE,
                       seed = NULL,
@@ -65,8 +65,8 @@ zigzagHMC <- function(nSample,
   samples <- array(0, c(nSample, ndim))
   
   if (nutsFlg) {
-    if (is.null(stepsize)) {
-      stepsize <- 0.1 / sqrt(computeExtremeEigenval(prec))
+    if (is.null(stepSize)) {
+      stepSize <- 0.1 / sqrt(computeExtremeEigenval(prec))
     }
     engine <- createNutsEngine(
       dimension = ndim,
@@ -74,14 +74,14 @@ zigzagHMC <- function(nSample,
       upperBounds = upperBounds,
       flags = 128,
       seed = cpp_seed,
-      stepSize = stepsize,
+      stepSize = stepSize,
       mean = mean,
       precision = prec
     )
     
   } else {
-    if (is.null(stepsize)) {
-      stepsize <- sqrt(2) / sqrt(computeExtremeEigenval(prec))
+    if (is.null(stepSize)) {
+      stepSize <- sqrt(2) / sqrt(computeExtremeEigenval(prec))
     }
     engine <- createEngine(
       dimension = ndim,
@@ -101,7 +101,7 @@ zigzagHMC <- function(nSample,
       momentum = NULL,
       nutsFlg = nutsFlg,
       sexp = engine$ptr,
-      stepZZHMC = stepsize
+      stepSize = stepSize
     )
     if (i > burnin) {
       if (precondition) {
@@ -112,7 +112,7 @@ zigzagHMC <- function(nSample,
     }
   }
   if (diagnosticMode) {
-    return(list("samples" = samples, "stepsize" = stepsize))
+    return(list("samples" = samples, "stepsize" = stepSize))
   } else {
     return(samples)
   }
@@ -125,7 +125,7 @@ markovianZigzag <- function(nSample,
                             lowerBounds,
                             upperBounds,
                             init = NULL,
-                            stepsize = NULL,
+                            stepSize = NULL,
                             seed = 1,
                             diagnosticMode = FALSE,
                             nStatusUpdate = 0L) {
@@ -143,8 +143,8 @@ markovianZigzag <- function(nSample,
   ndim <- length(mean)
   samples <- array(0, c(nSample, ndim))
   
-  if (is.null(stepsize)) {
-    stepsize <- sqrt(2) / sqrt(computeExtremeEigenval(prec))
+  if (is.null(stepSize)) {
+    stepSize <- sqrt(2) / sqrt(computeExtremeEigenval(prec))
   }
   engine <- createEngine(
     dimension = ndim,
@@ -163,7 +163,7 @@ markovianZigzag <- function(nSample,
       position = state$position,
       velocity = state$velocity,
       engine = engine,
-      travelTime = stepsize
+      travelTime = stepSize
     )
     if (i > burnin) {
       samples[i - burnin, ] <- state$position
@@ -173,7 +173,7 @@ markovianZigzag <- function(nSample,
     }
   }
   if (diagnosticMode) {
-    return(list("samples" = samples, "stepsize" = stepsize))
+    return(list("samples" = samples, "stepsize" = stepSize))
   } else {
     return(samples)
   }

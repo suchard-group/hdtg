@@ -12,7 +12,7 @@ zigzagHMC(
   lowerBounds,
   upperBounds,
   init = NULL,
-  stepsize = NULL,
+  stepSize = NULL,
   nutsFlg = FALSE,
   precondition = FALSE,
   seed = NULL,
@@ -34,7 +34,7 @@ zigzagHMC(
 
 \item{init}{a d-dimensional vector of the initial value. \code{init} must satisfy all constraints. If \code{init = NULL}, a random initial value will be used.}
 
-\item{stepsize}{step size for Zigzag-HMC or Zigzag-NUTS (if \code{nutsFlg = TRUE}). Default value is the empirically optimal choice: sqrt(2)(lambda)^(-1/2) for Zigzag-HMC and 0.1(lambda)^(-1/2) for Zigzag-NUTS, where lambda is the minimal eigenvalue of the precision matrix.}
+\item{stepSize}{step size for Zigzag-HMC or Zigzag-NUTS (if \code{nutsFlg = TRUE}). Default value is the empirically optimal choice: sqrt(2)(lambda)^(-1/2) for Zigzag-HMC and 0.1(lambda)^(-1/2) for Zigzag-NUTS, where lambda is the minimal eigenvalue of the precision matrix.}
 
 \item{nutsFlg}{logical. If \code{TRUE} the No-U-Turn sampler will be used (Zigzag-NUTS).}
 
