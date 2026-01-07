@@ -14,7 +14,7 @@ harmonicHMC(
   init,
   time = c(pi/8, pi/2),
   precFlg,
-  seed = NULL,
+  seed = 1,
   extraOutputs = c()
 )
 }

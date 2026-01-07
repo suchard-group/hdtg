@@ -50,7 +50,7 @@ harmonicHMC <- function(nSample,
                         init,
                         time = c(pi / 8, pi / 2),
                         precFlg,
-                        seed = NULL,
+                        seed = 1,
                         extraOutputs = c()) {
   if (length(time) == 1) {
     time[2] <- time[1]

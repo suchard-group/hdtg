@@ -103,6 +103,7 @@ getMarkovianZigzagSample <- function(position,
 #' @param d dimension of the momentum.
 #'
 #' @return a d-dimensional Laplace-distributed momentum.
+#' @noRd
 drawLaplaceMomentum <- function(d) {
   return((2 * (stats::runif(d) > .5) - 1) * stats::rexp(d, rate = 1))
 }

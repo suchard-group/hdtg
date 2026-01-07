@@ -15,7 +15,7 @@ zigzagHMC(
   stepSize = NULL,
   nutsFlg = FALSE,
   precondition = FALSE,
-  seed = NULL,
+  seed = 1,
   diagnosticMode = FALSE
 )
 }
