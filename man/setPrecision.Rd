@@ -4,10 +4,10 @@
 \alias{setPrecision}
 \title{Set the precision matrix for the target MTN}
 \usage{
-setPrecision(sexp, precision)
+setPrecision(engine, precision)
 }
 \arguments{
-\item{sexp}{pointer to a Zigzag-HMC engine object.}
+\item{engine}{A Zigzag-HMC engine container object.}
 
 \item{precision}{the precision matrix.}
 }

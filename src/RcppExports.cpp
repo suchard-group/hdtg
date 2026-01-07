@@ -120,24 +120,24 @@ BEGIN_RCPP
 END_RCPP
 }
 // setMean
-void setMean(SEXP sexp, NumericVector& mean);
-RcppExport SEXP _hdtg_setMean(SEXP sexpSEXP, SEXP meanSEXP) {
+void setMean(List engine, NumericVector& mean);
+RcppExport SEXP _hdtg_setMean(SEXP engineSEXP, SEXP meanSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type sexp(sexpSEXP);
+    Rcpp::traits::input_parameter< List >::type engine(engineSEXP);
     Rcpp::traits::input_parameter< NumericVector& >::type mean(meanSEXP);
-    setMean(sexp, mean);
+    setMean(engine, mean);
     return R_NilValue;
 END_RCPP
 }
 // setPrecision
-void setPrecision(SEXP sexp, NumericVector& precision);
-RcppExport SEXP _hdtg_setPrecision(SEXP sexpSEXP, SEXP precisionSEXP) {
+void setPrecision(List engine, NumericVector& precision);
+RcppExport SEXP _hdtg_setPrecision(SEXP engineSEXP, SEXP precisionSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< SEXP >::type sexp(sexpSEXP);
+    Rcpp::traits::input_parameter< List >::type engine(engineSEXP);
     Rcpp::traits::input_parameter< NumericVector& >::type precision(precisionSEXP);
-    setPrecision(sexp, precision);
+    setPrecision(engine, precision);
     return R_NilValue;
 END_RCPP
 }

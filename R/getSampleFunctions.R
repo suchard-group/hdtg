@@ -5,7 +5,9 @@
 #' @param position a d-dimensional initial position vector.
 #' @param momentum a d-dimensional initial momentum vector.
 #' @param nutsFlg logical. If `TRUE` the No-U-Turn sampler will be used (Zigzag-NUTS).
-#' @param sexp pointer to the Zigzag-HMC engine C++ object. Use `engine$ptr` from `createEngine()`.
+#' @param engine list. Its `engine` element is a pointer to the Zigzag-HMC engine
+#' (or Zigzag-NUTS engine) C++ object that implements fast computations for
+#' Zigzag-HMC (or Zigzag-NUTS).
 #' @param stepSize step size for Zigzag-HMC. If `nutsFlg = TRUE`, `engine` contains
 #' the base step size for Zigzag-NUTS).
 #'
@@ -37,29 +39,31 @@
 #' for (i in 1:n) {
 #'   m <- rnorm(d, 0, 1)
 #'   prec <- rWishart(n = 1, df = d, Sigma = diag(d))[,,1]
-#'   setMean(sexp = engine$ptr, mean = m)
-#'   setPrecision(sexp = engine$ptr, precision = prec)
-#'   currentSample <- getZigzagSample(position = currentSample, nutsFlg = FALSE,
-#'       sexp = engine$ptr, stepSize = HZZtime)
+#'   setMean(engine = engine, mean = m)
+#'   setPrecision(engine = engine, precision = prec)
+#'   currentSample <- getZigzagSample(position = currentSample,
+#'                                    nutsFlg = FALSE,
+#'                                    engine = engine,
+#'                                    stepSize = HZZtime)
 #'   samples[i,] <- currentSample
-#'}
+#' }
 getZigzagSample <- function(position,
                             momentum = NULL,
                             nutsFlg,
-                            sexp,
+                            engine,
                             stepSize = NULL) {
   if (is.null(momentum)) {
     momentum <- drawLaplaceMomentum(length(position))
   }
   
   if (nutsFlg) {
-    res <- .oneNutsIteration(sexp = sexp,
+    res <- .oneNutsIteration(sexp = engine$engine,
                              position = position,
                              momentum = momentum)
     
   } else {
     res <- .oneIteration(
-      sexp = sexp,
+      sexp = engine$engine,
       position = position,
       momentum = momentum,
       time = stepSize
@@ -88,7 +92,7 @@ getMarkovianZigzagSample <- function(position,
   }
   
   res <- .oneIrreversibleIteration(
-    sexp = engine$ptr,
+    sexp = engine$engine,
     position = position,
     velocity = velocity,
     time = travelTime

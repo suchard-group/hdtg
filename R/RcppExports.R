@@ -69,22 +69,22 @@ createNutsEngine <- function(dimension, lowerBounds, upperBounds, seed, stepSize
 #'
 #' Set the mean vector for a given Zigzag-HMC engine object.
 #'
-#' @param sexp pointer to a Zigzag-HMC engine object.
+#' @param engine A Zigzag-HMC engine container object.
 #' @param mean the mean vector.
 #' @export
-setMean <- function(sexp, mean) {
-    invisible(.Call(`_hdtg_setMean`, sexp, mean))
+setMean <- function(engine, mean) {
+    invisible(.Call(`_hdtg_setMean`, engine, mean))
 }
 
 #' Set the precision matrix for the target MTN
 #' 
 #' Set the precision matrix for a given Zigzag-HMC engine object.
 #'
-#' @param sexp pointer to a Zigzag-HMC engine object.
+#' @param engine A Zigzag-HMC engine container object.
 #' @param precision the precision matrix.
 #' @export
-setPrecision <- function(sexp, precision) {
-    invisible(.Call(`_hdtg_setPrecision`, sexp, precision))
+setPrecision <- function(engine, precision) {
+    invisible(.Call(`_hdtg_setPrecision`, engine, precision))
 }
 
 getNextEvent <- function(sexp, position, velocity, action, logpdfGradient, momentum) {

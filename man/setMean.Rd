@@ -4,10 +4,10 @@
 \alias{setMean}
 \title{Set the mean for the target MTN}
 \usage{
-setMean(sexp, mean)
+setMean(engine, mean)
 }
 \arguments{
-\item{sexp}{pointer to a Zigzag-HMC engine object.}
+\item{engine}{A Zigzag-HMC engine container object.}
 
 \item{mean}{the mean vector.}
 }

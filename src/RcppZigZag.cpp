@@ -4,7 +4,6 @@
 
 using namespace Rcpp;
 
-// [[Rcpp::depends(RcppParallel,RcppXsimd)]]
 #include <RcppParallel.h>
 
 #include "ZigZag.h"
@@ -117,7 +116,7 @@ Rcpp::List createEngine(int dimension,
     ptr->setMean(zz::DblSpan(mean.begin(), mean.end()));
     ptr->setPrecision(zz::DblSpan(precision.begin(), precision.end()));
 
-    Rcpp::List list = Rcpp::List::create(Rcpp::Named("ptr") = engine);
+    Rcpp::List list = Rcpp::List::create(Rcpp::Named("engine") = engine);
 
     return list;
 }
@@ -160,7 +159,7 @@ Rcpp::List createNutsEngine(int dimension,
     auto nuts = new NutsWrapper(nuts::dispatchNuts(100, 10, seed, stepSize, ptr));
     XPtrNutsWrapper engineNuts(nuts);
 
-    Rcpp::List list = Rcpp::List::create(Rcpp::Named("ptr") = engineNuts);
+    Rcpp::List list = Rcpp::List::create(Rcpp::Named("engine") = engineNuts);
 
     return list;
 }
@@ -170,26 +169,30 @@ Rcpp::List createNutsEngine(int dimension,
 //'
 //' Set the mean vector for a given Zigzag-HMC engine object.
 //'
-//' @param sexp pointer to a Zigzag-HMC engine object.
+//' @param engine A Zigzag-HMC engine container object.
 //' @param mean the mean vector.
 //' @export
 // [[Rcpp::export(setMean)]]
-void setMean(SEXP sexp, NumericVector &mean) {
-    auto ptr = parsePtr(sexp);
-    ptr->setMean(zz::DblSpan(mean.begin(), mean.end()));
+void setMean(List engine, NumericVector &mean) {
+  // Extract the internal engine pointer
+  SEXP sexp = engine["engine"];
+  auto ptr = parsePtr(sexp);
+  ptr->setMean(zz::DblSpan(mean.begin(), mean.end()));
 }
 
 //' Set the precision matrix for the target MTN
 //' 
 //' Set the precision matrix for a given Zigzag-HMC engine object.
 //'
-//' @param sexp pointer to a Zigzag-HMC engine object.
+//' @param engine A Zigzag-HMC engine container object.
 //' @param precision the precision matrix.
 //' @export
 // [[Rcpp::export(setPrecision)]]
-void setPrecision(SEXP sexp, NumericVector &precision) {
-    auto ptr = parsePtr(sexp);
-    ptr->setPrecision(zz::DblSpan(precision.begin(), precision.end()));
+void setPrecision(List engine, NumericVector &precision) {
+  // Extract the internal engine pointer
+  SEXP sexp = engine["engine"];
+  auto ptr = parsePtr(sexp);
+  ptr->setPrecision(zz::DblSpan(precision.begin(), precision.end()));
 }
 
 // [[Rcpp::export(getNextEvent)]]
