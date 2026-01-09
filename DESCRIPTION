@@ -12,7 +12,7 @@ Maintainer: Zhenyu Zhang <zhangzhenyusa@gmail.com>
 Description: Efficient sampling from high-dimensional truncated Gaussian
  distributions, or multivariate truncated normal (MTN). Techniques include 
  zigzag Hamiltonian Monte Carlo as in Akihiko Nishimura, Zhenyu Zhang and 
- Marc A. Suchard (2024) <doi:10.1080/01621459.2024.2395587>, and  harmonic Monte in Ari Pakman 
+ Marc A. Suchard (2024) <doi:10.1080/01621459.2024.2395587>, and  harmonic Monte Carlo in Ari Pakman 
  and Liam Paninski (2014) <doi:10.1080/10618600.2013.788448>.
 License: MIT + file LICENSE
 Encoding: UTF-8

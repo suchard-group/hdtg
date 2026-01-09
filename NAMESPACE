@@ -3,6 +3,7 @@
 export(cholesky)
 export(createEngine)
 export(createNutsEngine)
+export(drawLaplaceMomentum)
 export(getInitialPosition)
 export(getMarkovianZigzagSample)
 export(getZigzagSample)
