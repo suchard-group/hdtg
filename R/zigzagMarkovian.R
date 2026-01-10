@@ -15,8 +15,8 @@
 #' @param init A d-dimensional vector of the initial value. `init` must
 #'   satisfy all constraints. If `init = NULL`, a random initial value will
 #'   be used.
-#' @param stepSize Step size for the Markovian Zigzag sampler. Default value
-#'   is the empirically optimal choice: sqrt(2)λ^(-1/2), where λ is the
+#' @param stepSize Step size for the Markovian Zigzag sampler. Default value 
+#'   is the empirically optimal choice: \eqn{\sqrt{2}\lambda^{-1/2}}, where \eqn{\lambda} is the 
 #'   minimal eigenvalue of the precision matrix.
 #' @param seed Random seed (default = 1).
 #' @param diagnosticMode Logical. `TRUE` for also returning diagnostic
