@@ -8,23 +8,23 @@
 #' @param burnin Number of burn-in samples (default = 0).
 #' @param mean A d-dimensional mean vector.
 #' @param prec A d-by-d precision matrix of the Gaussian distribution.
-#' @param lowerBounds A d-dimensional vector specifying the lower bounds. 
+#' @param lowerBounds A d-dimensional vector specifying the lower bounds.
 #'   `-Inf` is accepted.
-#' @param upperBounds A d-dimensional vector specifying the upper bounds. 
+#' @param upperBounds A d-dimensional vector specifying the upper bounds.
 #'   `Inf` is accepted.
-#' @param init A d-dimensional vector of the initial value. `init` must 
-#'   satisfy all constraints. If `init = NULL`, a random initial value will 
+#' @param init A d-dimensional vector of the initial value. `init` must
+#'   satisfy all constraints. If `init = NULL`, a random initial value will
 #'   be used.
-#' @param stepSize Step size for the Markovian Zigzag sampler. Default value 
-#'   is the empirically optimal choice: sqrt(2)λ^(-1/2), where λ is the 
+#' @param stepSize Step size for the Markovian Zigzag sampler. Default value
+#'   is the empirically optimal choice: sqrt(2)λ^(-1/2), where λ is the
 #'   minimal eigenvalue of the precision matrix.
 #' @param seed Random seed (default = 1).
-#' @param diagnosticMode Logical. `TRUE` for also returning diagnostic 
+#' @param diagnosticMode Logical. `TRUE` for also returning diagnostic
 #'   information such as the step size used.
 #' @param nStatusUpdate Number of status updates to print during sampling.
 #'   If 0 (default), no updates are printed.
 #'
-#' @return An nSample-by-d matrix of samples. If `diagnosticMode` is `TRUE`, 
+#' @return An nSample-by-d matrix of samples. If `diagnosticMode` is `TRUE`,
 #'   a list with additional diagnostic information is returned.
 #' @export
 #' @examples
@@ -34,11 +34,11 @@
 #' precMat <- t(A) %*% A
 #' initial <- rep(1, d)
 #' results <- markovianZigzag(
-#'   nSample = 1000, 
-#'   burnin = 1000, 
-#'   mean = rep(0, d), 
+#'   nSample = 1000,
+#'   burnin = 1000,
+#'   mean = rep(0, d),
 #'   prec = precMat,
-#'   lowerBounds = rep(0, d), 
+#'   lowerBounds = rep(0, d),
 #'   upperBounds = rep(Inf, d)
 #' )
 markovianZigzag <- function(nSample,
@@ -52,7 +52,6 @@ markovianZigzag <- function(nSample,
                             seed = 1,
                             diagnosticMode = FALSE,
                             nStatusUpdate = 0L) {
-  
   validateInput(mean, prec, lowerBounds, upperBounds, init)
   if (is.null(init)) {
     init <- getInitialPosition(mean, lowerBounds, upperBounds)
@@ -100,4 +99,32 @@ markovianZigzag <- function(nSample,
   } else {
     return(samples)
   }
+}
+
+#' Draw one Markovian zigzag sample
+#'
+#' Simulate the Markovian zigzag dynamics for a given position over a specified travel time.
+#'
+#' @param position a d-dimensional position vector.
+#' @param velocity optional d-dimensional velocity vector. If NULL, it will be generated within the function.
+#' @param engine an object representing the Markovian zigzag engine, typically containing settings and state required for the simulation.
+#' @param travelTime the duration for which the dynamics are simulated.
+#'
+#' @return A list containing the position and velocity after simulating the dynamics.
+#' @export
+getMarkovianZigzagSample <- function(position, velocity = NULL, engine, travelTime) {
+  if (is.null(velocity)) {
+    velocity <- 2 * stats::rbinom(length(position), 1, .5) - 1
+  }
+  
+  res <- .oneIrreversibleIteration(
+    sexp = engine$engine,
+    position = position,
+    velocity = velocity,
+    time = travelTime
+  )
+  return(list(
+    position = res$position,
+    velocity = res$velocity
+  ))
 }
