@@ -1,17 +1,17 @@
 #' Sample from a truncated Gaussian distribution with the harmonic HMC
 #'
 #' Generate MCMC samples from a d-dimensional truncated Gaussian distribution
-#' with constraints Fx+g >= 0 using the Harmonic Hamiltonian Monte Carlo sampler 
+#' with constraints Fx+g >= 0 using the Harmonic Hamiltonian Monte Carlo sampler
 #' (Harmonic-HMC).
 #'
 #' @param nSample number of samples after burn-in.
 #' @param burnin number of burn-in samples (default = 0).
 #' @param mean a d-dimensional mean vector.
-#' @param choleskyFactor upper triangular matrix R from Cholesky decomposition of 
-#' precision or covariance matrix into R^TR. 
-#' @param constrainDirec the k-by-d F matrix (k is the number of linear constraints). 
-#' @param constrainBound the k-dimensional g vector. 
-#' @param init a d-dimensional vector of the initial value. `init` must satisfy all constraints. 
+#' @param choleskyFactor upper triangular matrix R from Cholesky decomposition of
+#' precision or covariance matrix into R^TR.
+#' @param constrainDirec the k-by-d F matrix (k is the number of linear constraints).
+#' @param constrainBound the k-dimensional g vector.
+#' @param init a d-dimensional vector of the initial value. `init` must satisfy all constraints.
 #' @param time HMC integration time for each iteration. Can either be
 #' a scalar value for a fixed time across all samples, or a length 2 vector of a
 #' lower and upper bound for uniform distribution from which the time is drawn
@@ -19,12 +19,12 @@
 #' @param precFlg logical. whether `choleskyFactor` is from precision
 #' (`TRUE`) or covariance matrix (`FALSE`).
 #' @param seed random seed (default = 1).
-#' @param extraOutputs vector of strings. "numBounces" and/or "bounceDistances" 
+#' @param extraOutputs vector of strings. "numBounces" and/or "bounceDistances"
 #' can be requested, with the latter containing the distances in-between bounces
 #' for each sample and hence incurring significant computational and memory costs.
 #'
-#' @return 
-#' `samples`: nSample-by-d matrix of samples 
+#' @return
+#' `samples`: nSample-by-d matrix of samples
 #' or, if `extraOutputs` is non-empty, a list of `samples` and the extra outputs.
 #' @export
 #'
@@ -83,22 +83,18 @@ harmonicHMC <- function(nSample,
     set.seed(seed)
   }
   for (i in 1:(nSample + burnin)) {
-    momentum <- rnorm(ncol(constrainDirec))
-    results <- simulateWhitenedDynamics(
-      position,
-      momentum,
-      whitenedConstraints$direc,
-      whitenedConstraints$direcRowNormSq,
-      whitenedConstraints$bound,
-      runif(1, time[1], time[2]),
-      diagnosticMode
+
+    results <- getHarmonicSample(
+      whitenedPosition = position,
+      whitenedConstraints = whitenedConstraints,
+      integrationTime = runif(1, time[1], time[2]),
+      diagnosticMode = diagnosticMode
     )
+    
     position <- results$position
+    
     if (i > burnin) {
-      samples[i - burnin, ] <- unwhitenPosition(position,
-                                                choleskyFactor,
-                                                mean,
-                                                precFlg)
+      samples[i - burnin, ] <- unwhitenPosition(position, choleskyFactor, mean, precFlg)
       numBounces[i - burnin] <- results$numBounces
       if ("bounceDistances" %in% extraOutputs) {
         bounceDistances[[i - burnin]] <- results$bounceDistances
@@ -114,4 +110,29 @@ harmonicHMC <- function(nSample,
     }
     return(output)
   }
+}
+
+
+#' One-step Harmonic HMC Sampler (Whitened Coordinates)
+#'
+#' @param whitenedPosition Position in whitened coordinates
+#' @param whitenedConstraints List from \code{applyWhitenTransform()}
+#' @param integrationTime Time for dynamics simulation
+#' @param diagnosticMode Return bounce diagnostics
+#' @export
+getHarmonicSample <- function(whitenedPosition,
+                              whitenedConstraints,
+                              integrationTime,
+                              diagnosticMode = FALSE) {
+  momentum <- rnorm(length(whitenedPosition))
+  
+  simulateWhitenedDynamics(
+    whitenedPosition,
+    momentum,
+    whitenedConstraints$direc,
+    whitenedConstraints$direcRowNormSq,
+    whitenedConstraints$bound,
+    integrationTime,
+    diagnosticMode
+  )
 }
