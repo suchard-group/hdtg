@@ -45,7 +45,11 @@ zigzagHMC(
 \item{diagnosticMode}{logical. \code{TRUE} for also returning diagnostic information such as the stepsize used.}
 }
 \value{
-an nSample-by-d matrix of samples. If \code{diagnosticMode} is \code{TRUE}, a list with additional diagnostic information is returned.
+When \code{diagnosticMode = FALSE} (default), returns an \code{nSample}-by-\code{d} matrix of samples.
+
+When \code{diagnosticMode = TRUE}, returns a list with elements:
+\item{samples}{\code{nSample}-by-\code{d} matrix of samples}
+\item{stepsize}{The step size used for sampling}
 }
 \description{
 Generate MCMC samples from a d-dimensional truncated Gaussian distribution with element-wise truncations using the Zigzag Hamiltonian Monte Carlo sampler (Zigzag-HMC).

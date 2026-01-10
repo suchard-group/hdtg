@@ -22,10 +22,13 @@
 #' @param extraOutputs vector of strings. "numBounces" and/or "bounceDistances"
 #' can be requested, with the latter containing the distances in-between bounces
 #' for each sample and hence incurring significant computational and memory costs.
-#'
-#' @return
-#' `samples`: nSample-by-d matrix of samples
-#' or, if `extraOutputs` is non-empty, a list of `samples` and the extra outputs.
+#' @return 
+#' When `extraOutputs` is empty (default), returns an `nSample`-by-`d` matrix of samples.
+#' 
+#' When `extraOutputs` contains `"numBounces"` and/or `"bounceDistances"`, returns a list with elements:
+#' \item{samples}{`nSample`-by-`d` matrix of samples}
+#' \item{numBounces}{Vector of bounce counts per sample (if requested)}
+#' \item{bounceDistances}{List of bounce distances per sample (if requested)}
 #' @export
 #'
 #' @examples

@@ -49,8 +49,12 @@ can be requested, with the latter containing the distances in-between bounces
 for each sample and hence incurring significant computational and memory costs.}
 }
 \value{
-\code{samples}: nSample-by-d matrix of samples
-or, if \code{extraOutputs} is non-empty, a list of \code{samples} and the extra outputs.
+When \code{extraOutputs} is empty (default), returns an \code{nSample}-by-\code{d} matrix of samples.
+
+When \code{extraOutputs} contains \code{"numBounces"} and/or \code{"bounceDistances"}, returns a list with elements:
+\item{samples}{\code{nSample}-by-\code{d} matrix of samples}
+\item{numBounces}{Vector of bounce counts per sample (if requested)}
+\item{bounceDistances}{List of bounce distances per sample (if requested)}
 }
 \description{
 Generate MCMC samples from a d-dimensional truncated Gaussian distribution

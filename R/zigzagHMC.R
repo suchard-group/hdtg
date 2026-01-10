@@ -14,8 +14,12 @@
 #' @param stepSize step size for Zigzag-HMC or Zigzag-NUTS (if `nutsFlg = TRUE`). Default value is the empirically optimal choice: sqrt(2)(lambda)^(-1/2) for Zigzag-HMC and 0.1(lambda)^(-1/2) for Zigzag-NUTS, where lambda is the minimal eigenvalue of the precision matrix.   
 #' @param seed random seed (default = 1).
 #' @param diagnosticMode logical. `TRUE` for also returning diagnostic information such as the stepsize used. 
-#'
-#' @return an nSample-by-d matrix of samples. If `diagnosticMode` is `TRUE`, a list with additional diagnostic information is returned. 
+#' @return 
+#' When `diagnosticMode = FALSE` (default), returns an `nSample`-by-`d` matrix of samples.
+#' 
+#' When `diagnosticMode = TRUE`, returns a list with elements:
+#' \item{samples}{`nSample`-by-`d` matrix of samples}
+#' \item{stepsize}{The step size used for sampling}
 #' @export
 #' @examples
 #' set.seed(1)
