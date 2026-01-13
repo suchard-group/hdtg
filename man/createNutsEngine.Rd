@@ -39,3 +39,15 @@ a list whose only element is the Zigzag-NUTS engine object.
 Create the C++ object to set up SIMD vectorization for speeding up calculations
 for Zigzag-NUTS ("Zigzag-NUTS engine").
 }
+\examples{
+# Create a Zigzag-NUTS engine for a 2D problem
+dimension <- 2
+lowerBounds <- c(-2, -2)
+upperBounds <- c(2, 2)
+stepSize <- 0.1
+mean <- c(0.5, -0.5)
+precision <- matrix(c(2, 0.3, 0.3, 2), nrow = 2)
+nuts_engine <- createNutsEngine(dimension, lowerBounds, upperBounds,
+                                seed = 456, stepSize, mean, precision)
+str(nuts_engine)
+}

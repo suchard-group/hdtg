@@ -8,6 +8,15 @@
 #' @param A matrix to decompose
 #' @return upper triangular matrix R such that A = U'U.
 #' @export
+#' @examples
+#' # Larger example
+#' set.seed(123)
+#' B <- matrix(rnorm(16), 4, 4)
+#' B <- t(B) %*% B  # Make symmetric positive definite
+#' U <- cholesky(B)
+#' U
+#' # Verify decomposition
+#' all.equal(B, t(U) %*% U)
 cholesky <- function(A) {
     .Call(`_hdtg_cholesky`, A)
 }
@@ -41,6 +50,17 @@ simulateWhitenedDynamics <- function(initialPosition, initialMomentum, constrain
 #' @param precision the precision matrix.
 #' @param flags which SIMD instruction set to use. 128 = SSE, 256 = AVX.
 #' @return a list whose only element is the Zigzag-HMC engine object.
+#' @examples
+#' # Create a 2D engine with simple bounds
+#' dimension <- 2
+#' lowerBounds <- c(-1, -1)
+#' upperBounds <- c(1, 1)
+#' mean <- c(0, 0)
+#' precision <- matrix(c(1, 0.5, 0.5, 1), nrow = 2)
+#' engine <- createEngine(dimension, lowerBounds, upperBounds, 
+#'                        seed = 123, mean, precision, flags = 128)
+#' # Check the engine structure
+#' str(engine)
 #' @export
 createEngine <- function(dimension, lowerBounds, upperBounds, seed, mean, precision, flags = 128L) {
     .Call(`_hdtg_createEngine`, dimension, lowerBounds, upperBounds, seed, mean, precision, flags)
@@ -60,6 +80,17 @@ createEngine <- function(dimension, lowerBounds, upperBounds, seed, mean, precis
 #' @param precision the precision matrix.
 #' @param flags which SIMD instruction set to use. 128 = SSE, 256 = AVX.
 #' @return a list whose only element is the Zigzag-NUTS engine object.
+#' @examples
+#' # Create a Zigzag-NUTS engine for a 2D problem
+#' dimension <- 2
+#' lowerBounds <- c(-2, -2)
+#' upperBounds <- c(2, 2)
+#' stepSize <- 0.1
+#' mean <- c(0.5, -0.5)
+#' precision <- matrix(c(2, 0.3, 0.3, 2), nrow = 2)
+#' nuts_engine <- createNutsEngine(dimension, lowerBounds, upperBounds,
+#'                                 seed = 456, stepSize, mean, precision)
+#' str(nuts_engine)
 #' @export
 createNutsEngine <- function(dimension, lowerBounds, upperBounds, seed, stepSize, mean, precision, flags = 128L) {
     .Call(`_hdtg_createNutsEngine`, dimension, lowerBounds, upperBounds, seed, stepSize, mean, precision, flags)
@@ -71,6 +102,16 @@ createNutsEngine <- function(dimension, lowerBounds, upperBounds, seed, stepSize
 #'
 #' @param engine A Zigzag-HMC engine container object.
 #' @param mean the mean vector.
+#' @examples
+#' # First create an engine
+#' engine <- createEngine(dimension = 2, 
+#'                        lowerBounds = c(-1, -1),
+#'                        upperBounds = c(1, 1),
+#'                        seed = 123,
+#'                        mean = c(0, 0),
+#'                        precision = diag(2))
+#' # Update the mean
+#' setMean(engine, mean = c(0.5, 0.5))
 #' @export
 setMean <- function(engine, mean) {
     invisible(.Call(`_hdtg_setMean`, engine, mean))
@@ -82,6 +123,17 @@ setMean <- function(engine, mean) {
 #'
 #' @param engine A Zigzag-HMC engine container object.
 #' @param precision the precision matrix.
+#' @examples
+#' # First create an engine
+#' engine <- createEngine(dimension = 2,
+#'                        lowerBounds = c(-1, -1),
+#'                        upperBounds = c(1, 1),
+#'                        seed = 123,
+#'                        mean = c(0, 0),
+#'                        precision = diag(2))
+#' # Update with a correlated precision matrix
+#' new_precision <- matrix(c(2, 0.8, 0.8, 2), nrow = 2)
+#' setPrecision(engine, precision = new_precision)
 #' @export
 setPrecision <- function(engine, precision) {
     invisible(.Call(`_hdtg_setPrecision`, engine, precision))

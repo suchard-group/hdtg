@@ -15,3 +15,9 @@ a d-dimensional Laplace-distributed momentum.
 \description{
 Generate a d-dimensional momentum where the density of each element is proportional to exp(-|pi|).
 }
+\examples{
+# Draw a 3-dimensional Laplace momentum with reproducible results
+set.seed(3)
+momentum <- drawLaplaceMomentum(3)
+momentum
+}

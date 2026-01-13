@@ -7,6 +7,15 @@
 //' @param A matrix to decompose
 //' @return upper triangular matrix R such that A = U'U.
 //' @export
+//' @examples
+//' # Larger example
+//' set.seed(123)
+//' B <- matrix(rnorm(16), 4, 4)
+//' B <- t(B) %*% B  # Make symmetric positive definite
+//' U <- cholesky(B)
+//' U
+//' # Verify decomposition
+//' all.equal(B, t(U) %*% U)
 // [[Rcpp::export]]
 Eigen::MatrixXd cholesky(const Eigen::Map<Eigen::MatrixXd> A) {
   return A.llt().matrixU();

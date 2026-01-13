@@ -43,7 +43,10 @@
 #' initial <- rep(1, d)
 #' results <- harmonicHMC(1000, 1000, mu, R, constrainDirec, constrainBound, initial, precFlg = TRUE)
 #' @references
-#' \insertRef{pakman2014exact}{hdtg}
+#'
+#' Pakman, A. and Paninski, L. (2014). Exact Hamiltonian Monte Carlo for 
+#' Truncated Multivariate Gaussians. Journal of Computational and Graphical 
+#' Statistics. doi:10.1080/10618600.2013.788448
 harmonicHMC <- function(nSample,
                         burnin = 0,
                         mean,
@@ -123,6 +126,31 @@ harmonicHMC <- function(nSample,
 #' @param integrationTime Time for dynamics simulation
 #' @param diagnosticMode Return bounce diagnostics
 #' @export
+#' @examples
+#' # Basic usage with whitened coordinates
+#' set.seed(123)
+#' whitened_pos <- c(0.1, -0.2, 0.3)
+#' # Create example whitened constraints
+#' whitened_constraints <- list(
+#'   direc = matrix(c(1, 0, 0, 0, 1, 0), nrow = 2, byrow = TRUE),
+#'   direcRowNormSq = c(1, 1),
+#'   bound = c(-0.5, -0.5)
+#' )
+#' result <- getHarmonicSample(
+#'   whitenedPosition = whitened_pos,
+#'   whitenedConstraints = whitened_constraints,
+#'   integrationTime = pi/4
+#' )
+#' result
+#' 
+#' # With diagnostics enabled
+#' result_diag <- getHarmonicSample(
+#'   whitenedPosition = whitened_pos,
+#'   whitenedConstraints = whitened_constraints,
+#'   integrationTime = pi/4,
+#'   diagnosticMode = TRUE
+#' )
+#' str(result_diag)
 getHarmonicSample <- function(whitenedPosition,
                               whitenedConstraints,
                               integrationTime,

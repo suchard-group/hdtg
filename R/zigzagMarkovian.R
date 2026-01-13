@@ -112,6 +112,27 @@ markovianZigzag <- function(nSample,
 #'
 #' @return A list containing the position and velocity after simulating the dynamics.
 #' @export
+#' @examples
+#' # First create an engine
+#' set.seed(123)
+#' engine <- createEngine(
+#'   dimension = 2,
+#'   lowerBounds = c(-1, -1),
+#'   upperBounds = c(1, 1),
+#'   seed = 123,
+#'   mean = c(0, 0),
+#'   precision = diag(2)
+#' )
+#' 
+#' # Draw a single Markovian zigzag sample
+#' position <- c(0.1, -0.2)
+#' travel_time <- 0.5
+#' sample_result <- getMarkovianZigzagSample(
+#'   position = position,
+#'   engine = engine,
+#'   travelTime = travel_time
+#' )
+#' sample_result
 getMarkovianZigzagSample <- function(position, velocity = NULL, engine, travelTime) {
   if (is.null(velocity)) {
     velocity <- 2 * stats::rbinom(length(position), 1, .5) - 1

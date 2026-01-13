@@ -74,5 +74,7 @@ initial <- rep(1, d)
 results <- harmonicHMC(1000, 1000, mu, R, constrainDirec, constrainBound, initial, precFlg = TRUE)
 }
 \references{
-\insertRef{pakman2014exact}{hdtg}
+Pakman, A. and Paninski, L. (2014). Exact Hamiltonian Monte Carlo for
+Truncated Multivariate Gaussians. Journal of Computational and Graphical
+Statistics. doi:10.1080/10618600.2013.788448
 }

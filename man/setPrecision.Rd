@@ -14,3 +14,15 @@ setPrecision(engine, precision)
 \description{
 Set the precision matrix for a given Zigzag-HMC engine object.
 }
+\examples{
+# First create an engine
+engine <- createEngine(dimension = 2,
+                       lowerBounds = c(-1, -1),
+                       upperBounds = c(1, 1),
+                       seed = 123,
+                       mean = c(0, 0),
+                       precision = diag(2))
+# Update with a correlated precision matrix
+new_precision <- matrix(c(2, 0.8, 0.8, 2), nrow = 2)
+setPrecision(engine, precision = new_precision)
+}

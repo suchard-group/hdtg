@@ -23,3 +23,29 @@ getHarmonicSample(
 \description{
 One-step Harmonic HMC Sampler (Whitened Coordinates)
 }
+\examples{
+# Basic usage with whitened coordinates
+set.seed(123)
+whitened_pos <- c(0.1, -0.2, 0.3)
+# Create example whitened constraints
+whitened_constraints <- list(
+  direc = matrix(c(1, 0, 0, 0, 1, 0), nrow = 2, byrow = TRUE),
+  direcRowNormSq = c(1, 1),
+  bound = c(-0.5, -0.5)
+)
+result <- getHarmonicSample(
+  whitenedPosition = whitened_pos,
+  whitenedConstraints = whitened_constraints,
+  integrationTime = pi/4
+)
+result
+
+# With diagnostics enabled
+result_diag <- getHarmonicSample(
+  whitenedPosition = whitened_pos,
+  whitenedConstraints = whitened_constraints,
+  integrationTime = pi/4,
+  diagnosticMode = TRUE
+)
+str(result_diag)
+}

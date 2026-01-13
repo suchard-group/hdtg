@@ -14,3 +14,14 @@ setMean(engine, mean)
 \description{
 Set the mean vector for a given Zigzag-HMC engine object.
 }
+\examples{
+# First create an engine
+engine <- createEngine(dimension = 2, 
+                       lowerBounds = c(-1, -1),
+                       upperBounds = c(1, 1),
+                       seed = 123,
+                       mean = c(0, 0),
+                       precision = diag(2))
+# Update the mean
+setMean(engine, mean = c(0.5, 0.5))
+}

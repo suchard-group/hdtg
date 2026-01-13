@@ -31,9 +31,14 @@
 #' lowerBounds = rep(0, d), upperBounds = rep(Inf, d))
 #'
 #' @references
-#' \insertRef{nishimura2024zigzag}{hdtg}
 #'
-#' \insertRef{nishimura2020discontinuous}{hdtg}
+#' Nishimura, A., Zhang, Z., and Suchard, M. A. (2024). Zigzag path connects 
+#' two Monte Carlo samplers: Hamiltonian counterpart to a piecewise deterministic 
+#' Markov process. Journal of the American Statistical Association, 1-13.
+#'
+#' Nishimura, A., Dunson, D. B., and Lu, J. (2020). Discontinuous Hamiltonian 
+#' Monte Carlo for discrete parameters and discontinuous likelihoods. 
+#' Biometrika, 107(2): 365-380.
 
 zigzagHMC <- function(nSample,
                       burnin = 0,

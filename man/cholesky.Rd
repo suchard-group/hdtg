@@ -15,3 +15,13 @@ upper triangular matrix R such that A = U'U.
 \description{
 Compute Cholesky decomposition of a matrix.
 }
+\examples{
+# Larger example
+set.seed(123)
+B <- matrix(rnorm(16), 4, 4)
+B <- t(B) \%*\% B  # Make symmetric positive definite
+U <- cholesky(B)
+U
+# Verify decomposition
+all.equal(B, t(U) \%*\% U)
+}

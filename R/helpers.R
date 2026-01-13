@@ -6,6 +6,11 @@
 #'
 #' @return a d-dimensional Laplace-distributed momentum.
 #' @export
+#' @examples
+#' # Draw a 3-dimensional Laplace momentum with reproducible results
+#' set.seed(3)
+#' momentum <- drawLaplaceMomentum(3)
+#' momentum
 drawLaplaceMomentum <- function(d) {
   return((2 * (stats::runif(d) > .5) - 1) * stats::rexp(d, rate = 1))
 }
@@ -24,6 +29,24 @@ drawLaplaceMomentum <- function(d) {
 #'
 #' @return an eligible d-dimensional initial vector.
 #' @export
+#' @examples
+#' # Example 1: Bounded interval
+#' mean <- c(0, 0)
+#' lower <- c(-1, -2)
+#' upper <- c(1, 2)
+#' getInitialPosition(mean, lower, upper)
+#'
+#' # Example 2: Mixed bounds (some finite, some infinite)
+#' mean <- c(0, 0, 0)
+#' lower <- c(-Inf, 0, -1)
+#' upper <- c(Inf, 5, Inf)
+#' getInitialPosition(mean, lower, upper)
+#'
+#' # Example 3: All unbounded (returns mean)
+#' mean <- c(1, 2, 3)
+#' lower <- c(-Inf, -Inf, -Inf)
+#' upper <- c(Inf, Inf, Inf)
+#' getInitialPosition(mean, lower, upper)
 getInitialPosition <- function(mean, lowerBounds, upperBounds) {
   bL <- upperBounds - lowerBounds
   midPoint <- (upperBounds + lowerBounds) / 2

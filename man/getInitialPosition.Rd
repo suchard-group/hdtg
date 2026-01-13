@@ -22,3 +22,22 @@ For a given MTN the function returns an initial vector whose elements are one of
 finite (2) lower (upper) bound +0.1 (-0.1) if only the lower (upper) bound is finite
 (3) the corresponding mean value if lower bound = \code{-Inf} are upper bound = \code{Inf}.
 }
+\examples{
+# Example 1: Bounded interval
+mean <- c(0, 0)
+lower <- c(-1, -2)
+upper <- c(1, 2)
+getInitialPosition(mean, lower, upper)
+
+# Example 2: Mixed bounds (some finite, some infinite)
+mean <- c(0, 0, 0)
+lower <- c(-Inf, 0, -1)
+upper <- c(Inf, 5, Inf)
+getInitialPosition(mean, lower, upper)
+
+# Example 3: All unbounded (returns mean)
+mean <- c(1, 2, 3)
+lower <- c(-Inf, -Inf, -Inf)
+upper <- c(Inf, Inf, Inf)
+getInitialPosition(mean, lower, upper)
+}

@@ -36,3 +36,15 @@ a list whose only element is the Zigzag-HMC engine object.
 Create the C++ object to set up SIMD vectorization for speeding up calculations
 for Zigzag-HMC ("Zigzag-HMC engine").
 }
+\examples{
+# Create a 2D engine with simple bounds
+dimension <- 2
+lowerBounds <- c(-1, -1)
+upperBounds <- c(1, 1)
+mean <- c(0, 0)
+precision <- matrix(c(1, 0.5, 0.5, 1), nrow = 2)
+engine <- createEngine(dimension, lowerBounds, upperBounds, 
+                       seed = 123, mean, precision, flags = 128)
+# Check the engine structure
+str(engine)
+}

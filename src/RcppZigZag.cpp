@@ -96,6 +96,17 @@ NutsSharedPtr &parsePtrNuts(SEXP sexp) {
 //' @param precision the precision matrix.
 //' @param flags which SIMD instruction set to use. 128 = SSE, 256 = AVX.
 //' @return a list whose only element is the Zigzag-HMC engine object.
+//' @examples
+//' # Create a 2D engine with simple bounds
+//' dimension <- 2
+//' lowerBounds <- c(-1, -1)
+//' upperBounds <- c(1, 1)
+//' mean <- c(0, 0)
+//' precision <- matrix(c(1, 0.5, 0.5, 1), nrow = 2)
+//' engine <- createEngine(dimension, lowerBounds, upperBounds, 
+//'                        seed = 123, mean, precision, flags = 128)
+//' # Check the engine structure
+//' str(engine)
 //' @export
 // [[Rcpp::export(createEngine)]]
 Rcpp::List createEngine(int dimension,
@@ -135,6 +146,17 @@ Rcpp::List createEngine(int dimension,
 //' @param precision the precision matrix.
 //' @param flags which SIMD instruction set to use. 128 = SSE, 256 = AVX.
 //' @return a list whose only element is the Zigzag-NUTS engine object.
+//' @examples
+//' # Create a Zigzag-NUTS engine for a 2D problem
+//' dimension <- 2
+//' lowerBounds <- c(-2, -2)
+//' upperBounds <- c(2, 2)
+//' stepSize <- 0.1
+//' mean <- c(0.5, -0.5)
+//' precision <- matrix(c(2, 0.3, 0.3, 2), nrow = 2)
+//' nuts_engine <- createNutsEngine(dimension, lowerBounds, upperBounds,
+//'                                 seed = 456, stepSize, mean, precision)
+//' str(nuts_engine)
 //' @export
 // [[Rcpp::export(createNutsEngine)]]
 Rcpp::List createNutsEngine(int dimension,
@@ -171,6 +193,16 @@ Rcpp::List createNutsEngine(int dimension,
 //'
 //' @param engine A Zigzag-HMC engine container object.
 //' @param mean the mean vector.
+//' @examples
+//' # First create an engine
+//' engine <- createEngine(dimension = 2, 
+//'                        lowerBounds = c(-1, -1),
+//'                        upperBounds = c(1, 1),
+//'                        seed = 123,
+//'                        mean = c(0, 0),
+//'                        precision = diag(2))
+//' # Update the mean
+//' setMean(engine, mean = c(0.5, 0.5))
 //' @export
 // [[Rcpp::export(setMean)]]
 void setMean(List engine, NumericVector &mean) {
@@ -186,6 +218,17 @@ void setMean(List engine, NumericVector &mean) {
 //'
 //' @param engine A Zigzag-HMC engine container object.
 //' @param precision the precision matrix.
+//' @examples
+//' # First create an engine
+//' engine <- createEngine(dimension = 2,
+//'                        lowerBounds = c(-1, -1),
+//'                        upperBounds = c(1, 1),
+//'                        seed = 123,
+//'                        mean = c(0, 0),
+//'                        precision = diag(2))
+//' # Update with a correlated precision matrix
+//' new_precision <- matrix(c(2, 0.8, 0.8, 2), nrow = 2)
+//' setPrecision(engine, precision = new_precision)
 //' @export
 // [[Rcpp::export(setPrecision)]]
 void setPrecision(List engine, NumericVector &precision) {
