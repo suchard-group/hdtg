@@ -11,6 +11,7 @@
 #' set.seed(3)
 #' momentum <- drawLaplaceMomentum(3)
 #' momentum
+#' @seealso [zigzagHMC()]
 drawLaplaceMomentum <- function(d) {
   return((2 * (stats::runif(d) > .5) - 1) * stats::rexp(d, rate = 1))
 }
@@ -47,6 +48,7 @@ drawLaplaceMomentum <- function(d) {
 #' lower <- c(-Inf, -Inf, -Inf)
 #' upper <- c(Inf, Inf, Inf)
 #' getInitialPosition(mean, lower, upper)
+#' @seealso [harmonicHMC()], [zigzagHMC()], [markovianZigzag()]
 getInitialPosition <- function(mean, lowerBounds, upperBounds) {
   bL <- upperBounds - lowerBounds
   midPoint <- (upperBounds + lowerBounds) / 2

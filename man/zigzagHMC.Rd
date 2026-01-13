@@ -73,3 +73,6 @@ Nishimura, A., Dunson, D. B., and Lu, J. (2020). Discontinuous Hamiltonian
 Monte Carlo for discrete parameters and discontinuous likelihoods.
 Biometrika, 107(2): 365-380.
 }
+\seealso{
+\code{\link[=getZigzagSample]{getZigzagSample()}}, \code{\link[=createEngine]{createEngine()}}, \code{\link[=setMean]{setMean()}}, \code{\link[=setPrecision]{setPrecision()}}
+}

@@ -107,6 +107,7 @@ NutsSharedPtr &parsePtrNuts(SEXP sexp) {
 //'                        seed = 123, mean, precision, flags = 128)
 //' # Check the engine structure
 //' str(engine)
+//' @seealso [setMean()], [setPrecision()], [zigzagHMC()], [markovianZigzag()]
 //' @export
 // [[Rcpp::export(createEngine)]]
 Rcpp::List createEngine(int dimension,
@@ -157,6 +158,7 @@ Rcpp::List createEngine(int dimension,
 //' nuts_engine <- createNutsEngine(dimension, lowerBounds, upperBounds,
 //'                                 seed = 456, stepSize, mean, precision)
 //' str(nuts_engine)
+//' @seealso [setMean()], [setPrecision()], [zigzagHMC()], [createEngine()]
 //' @export
 // [[Rcpp::export(createNutsEngine)]]
 Rcpp::List createNutsEngine(int dimension,
@@ -203,6 +205,7 @@ Rcpp::List createNutsEngine(int dimension,
 //'                        precision = diag(2))
 //' # Update the mean
 //' setMean(engine, mean = c(0.5, 0.5))
+//' @seealso [createEngine()], [createNutsEngine()]
 //' @export
 // [[Rcpp::export(setMean)]]
 void setMean(List engine, NumericVector &mean) {
@@ -229,6 +232,7 @@ void setMean(List engine, NumericVector &mean) {
 //' # Update with a correlated precision matrix
 //' new_precision <- matrix(c(2, 0.8, 0.8, 2), nrow = 2)
 //' setPrecision(engine, precision = new_precision)
+//' @seealso [createEngine()], [createNutsEngine()]
 //' @export
 // [[Rcpp::export(setPrecision)]]
 void setPrecision(List engine, NumericVector &precision) {

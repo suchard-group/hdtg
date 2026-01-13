@@ -25,3 +25,6 @@ engine <- createEngine(dimension = 2,
 # Update the mean
 setMean(engine, mean = c(0.5, 0.5))
 }
+\seealso{
+\code{\link[=createEngine]{createEngine()}}, \code{\link[=createNutsEngine]{createNutsEngine()}}
+}

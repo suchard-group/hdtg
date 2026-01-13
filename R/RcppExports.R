@@ -17,6 +17,7 @@
 #' U
 #' # Verify decomposition
 #' all.equal(B, t(U) %*% U)
+#' @seealso [harmonicHMC()]
 cholesky <- function(A) {
     .Call(`_hdtg_cholesky`, A)
 }
@@ -61,6 +62,7 @@ simulateWhitenedDynamics <- function(initialPosition, initialMomentum, constrain
 #'                        seed = 123, mean, precision, flags = 128)
 #' # Check the engine structure
 #' str(engine)
+#' @seealso [setMean()], [setPrecision()], [zigzagHMC()], [markovianZigzag()]
 #' @export
 createEngine <- function(dimension, lowerBounds, upperBounds, seed, mean, precision, flags = 128L) {
     .Call(`_hdtg_createEngine`, dimension, lowerBounds, upperBounds, seed, mean, precision, flags)
@@ -91,6 +93,7 @@ createEngine <- function(dimension, lowerBounds, upperBounds, seed, mean, precis
 #' nuts_engine <- createNutsEngine(dimension, lowerBounds, upperBounds,
 #'                                 seed = 456, stepSize, mean, precision)
 #' str(nuts_engine)
+#' @seealso [setMean()], [setPrecision()], [zigzagHMC()], [createEngine()]
 #' @export
 createNutsEngine <- function(dimension, lowerBounds, upperBounds, seed, stepSize, mean, precision, flags = 128L) {
     .Call(`_hdtg_createNutsEngine`, dimension, lowerBounds, upperBounds, seed, stepSize, mean, precision, flags)
@@ -112,6 +115,7 @@ createNutsEngine <- function(dimension, lowerBounds, upperBounds, seed, stepSize
 #'                        precision = diag(2))
 #' # Update the mean
 #' setMean(engine, mean = c(0.5, 0.5))
+#' @seealso [createEngine()], [createNutsEngine()]
 #' @export
 setMean <- function(engine, mean) {
     invisible(.Call(`_hdtg_setMean`, engine, mean))
@@ -134,6 +138,7 @@ setMean <- function(engine, mean) {
 #' # Update with a correlated precision matrix
 #' new_precision <- matrix(c(2, 0.8, 0.8, 2), nrow = 2)
 #' setPrecision(engine, precision = new_precision)
+#' @seealso [createEngine()], [createNutsEngine()]
 #' @export
 setPrecision <- function(engine, precision) {
     invisible(.Call(`_hdtg_setPrecision`, engine, precision))

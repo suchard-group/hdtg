@@ -41,3 +41,6 @@ lower <- c(-Inf, -Inf, -Inf)
 upper <- c(Inf, Inf, Inf)
 getInitialPosition(mean, lower, upper)
 }
+\seealso{
+\code{\link[=harmonicHMC]{harmonicHMC()}}, \code{\link[=zigzagHMC]{zigzagHMC()}}, \code{\link[=markovianZigzag]{markovianZigzag()}}
+}

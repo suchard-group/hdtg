@@ -43,3 +43,6 @@ sample_result <- getMarkovianZigzagSample(
 )
 sample_result
 }
+\seealso{
+\code{\link[=markovianZigzag]{markovianZigzag()}}
+}

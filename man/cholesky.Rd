@@ -25,3 +25,6 @@ U
 # Verify decomposition
 all.equal(B, t(U) \%*\% U)
 }
+\seealso{
+\code{\link[=harmonicHMC]{harmonicHMC()}}
+}

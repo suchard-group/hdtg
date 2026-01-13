@@ -51,3 +51,6 @@ nuts_engine <- createNutsEngine(dimension, lowerBounds, upperBounds,
                                 seed = 456, stepSize, mean, precision)
 str(nuts_engine)
 }
+\seealso{
+\code{\link[=setMean]{setMean()}}, \code{\link[=setPrecision]{setPrecision()}}, \code{\link[=zigzagHMC]{zigzagHMC()}}, \code{\link[=createEngine]{createEngine()}}
+}

@@ -62,3 +62,6 @@ for (i in 1:n) {
   samples[i,] <- currentSample
 }
 }
+\seealso{
+\code{\link[=zigzagHMC]{zigzagHMC()}}, \code{\link[=drawLaplaceMomentum]{drawLaplaceMomentum()}}
+}

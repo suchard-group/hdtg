@@ -39,7 +39,8 @@
 #' Nishimura, A., Dunson, D. B., and Lu, J. (2020). Discontinuous Hamiltonian 
 #' Monte Carlo for discrete parameters and discontinuous likelihoods. 
 #' Biometrika, 107(2): 365-380.
-
+#' 
+#' @seealso [getZigzagSample()], [createEngine()], [setMean()], [setPrecision()] 
 zigzagHMC <- function(nSample,
                       burnin = 0,
                       mean,
@@ -176,6 +177,7 @@ zigzagHMC <- function(nSample,
 #'                                    stepSize = HZZtime)
 #'   samples[i,] <- currentSample
 #' }
+#' @seealso [zigzagHMC()], [drawLaplaceMomentum()]
 getZigzagSample <- function(position,
                             momentum = NULL,
                             nutsFlg,

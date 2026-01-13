@@ -78,3 +78,6 @@ Pakman, A. and Paninski, L. (2014). Exact Hamiltonian Monte Carlo for
 Truncated Multivariate Gaussians. Journal of Computational and Graphical
 Statistics. doi:10.1080/10618600.2013.788448
 }
+\seealso{
+\code{\link[=getHarmonicSample]{getHarmonicSample()}}, \code{\link[=cholesky]{cholesky()}}, \code{\link[=getInitialPosition]{getInitialPosition()}}
+}

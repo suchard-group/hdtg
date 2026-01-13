@@ -44,6 +44,8 @@
 #' @references
 #' Bierkens, J., Roberts, G. O., and Zitt, P.-A. (2019). Ergodicity of the 
 #' zigzag process. The Annals of Applied Probability, 29(4): 2266-2301.
+#' @seealso [getMarkovianZigzagSample()], [createEngine()]
+
 markovianZigzag <- function(nSample,
                             burnin = 0,
                             mean,
@@ -136,6 +138,8 @@ markovianZigzag <- function(nSample,
 #'   travelTime = travel_time
 #' )
 #' sample_result
+
+#' @seealso [markovianZigzag()]
 getMarkovianZigzagSample <- function(position, velocity = NULL, engine, travelTime) {
   if (is.null(velocity)) {
     velocity <- 2 * stats::rbinom(length(position), 1, .5) - 1

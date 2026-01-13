@@ -49,3 +49,6 @@ result_diag <- getHarmonicSample(
 )
 str(result_diag)
 }
+\seealso{
+\code{\link[=harmonicHMC]{harmonicHMC()}}
+}

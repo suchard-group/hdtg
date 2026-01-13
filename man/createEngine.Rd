@@ -48,3 +48,6 @@ engine <- createEngine(dimension, lowerBounds, upperBounds,
 # Check the engine structure
 str(engine)
 }
+\seealso{
+\code{\link[=setMean]{setMean()}}, \code{\link[=setPrecision]{setPrecision()}}, \code{\link[=zigzagHMC]{zigzagHMC()}}, \code{\link[=markovianZigzag]{markovianZigzag()}}
+}

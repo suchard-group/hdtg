@@ -26,3 +26,6 @@ engine <- createEngine(dimension = 2,
 new_precision <- matrix(c(2, 0.8, 0.8, 2), nrow = 2)
 setPrecision(engine, precision = new_precision)
 }
+\seealso{
+\code{\link[=createEngine]{createEngine()}}, \code{\link[=createNutsEngine]{createNutsEngine()}}
+}

@@ -16,6 +16,7 @@
 //' U
 //' # Verify decomposition
 //' all.equal(B, t(U) %*% U)
+//' @seealso [harmonicHMC()]
 // [[Rcpp::export]]
 Eigen::MatrixXd cholesky(const Eigen::Map<Eigen::MatrixXd> A) {
   return A.llt().matrixU();

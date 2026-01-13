@@ -21,3 +21,6 @@ set.seed(3)
 momentum <- drawLaplaceMomentum(3)
 momentum
 }
+\seealso{
+\code{\link[=zigzagHMC]{zigzagHMC()}}
+}
