@@ -41,6 +41,9 @@
 #'   lowerBounds = rep(0, d),
 #'   upperBounds = rep(Inf, d)
 #' )
+#' @references
+#' Bierkens, J., Roberts, G. O., and Zitt, P.-A. (2019). Ergodicity of the 
+#' zigzag process. The Annals of Applied Probability, 29(4): 2266-2301.
 markovianZigzag <- function(nSample,
                             burnin = 0,
                             mean,
