@@ -90,13 +90,18 @@ harmonicHMC <- function(nSample,
   if (!is.null(seed)) {
     set.seed(seed)
   }
+  
+  # Generate seeds for C++ RNG (deterministic from main seed)
+  cpp_seeds <- sample.int(.Machine$integer.max, nSample + burnin)
+  
   for (i in 1:(nSample + burnin)) {
 
     results <- getHarmonicSample(
       whitenedPosition = position,
       whitenedConstraints = whitenedConstraints,
       integrationTime = runif(1, time[1], time[2]),
-      diagnosticMode = diagnosticMode
+      diagnosticMode = diagnosticMode,
+      seed = cpp_seeds[i]
     )
     
     position <- results$position
@@ -127,6 +132,7 @@ harmonicHMC <- function(nSample,
 #' @param whitenedConstraints List from \code{applyWhitenTransform()}
 #' @param integrationTime Time for dynamics simulation
 #' @param diagnosticMode Return bounce diagnostics
+#' @param seed random seed
 #' @export
 #' @examples
 #' # Basic usage with whitened coordinates
@@ -157,16 +163,19 @@ harmonicHMC <- function(nSample,
 getHarmonicSample <- function(whitenedPosition,
                               whitenedConstraints,
                               integrationTime,
-                              diagnosticMode = FALSE) {
-  momentum <- rnorm(length(whitenedPosition))
+                              diagnosticMode = FALSE,
+                              seed = NULL) {
+  if (is.null(seed)) {
+    seed <- sample.int(.Machine$integer.max, 1)  
+  }
   
   simulateWhitenedDynamics(
     whitenedPosition,
-    momentum,
     whitenedConstraints$direc,
     whitenedConstraints$direcRowNormSq,
     whitenedConstraints$bound,
     integrationTime,
-    diagnosticMode
+    diagnosticMode,
+    seed = seed
   )
 }

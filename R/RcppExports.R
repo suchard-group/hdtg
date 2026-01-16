@@ -34,8 +34,8 @@ unwhitenPosition <- function(position, choleskyFactor, unconstrainedMean, precPa
     .Call(`_hdtg_unwhitenPosition`, position, choleskyFactor, unconstrainedMean, precParametrized)
 }
 
-simulateWhitenedDynamics <- function(initialPosition, initialMomentum, constraintDirec, constraintRowNormSq, constraintBound, integrationTime, diagnosticMode) {
-    .Call(`_hdtg_simulateWhitenedDynamics`, initialPosition, initialMomentum, constraintDirec, constraintRowNormSq, constraintBound, integrationTime, diagnosticMode)
+simulateWhitenedDynamics <- function(initialPosition, constraintDirec, constraintRowNormSq, constraintBound, integrationTime, diagnosticMode, seed = 0L) {
+    .Call(`_hdtg_simulateWhitenedDynamics`, initialPosition, constraintDirec, constraintRowNormSq, constraintBound, integrationTime, diagnosticMode, seed)
 }
 
 #' Create a Zigzag-HMC engine object

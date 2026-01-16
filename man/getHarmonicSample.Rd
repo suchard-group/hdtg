@@ -8,7 +8,8 @@ getHarmonicSample(
   whitenedPosition,
   whitenedConstraints,
   integrationTime,
-  diagnosticMode = FALSE
+  diagnosticMode = FALSE,
+  seed = NULL
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ getHarmonicSample(
 \item{integrationTime}{Time for dynamics simulation}
 
 \item{diagnosticMode}{Return bounce diagnostics}
+
+\item{seed}{random seed}
 }
 \description{
 One-step Harmonic HMC Sampler (Whitened Coordinates)

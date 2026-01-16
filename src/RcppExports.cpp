@@ -68,19 +68,19 @@ BEGIN_RCPP
 END_RCPP
 }
 // simulateWhitenedDynamics
-Rcpp::List simulateWhitenedDynamics(const Eigen::Map<Eigen::VectorXd> initialPosition, const Eigen::Map<Eigen::VectorXd> initialMomentum, const Eigen::Map<Eigen::MatrixXd> constraintDirec, const Eigen::Map<Eigen::VectorXd> constraintRowNormSq, const Eigen::Map<Eigen::VectorXd> constraintBound, double integrationTime, bool diagnosticMode);
-RcppExport SEXP _hdtg_simulateWhitenedDynamics(SEXP initialPositionSEXP, SEXP initialMomentumSEXP, SEXP constraintDirecSEXP, SEXP constraintRowNormSqSEXP, SEXP constraintBoundSEXP, SEXP integrationTimeSEXP, SEXP diagnosticModeSEXP) {
+Rcpp::List simulateWhitenedDynamics(const Eigen::Map<Eigen::VectorXd> initialPosition, const Eigen::Map<Eigen::MatrixXd> constraintDirec, const Eigen::Map<Eigen::VectorXd> constraintRowNormSq, const Eigen::Map<Eigen::VectorXd> constraintBound, double integrationTime, bool diagnosticMode, long seed);
+RcppExport SEXP _hdtg_simulateWhitenedDynamics(SEXP initialPositionSEXP, SEXP constraintDirecSEXP, SEXP constraintRowNormSqSEXP, SEXP constraintBoundSEXP, SEXP integrationTimeSEXP, SEXP diagnosticModeSEXP, SEXP seedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type initialPosition(initialPositionSEXP);
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type initialMomentum(initialMomentumSEXP);
     Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd> >::type constraintDirec(constraintDirecSEXP);
     Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type constraintRowNormSq(constraintRowNormSqSEXP);
     Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd> >::type constraintBound(constraintBoundSEXP);
     Rcpp::traits::input_parameter< double >::type integrationTime(integrationTimeSEXP);
     Rcpp::traits::input_parameter< bool >::type diagnosticMode(diagnosticModeSEXP);
-    rcpp_result_gen = Rcpp::wrap(simulateWhitenedDynamics(initialPosition, initialMomentum, constraintDirec, constraintRowNormSq, constraintBound, integrationTime, diagnosticMode));
+    Rcpp::traits::input_parameter< long >::type seed(seedSEXP);
+    rcpp_result_gen = Rcpp::wrap(simulateWhitenedDynamics(initialPosition, constraintDirec, constraintRowNormSq, constraintBound, integrationTime, diagnosticMode, seed));
     return rcpp_result_gen;
 END_RCPP
 }

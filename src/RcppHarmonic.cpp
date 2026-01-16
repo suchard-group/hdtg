@@ -1,4 +1,6 @@
 #include <RcppEigen.h>
+#include <random>
+#include <chrono>
 // [[Rcpp::depends(RcppEigen)]]
 //' Efficient Cholesky decomposition
 //' 
@@ -204,21 +206,29 @@ Eigen::VectorXd unwhitenPosition(
 // ' @param integrationTime total time the particle will travel for
 // ' @param diagnosticMode boolean for whether to return the bounce
 // ' distances for each sample
+// ' @param seed random seed
 // ' @return vector of position in standard normal frame
 // [[Rcpp::export]]
 Rcpp::List simulateWhitenedDynamics(
     const Eigen::Map<Eigen::VectorXd> initialPosition,
-    const Eigen::Map<Eigen::VectorXd> initialMomentum,
     const Eigen::Map<Eigen::MatrixXd> constraintDirec,
     const Eigen::Map<Eigen::VectorXd> constraintRowNormSq,
     const Eigen::Map<Eigen::VectorXd> constraintBound, double integrationTime,
-    bool diagnosticMode) {
+    bool diagnosticMode,
+    long seed = 0) {
+  std::mt19937 rng(seed == 0 ? std::random_device{}() : seed);
+  std::normal_distribution<double> normal(0, 1);
+  
+  Eigen::VectorXd momentum(initialPosition.size());
+  for (int i = 0; i < momentum.size(); ++i) {
+    momentum[i] = normal(rng);
+  }
+  
   int bounceIdx;
   double bounceTime;
   double bouncedDistance;
   Eigen::VectorXd newPosition;
   Eigen::VectorXd position = initialPosition;
-  Eigen::VectorXd momentum = initialMomentum;
   Eigen::VectorXd bounceDistances;
   if (diagnosticMode) {
     bounceDistances = Eigen::VectorXd(constraintDirec.cols());
