@@ -11,7 +11,8 @@ createEngine(
   seed,
   mean,
   precision,
-  flags = 128L
+  flags = 128L,
+  numThreads = 1L
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ createEngine(
 \item{precision}{the precision matrix.}
 
 \item{flags}{which SIMD instruction set to use. 128 = SSE, 256 = AVX.}
+
+\item{numThreads}{number of threads for parallel execution (default = 1). Set to 0 for automatic detection of available cores.}
 }
 \value{
 a list whose only element is the Zigzag-HMC engine object.

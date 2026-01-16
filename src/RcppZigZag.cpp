@@ -95,6 +95,7 @@ NutsSharedPtr &parsePtrNuts(SEXP sexp) {
 //' @param mean the mean vector.
 //' @param precision the precision matrix.
 //' @param flags which SIMD instruction set to use. 128 = SSE, 256 = AVX.
+//' @param numThreads number of threads for parallel execution (default = 1). Set to 0 for automatic detection of available cores.
 //' @return a list whose only element is the Zigzag-HMC engine object.
 //' @examples
 //' # Create a 2D engine with simple bounds
@@ -116,11 +117,12 @@ Rcpp::List createEngine(int dimension,
                         long seed, 
                         NumericVector &mean,
                         NumericVector &precision,
-                        long flags = 128) {
+                        long flags = 128,
+                        int numThreads = 1) {
     std::vector<double> mask(dimension, 1);
     auto zigZag = new ZigZagWrapper(
       zz::dispatch(dimension, mask.data(), lowerBounds.data(), upperBounds.data(),
-                         flags, 1, seed));
+                         flags, numThreads, seed));
 
     XPtrZigZagWrapper engine(zigZag);
 
@@ -146,6 +148,7 @@ Rcpp::List createEngine(int dimension,
 //' @param mean the mean vector.
 //' @param precision the precision matrix.
 //' @param flags which SIMD instruction set to use. 128 = SSE, 256 = AVX.
+//' @param numThreads number of threads for parallel execution (default = 1). Set to 0 for automatic detection of available cores.
 //' @return a list whose only element is the Zigzag-NUTS engine object.
 //' @examples
 //' # Create a Zigzag-NUTS engine for a 2D problem
@@ -168,10 +171,11 @@ Rcpp::List createNutsEngine(int dimension,
                             double stepSize,
                             NumericVector &mean,
                             NumericVector &precision,
-                            long flags = 128) {
+                            long flags = 128,
+                            int numThreads = 1) {
     std::vector<double> mask(dimension, 1); 
     auto zigZag = new ZigZagWrapper(
-            zz::dispatch(dimension, mask.data(), lowerBounds.data(), upperBounds.data(), flags, 1, seed));
+            zz::dispatch(dimension, mask.data(), lowerBounds.data(), upperBounds.data(), flags, numThreads, seed));
     XPtrZigZagWrapper engineZZ(zigZag);
 
     // ptr to a zigzag obj

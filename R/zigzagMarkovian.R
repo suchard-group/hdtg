@@ -19,6 +19,7 @@
 #'   is the empirically optimal choice: \eqn{\sqrt{2}\lambda^{-1/2}}, where \eqn{\lambda} is the 
 #'   minimal eigenvalue of the precision matrix.
 #' @param seed Random seed (default = 1).
+#' @param numThreads number of threads for parallel execution (default = 1). Set to 0 for automatic detection of available cores.
 #' @param diagnosticMode Logical. `TRUE` for also returning diagnostic
 #'   information such as the step size used.
 #' @param nStatusUpdate Number of status updates to print during sampling.
@@ -55,6 +56,7 @@ markovianZigzag <- function(nSample,
                             init = NULL,
                             stepSize = NULL,
                             seed = 1,
+                            numThreads = 1,
                             diagnosticMode = FALSE,
                             nStatusUpdate = 0L) {
   validateInput(mean, prec, lowerBounds, upperBounds, init)
@@ -78,6 +80,7 @@ markovianZigzag <- function(nSample,
     lowerBounds = lowerBounds,
     upperBounds = upperBounds,
     flags = 128,
+    numThreads = numThreads,
     seed = cpp_seed,
     mean = mean,
     precision = prec

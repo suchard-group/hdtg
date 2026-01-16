@@ -14,6 +14,7 @@ markovianZigzag(
   init = NULL,
   stepSize = NULL,
   seed = 1,
+  numThreads = 1,
   diagnosticMode = FALSE,
   nStatusUpdate = 0L
 )
@@ -42,6 +43,8 @@ is the empirically optimal choice: \eqn{\sqrt{2}\lambda^{-1/2}}, where \eqn{\lam
 minimal eigenvalue of the precision matrix.}
 
 \item{seed}{Random seed (default = 1).}
+
+\item{numThreads}{number of threads for parallel execution (default = 1). Set to 0 for automatic detection of available cores.}
 
 \item{diagnosticMode}{Logical. \code{TRUE} for also returning diagnostic
 information such as the step size used.}
