@@ -132,7 +132,17 @@ std::pair<double, int> computeNextBounce(
   int bounceIdx = -1;
   for (int i = 0; i < constraintBound.size(); ++i) {
     if (U[i] > abs(constraintBound[i])) {
-      double bounceTime = -phi[i] + std::acos(-constraintBound[i] / U[i]);
+      double A = std::acos(-constraintBound[i] / U[i]);  // A ∈ [0, π]
+      double t1 = -phi[i] + A; // solution t1
+      double t2 = -phi[i] - A + 2 * M_PI; // solution t2
+      // t2 is always ≥ 0, but t1 could be negative
+      double bounceTime;
+      if (t1 < 0) {
+        bounceTime = t2;  
+      } else {
+        bounceTime = t1;
+      }
+      // double bounceTime = -phi[i] + std::acos(-constraintBound[i] / U[i]);
       if (bounceTime < minTime) {
         minTime = bounceTime;
         bounceIdx = i;
