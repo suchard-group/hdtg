@@ -1,6 +1,7 @@
 #include <RcppEigen.h>
 #include <random>
 #include <chrono>
+#include <Rcpp.h>
 // [[Rcpp::depends(RcppEigen)]]
 //' Efficient Cholesky decomposition
 //' 
@@ -136,9 +137,12 @@ std::pair<double, int> computeNextBounce(
       double t1 = -phi[i] + A; // solution t1
       double t2 = -phi[i] - A + 2 * M_PI; // solution t2
       // t2 is always ≥ 0, but t1 could be negative
-      double bounceTime;
+      double bounceTime = 0;
       if (t1 < 0) {
         bounceTime = t2;  
+        Rcpp::Rcout << "t1 " << t1 
+                    << ", t2 " << t2 << std::endl;
+        Rcpp::Rcout.flush(); 
       } else {
         bounceTime = t1;
       }
