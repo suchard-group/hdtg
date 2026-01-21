@@ -140,9 +140,9 @@ std::pair<double, int> computeNextBounce(
       double bounceTime = 0;
       if (t1 < 0) {
         bounceTime = t2;  
-        Rcpp::Rcout << "t1 " << t1 
-                    << ", t2 " << t2 << std::endl;
-        Rcpp::Rcout.flush(); 
+        // Rcpp::Rcout << "t1 " << t1 
+        //             << ", t2 " << t2 << std::endl;
+        // Rcpp::Rcout.flush(); 
       } else {
         bounceTime = t1;
       }
