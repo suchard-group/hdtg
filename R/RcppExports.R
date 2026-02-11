@@ -50,7 +50,6 @@ simulateWhitenedDynamics <- function(initialPosition, constraintDirec, constrain
 #' @param mean the mean vector.
 #' @param precision the precision matrix.
 #' @param flags which SIMD instruction set to use. 128 = SSE, 256 = AVX.
-#' @param numThreads number of threads for parallel execution (default = 1). Set to 0 for automatic detection of available cores.
 #' @return a list whose only element is the Zigzag-HMC engine object.
 #' @examples
 #' # Create a 2D engine with simple bounds
@@ -65,8 +64,8 @@ simulateWhitenedDynamics <- function(initialPosition, constraintDirec, constrain
 #' str(engine)
 #' @seealso [setMean()], [setPrecision()], [zigzagHMC()], [markovianZigzag()]
 #' @export
-createEngine <- function(dimension, lowerBounds, upperBounds, seed, mean, precision, flags = 128L, numThreads = 1L) {
-    .Call(`_hdtg_createEngine`, dimension, lowerBounds, upperBounds, seed, mean, precision, flags, numThreads)
+createEngine <- function(dimension, lowerBounds, upperBounds, seed, mean, precision, flags = 128L) {
+    .Call(`_hdtg_createEngine`, dimension, lowerBounds, upperBounds, seed, mean, precision, flags)
 }
 
 #' Create a Zigzag-NUTS engine object
@@ -82,7 +81,6 @@ createEngine <- function(dimension, lowerBounds, upperBounds, seed, mean, precis
 #' @param mean the mean vector.
 #' @param precision the precision matrix.
 #' @param flags which SIMD instruction set to use. 128 = SSE, 256 = AVX.
-#' @param numThreads number of threads for parallel execution (default = 1). Set to 0 for automatic detection of available cores.
 #' @return a list whose only element is the Zigzag-NUTS engine object.
 #' @examples
 #' # Create a Zigzag-NUTS engine for a 2D problem
@@ -97,8 +95,8 @@ createEngine <- function(dimension, lowerBounds, upperBounds, seed, mean, precis
 #' str(nuts_engine)
 #' @seealso [setMean()], [setPrecision()], [zigzagHMC()], [createEngine()]
 #' @export
-createNutsEngine <- function(dimension, lowerBounds, upperBounds, seed, stepSize, mean, precision, flags = 128L, numThreads = 1L) {
-    .Call(`_hdtg_createNutsEngine`, dimension, lowerBounds, upperBounds, seed, stepSize, mean, precision, flags, numThreads)
+createNutsEngine <- function(dimension, lowerBounds, upperBounds, seed, stepSize, mean, precision, flags = 128L) {
+    .Call(`_hdtg_createNutsEngine`, dimension, lowerBounds, upperBounds, seed, stepSize, mean, precision, flags)
 }
 
 #' Set the mean for the target MTN

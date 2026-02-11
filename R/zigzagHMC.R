@@ -13,7 +13,6 @@
 #' @param init a d-dimensional vector of the initial value. `init` must satisfy all constraints. If `init = NULL`, a random initial value will be used.
 #' @param stepSize step size for Zigzag-HMC or Zigzag-NUTS (if `nutsFlg = TRUE`). Default value is the empirically optimal choice: sqrt(2)(lambda)^(-1/2) for Zigzag-HMC and 0.1(lambda)^(-1/2) for Zigzag-NUTS, where lambda is the minimal eigenvalue of the precision matrix.   
 #' @param seed random seed (default = 1).
-#' @param numThreads number of threads for parallel execution (default = 1). Set to 0 for automatic detection of available cores.
 #' @param diagnosticMode logical. `TRUE` for also returning diagnostic information such as the stepsize used. 
 #' @return 
 #' When `diagnosticMode = FALSE` (default), returns an `nSample`-by-`d` matrix of samples.
@@ -53,7 +52,6 @@ zigzagHMC <- function(nSample,
                       nutsFlg = FALSE,
                       precondition = FALSE,
                       seed = 1,
-                      numThreads = 1,
                       diagnosticMode = FALSE) {
   
   validateInput(mean, prec, lowerBounds, upperBounds, init)
@@ -85,7 +83,6 @@ zigzagHMC <- function(nSample,
       lowerBounds = lowerBounds,
       upperBounds = upperBounds,
       flags = 128,
-      numThreads = numThreads,
       seed = cpp_seed,
       stepSize = stepSize,
       mean = mean,
@@ -101,7 +98,6 @@ zigzagHMC <- function(nSample,
       lowerBounds = lowerBounds,
       upperBounds = upperBounds,
       flags = 128,
-      numThreads = numThreads,
       seed = cpp_seed,
       mean = mean,
       precision = prec

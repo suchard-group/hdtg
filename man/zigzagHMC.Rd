@@ -16,7 +16,6 @@ zigzagHMC(
   nutsFlg = FALSE,
   precondition = FALSE,
   seed = 1,
-  numThreads = 1,
   diagnosticMode = FALSE
 )
 }
@@ -42,8 +41,6 @@ zigzagHMC(
 \item{precondition}{logical. If \code{TRUE}, the precision matrix will be preconditioned so that its diagonals (i.e. conditional variances) are all 1.}
 
 \item{seed}{random seed (default = 1).}
-
-\item{numThreads}{number of threads for parallel execution (default = 1). Set to 0 for automatic detection of available cores.}
 
 \item{diagnosticMode}{logical. \code{TRUE} for also returning diagnostic information such as the stepsize used.}
 }
