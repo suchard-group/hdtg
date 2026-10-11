@@ -8,7 +8,7 @@
 #include "xsimd/xsimd.hpp"
 #include "ZigZag.h"
 
-#if defined(__ARM64_ARCH_8__)    
+#if defined(__ARM64_ARCH_8__) || defined(__aarch64__)
 #include "sse2neon.h"
 #endif
 

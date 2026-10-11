@@ -6205,8 +6205,16 @@ FORCE_INLINE void _mm_clflush(void const *p)
 // Allocate aligned blocks of memory.
 // https://software.intel.com/en-us/
 //         cpp-compiler-developer-guide-and-reference-allocating-and-freeing-aligned-memory-blocks
+#if defined(_WIN32)
+#include <malloc.h>
+#endif
 FORCE_INLINE void *_mm_malloc(size_t size, size_t align)
 {
+#if defined(_WIN32)
+    if (align < sizeof(void *))
+        align = sizeof(void *);
+    return _aligned_malloc(size, align);
+#else
     void *ptr;
     if (align == 1)
         return malloc(size);
@@ -6215,11 +6223,16 @@ FORCE_INLINE void *_mm_malloc(size_t size, size_t align)
     if (!posix_memalign(&ptr, align, size))
         return ptr;
     return NULL;
+#endif
 }
 
 FORCE_INLINE void _mm_free(void *addr)
 {
+#if defined(_WIN32)
+    _aligned_free(addr);
+#else
     free(addr);
+#endif
 }
 
 // Starting with the initial value in crc, accumulates a CRC32 value for
